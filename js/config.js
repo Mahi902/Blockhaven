@@ -3,7 +3,7 @@ export const TILE = 48;          // world pixels per grid cell
 export const WALL_T = 12;        // wall thickness in world pixels
 export const WORLD_W = 40;       // plot size in cells
 export const WORLD_H = 30;
-export const VERSION = '1.19';
+export const VERSION = '1.20';
 export const REPO = 'mahi902/Blockhaven';   // used by the GitHub-API catalog fallback
 
 export const SAVE_KEY = 'blockhaven.world.v1';
@@ -27,4 +27,6 @@ export const HAIR_COLORS = ['#1e1b4b', '#3b2314', '#6b3e1f', '#c59a4b', '#e8d28a
 export const SHIRT_COLORS = ['#0284c7', '#e11d48', '#16a34a', '#f59e0b', '#7c3aed', '#0f172a', '#f1f5f9', '#ec4899'];
 export const PANTS_COLORS = ['#1e293b', '#334155', '#78350f', '#14532d', '#4c1d95', '#7f1d1d', '#d6d3d1'];
 
-export const DEFAULT_LOOK = { style: 'short', skin: '#f1c27d', hair: '#1e1b4b', shirt: '#0284c7', pants: '#1e293b' };
+export const DEFAULT_LOOK = { gender: 'male', build: 'average', style: 'short', skin: '#f1c27d', hair: '#1e1b4b', shirt: '#0284c7', pants: '#1e293b' };
+export const GENDERS = [{ id: 'male', name: 'Male' }, { id: 'female', name: 'Female' }];
+export const BUILDS = [{ id: 'slim', name: 'Slim', sx: 0.88 }, { id: 'average', name: 'Average', sx: 1 }, { id: 'broad', name: 'Broad', sx: 1.16 }];

@@ -1,5 +1,5 @@
 // Blockhaven - the player character: sprites, movement, sitting/lying, click-to-move pathfinding
-import { TILE, VERSION } from './config.js';
+import { TILE, VERSION, BUILDS } from './config.js';
 import { hairParts } from './hair.js';
 import { S } from './state.js';
 import { catalog } from './catalog.js';
@@ -26,8 +26,15 @@ export function rebuildSprites() {
     const svg = templates[d]
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
+    const L = S.player.look, fem = L.gender === 'female';
+    const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 0.94 : 1);
+    let face = '';
+    if (d === 'down') face = fem
+      ? '<path d="M16.2 16.3 L18 17.2 M21.8 16.3 L20 17.2 M26.2 16.3 L28 17.2 M31.8 16.3 L30 17.2" stroke="#1b2336" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M21 23.6 Q24 26.4 27 23.6" fill="none" stroke="#d9455f" stroke-width="1.6" stroke-linecap="round"/>'
+      : '<path d="M16.5 14.2 H21.5 M26.5 14.2 H31.5" stroke="#1b2336" stroke-width="1.5" stroke-linecap="round" fill="none"/>';
+    const body = svg.replace(/(<svg[^>]*>)/, `$1<g transform="translate(24 0) scale(${sx} 1) translate(-24 0)">`).replace('</svg>', face + '</g></svg>');
     const img = new Image();
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(body);
     sprites[d] = img;
   }
 }

@@ -1,6 +1,6 @@
 // Blockhaven - boot, game loop and top bar
 import { HAIR_STYLES } from './hair.js';
-import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_COLORS, VERSION } from './config.js';
+import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_COLORS, VERSION, GENDERS, BUILDS } from './config.js';
 import * as Wm from './worlds.js';
 import { S } from './state.js';
 import * as W from './world.js';
@@ -207,7 +207,13 @@ function buildLook() {
   });
   const styleRow = h('div', { class: 'bh-chips' }, ...styleBtns);
   document.addEventListener('bh-look', () => styleBtns.forEach(b => b.classList.toggle('on', b.dataset.style === (S.player.look.style || 'short'))));
-  box.append(...row('Skin', 'skin', SKIN_TONES), h('div', { class: 'bh-label' }, 'Hairstyle'), styleRow, ...row('Hair colour', 'hair', HAIR_COLORS), ...row('Shirt', 'shirt', SHIRT_COLORS), ...row('Pants', 'pants', PANTS_COLORS));
+  const chips = (key, list, def) => {
+    const bs = list.map(o => { const b = h('button', { class: `bh-tab${(L[key] || def) === o.id ? ' on' : ''}`, type: 'button' }, o.name); b.addEventListener('click', () => { sound('click'); setLook({ [key]: o.id }); }); b.dataset.v = o.id; return b; });
+    document.addEventListener('bh-look', () => bs.forEach(b => b.classList.toggle('on', b.dataset.v === (S.player.look[key] || def))));
+    return h('div', { class: 'bh-chips' }, ...bs);
+  };
+  box.append(h('div', { class: 'bh-label' }, 'Gender'), chips('gender', GENDERS, 'male'), h('div', { class: 'bh-label' }, 'Build'), chips('build', BUILDS, 'average'),
+    ...row('Skin', 'skin', SKIN_TONES), h('div', { class: 'bh-label' }, 'Hairstyle'), styleRow, ...row('Hair colour', 'hair', HAIR_COLORS), ...row('Shirt', 'shirt', SHIRT_COLORS), ...row('Pants', 'pants', PANTS_COLORS));
   document.addEventListener('bh-look', refreshPreview);
   refreshPreview();
 }
