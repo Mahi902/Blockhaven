@@ -133,6 +133,25 @@ function drawSwimmer(c) {
   for (const d of sw.drops) { c.beginPath(); c.arc(d.x, d.y, 1.8, 0, Math.PI * 2); c.fill(); }
 }
 
+// soft-body secondary motion for the female character: chest and hips lag behind the walking bounce and settle with a small wobble
+const jig = { c: 0, cv: 0, h: 0, hv: 0, last: 0, prev: 0 };
+function stepJig(bob) {
+  const now = performance.now(), dt = Math.min(0.04, Math.max(0.001, (now - (jig.last || now - 16)) / 1000)); jig.last = now;
+  const acc = (bob - jig.prev) / dt; jig.prev = bob;                     // body motion drives the springs
+  const drive = Math.max(-260, Math.min(260, acc));
+  jig.cv += (-170 * jig.c - 9 * jig.cv - drive * 0.055) * dt; jig.c += jig.cv * dt;
+  jig.hv += (-150 * jig.h - 8 * jig.hv + drive * 0.04) * dt; jig.h += jig.hv * dt;
+  jig.c = Math.max(-1.6, Math.min(1.6, jig.c)); jig.h = Math.max(-1.3, Math.min(1.3, jig.h));
+}
+function drawSliced(c, img, dw, dh, bob) {
+  stepJig(bob);
+  const k = img.width / 48, u = dw / 48, x0 = -dw / 2, y0 = -dh * 0.89 + bob;
+  const band = (a, b, off, sq) => c.drawImage(img, 0, a * k, img.width, (b - a) * k, x0 - dw * 0.5 * sq, y0 + a * u + off, dw * (1 + sq), (b - a) * u + 0.4);
+  band(41, 64, jig.h * u * 0.9, jig.h * 0.012);          // hips
+  band(26.5, 42, jig.c * u * 1.1, -jig.c * 0.014);       // chest
+  band(0, 27.2, 0, 0);                                   // head and shoulders
+}
+
 function drawPlayer(c) {
   const P = S.player;
   if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
@@ -171,7 +190,8 @@ function drawPlayer(c) {
   c.translate(ox, 0);
   c.rotate(tilt + extraRot);
   if (P.seat && !P.seat.run) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
-  c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
+  if (P.look.gender === 'female' && !(P.seat && P.seat.lying)) drawSliced(c, img, dw, dh, bob);
+  else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
   c.restore();
   if (P.lock && P.lock.anim === 'scrub') drawScrub(c, P);
   if (P.seat && P.seat.spin && Math.abs(P.seat.spin.v) > 5) {   // motion swirl
