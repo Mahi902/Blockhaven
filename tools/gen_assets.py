@@ -378,6 +378,18 @@ def ceiling_tiles(cols=4, rows=3):
                     f'H{pts(y1, c, 0):.2f}Z"/>')
     return out
 
+def gear_path(teeth=8, r_out=9.6, r_in=7.0):
+    """Outline of a simple cog: `teeth` flat-topped teeth around a circle, centred at 12,12."""
+    import math
+    pts = []
+    for i in range(teeth):
+        a = i * 2 * math.pi / teeth
+        step = 2 * math.pi / teeth
+        for r, off in ((r_in, -0.34), (r_out, -0.2), (r_out, 0.2), (r_in, 0.34)):
+            ang = a + off * step * 1.5
+            pts.append(f'{12 + r * math.sin(ang):.2f} {12 - r * math.cos(ang):.2f}')
+    return 'M' + 'L'.join(pts) + 'Z'
+
 def icon_fill(name, body):
     write(os.path.join(ROOT, 'img', 'icons', name + '.svg'),
           f'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><g fill="#fff" stroke="none">{body}</g></svg>\n')
@@ -420,7 +432,7 @@ def gen_icons():
     icon('reset', '<path d="M4 12a8 8 0 112.5 5.8"/><path d="M4 18v-5h5"/>')
     icon('plus', '<path d="M12 5v14M5 12h14"/>')
     icon('info', '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".9" fill="#fff"/>')
-    icon('grid', '<path d="M4 4h16v16H4zM4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/>')
+    icon('gear', f'<path d="{gear_path()}"/><circle cx="12" cy="12" r="3"/>')
 
 def gen_logo():
     b = ('<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5eead4"/>'

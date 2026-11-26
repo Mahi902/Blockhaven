@@ -54,7 +54,7 @@ function buildBar() {
   const zi = button('', { kind: 'dark', small: true, icon: 'zoom-in', title: 'Zoom in', onClick: () => setZoom(S.camera.zoom * 1.2) });
   const zo = button('', { kind: 'dark', small: true, icon: 'zoom-out', title: 'Zoom out', onClick: () => setZoom(S.camera.zoom / 1.2) });
   $('topLeft').append(bar.mode, bar.ceil);
-  bar.set = button('', { kind: 'dark', small: true, icon: 'grid', title: 'Settings', onClick: openSettings });
+  bar.set = button('', { kind: 'dark', small: true, icon: 'gear', title: 'Settings', onClick: openSettings });
   zo.classList.add('zoom-btn'); zi.classList.add('zoom-btn');
   const canFs = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   bar.fs = button('', { kind: 'dark', small: true, icon: 'fullscreen', title: 'Full screen', onClick: toggleFullscreen });
