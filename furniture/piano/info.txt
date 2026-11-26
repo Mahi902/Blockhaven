@@ -1,4 +1,4 @@
 name=Piano
-description=Eighty-eight keys, three of which you know.
+description=Two octaves of real notes. Play with touch, mouse or your computer keys.
 block=2
-function=Play a tune
+function=Play the piano

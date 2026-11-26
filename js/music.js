@@ -248,3 +248,14 @@ export function setMusicVolume(v) {
   volume = Math.max(0, Math.min(1, v));
   if (bus) bus.gain.setTargetAtTime(volume, ctx.currentTime, 0.03);
 }
+
+/** One piano-like note (MIDI number). Plays over any music; used by api.note(). */
+export function playNote(m, dur = 1.6, vel = 1) {
+  if (!soundOn) return;
+  setup();
+  if (ctx.state === 'suspended') ctx.resume();
+  const t = ctx.currentTime + 0.005;
+  tone(m, t, dur, { type: 'triangle', vol: 0.22 * vel, atk: 0.004, lp: 3600, dest: bus });
+  tone(m, t, dur * 0.8, { type: 'sine', vol: 0.1 * vel, atk: 0.004, det: 3, dest: bus });
+  tone(m + 12, t, dur * 0.4, { type: 'sine', vol: 0.05 * vel, atk: 0.004, dest: bus });
+}

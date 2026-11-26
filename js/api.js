@@ -5,7 +5,7 @@ import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
 import { hooks, sitOn, runOn, standUp, say, setLook } from './player.js';
 import { sound } from './audio.js';
-import { playMusic, stopMusic, musicNow, setMusicVolume, TRACK_LIST } from './music.js';
+import { playMusic, stopMusic, musicNow, setMusicVolume, playNote, TRACK_LIST } from './music.js';
 import { HAIR_STYLES } from './hair.js';
 import { h, button, choice, swatches, openModal, closeModal, toast } from './ui.js';
 
@@ -53,6 +53,7 @@ function makeApi(kind, obj) {
       W.touch();
     },
     exists: () => !!W.byId('item', obj.id),
+    note: (midi, dur, vel) => playNote(midi, dur, vel),   // one piano-like note (MIDI number, 60 = middle C)
     fmtTime,
     music: {
       tracks: TRACK_LIST,
