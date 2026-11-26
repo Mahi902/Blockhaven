@@ -1,5 +1,5 @@
 name=Cleaning Robot
-description=A little robot with a see-through tank. Pick rooms and it cleans every reachable tile, then returns to its dock to drain, refill and empty. Catch it and press E to stop it.
+description=A little robot with a see-through tank. Pick rooms and it cleans every reachable tile, then returns to its dock to drain, refill and empty. Catch it and press E to pause it; its dock is always home.
 block=1
 function=Cleaning Robot
 npc=1

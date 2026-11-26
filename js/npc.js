@@ -15,8 +15,8 @@ export function botOf(it) {
   let b = bots.get(it.id);
   if (!b) {
     const st = it.state || (it.state = {}), d = W.itemCenter(it);
-    if (st.rest && st.restFor !== `${it.x},${it.y},${it.rot}`) delete st.rest;
-    const home = st.rest || d;
+    delete st.rest; delete st.restFor;
+    const home = d;
     b = { x: home.x, y: home.y, ang: Math.PI / 2, mode: 'idle', path: null, todo: new Set(), dirty: 0, clean: 0, sv: null, bubble: null, cool: 0, wait: 0, fails: 0, after: null, resume: false, shine: [], t: 0 };
     bots.set(it.id, b);
   }
@@ -65,6 +65,10 @@ export function botApi(it) {
     get status() { return b().mode; },
     get servicing() { return b().mode === 'service'; },
     get moving() { return ['clean', 'return', 'wait', 'home'].includes(b().mode); },
+    get paused() { return b().mode === 'paused'; },
+    get working() { return ['clean', 'return', 'wait', 'home', 'paused', 'stuck'].includes(b().mode); },
+    resume: () => resume(it),
+    recall: () => recall(it),
     get busy() { return b().mode !== 'idle'; },
     get near() { return Math.hypot(S.player.x - b().x, S.player.y - b().y) < 52; },
     get rooms() { return W.world.rooms.map(r => ({ id: r.id, name: r.name, w: r.w, h: r.h })); },
@@ -91,13 +95,27 @@ function start(it, ids) {
 }
 function stop(it) {
   const b = botOf(it);
-  if (!['clean', 'return', 'wait', 'home'].includes(b.mode)) return false;
-  b.mode = 'idle'; b.path = null; b.todo = new Set();
-  const st = it.state || (it.state = {});
-  st.rest = { x: Math.round(b.x), y: Math.round(b.y) }; st.restFor = `${it.x},${it.y},${it.rot}`;
-  npcSay(b, 'Stopped. This is my new home');
-  W.touch();
+  if (!['clean', 'wait'].includes(b.mode)) return false;
+  b.prev = 'clean'; b.mode = 'paused'; b.path = null;
+  npcSay(b, 'Paused');
   return true;
+}
+function resume(it) {
+  const b = botOf(it);
+  if (b.mode !== 'paused') return false;
+  b.mode = 'clean'; b.path = null; b.fails = 0; npcSay(b, 'Back to cleaning');
+  return true;
+}
+function recall(it) {
+  const b = botOf(it);
+  if (!['clean', 'wait', 'paused', 'stuck', 'return'].includes(b.mode)) return false;
+  b.todo = new Set(); b.resume = false; b.fails = 0; b.path = null;
+  npcSay(b, 'Coming back to the dock'); goDock(it, b);
+  return true;
+}
+function teleportDock(it, b) {
+  const dc = W.itemCenter(it); b.x = dc.x; b.y = dc.y; b.path = null; b.fails = 0;
+  npcSay(b, 'Back at the dock'); b.mode = 'service'; b.sv = { ph: 0, t: 0, d0: b.dirty };
 }
 
 // ---- brain
@@ -115,9 +133,9 @@ function move(b, tx, ty, dt) {
   if (d <= s) { b.x = tx; b.y = ty; return true; }
   b.x += dx / d * s; b.y += dy / d * s; return false;
 }
-function giveUp(b) { npcSay(b, "I can't do it"); b.mode = 'idle'; b.path = null; b.todo = new Set(); b.fails = 0; }
-function waitFor(b, after) {
-  if (++b.fails > 10) return giveUp(b);
+function giveUp(b) { npcSay(b, "I can't do it"); b.mode = 'stuck'; b.stuckT = 30; b.path = null; b.todo = new Set(); b.fails = 0; b.resume = false; }
+function waitFor(it, b, after) {
+  if (++b.fails > 10) return after === 'return' ? teleportDock(it, b) : giveUp(b);
   if (b.fails === 1) npcSay(b, "I can't do it");
   b.mode = 'wait'; b.after = after; b.wait = 1.5; b.path = null;
 }
@@ -125,7 +143,7 @@ function goDock(it, b) {
   const dc = W.itemCenter(it), k = keyOf(cellOf(dc.x), cellOf(dc.y));
   if (Math.hypot(b.x - dc.x, b.y - dc.y) < 3) { b.mode = 'service'; b.sv = { ph: 0, t: 0, d0: b.dirty }; npcSay(b, 'Draining dirty water'); return; }
   let res = bfs(it, b, false);
-  if (!res.dist.has(k)) { if (!bfs(it, b, true).dist.has(k)) return giveUp(b); return waitFor(b, 'return'); }
+  if (!res.dist.has(k)) { if (!bfs(it, b, true).dist.has(k)) return teleportDock(it, b); return waitFor(it, b, 'return'); }
   b.mode = 'return'; b.path = pathTo(res, k); b.path.push({ x: dc.x, y: dc.y });
 }
 function planClean(it, b) {
@@ -165,7 +183,7 @@ function step(it, b, dt) {
     if (!b.path || !b.path.length) {
       if (!b.todo.size) { b.resume = false; goDock(it, b); return; }
       const r = planClean(it, b);
-      if (r === 'wait') return waitFor(b, 'clean');
+      if (r === 'wait') return waitFor(it, b, 'clean');
       if (r === null) { b.resume = false; goDock(it, b); return; }
     }
     if (b.path && b.path.length) follow(it, b, dt, () => { b.fails = 0; });
@@ -175,6 +193,11 @@ function step(it, b, dt) {
   } else if (b.mode === 'wait') {
     b.ang += dt * 4;   // turns on the spot, looking for a way round
     if ((b.wait -= dt) <= 0) { b.mode = b.after || 'clean'; b.path = null; if (b.mode === 'return') goDock(it, b); }
+  } else if (b.mode === 'stuck') {
+    b.ang += dt * 2;
+    if ((b.stuckT -= dt) <= 0) { npcSay(b, 'Going to the dock'); goDock(it, b); }
+  } else if (b.mode === 'paused') {
+    b.ang += 0;
   } else if (b.mode === 'service') {
     const s = b.sv; s.t += dt;
     if (s.ph === 0) { b.dirty = Math.max(0, s.d0 * (1 - s.t / 3)); if (s.t >= 3) { b.dirty = 0; s.ph = 1; s.t = 0; npcSay(b, 'Filling clean water'); } }
@@ -183,11 +206,7 @@ function step(it, b, dt) {
       b.clean = 0; b.sv = null; b.fails = 0;
       if (b.resume && b.todo.size) { b.resume = false; b.mode = 'clean'; b.path = null; npcSay(b, 'Back to cleaning'); }
       else {
-        npcSay(b, 'Done'); const st = it.state || {};
-        if (st.rest && Math.hypot(st.rest.x - b.x, st.rest.y - b.y) > 8) {
-          const res = bfs(it, b, true), k = keyOf(cellOf(st.rest.x), cellOf(st.rest.y));
-          if (res.dist.has(k)) { b.path = pathTo(res, k); b.mode = 'home'; } else b.mode = 'idle';
-        } else b.mode = 'idle';
+        npcSay(b, 'Done'); b.mode = 'idle';
       }
     } }
   }

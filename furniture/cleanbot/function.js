@@ -1,13 +1,14 @@
 // Cleaning Robot (NPC): pick the rooms, press Start. It cleans, goes back to the dock to drain dirty water,
 // fill clean water and empty it (it cannot be started during that). While it moves, chase it and press E to
-// stop it; where it stops becomes its new home. It walks around you and new obstacles, and talks.
+// pause it; its dock is always home. After 30s of being unable to work it returns to the dock (teleports if stuck).
+// From the dock you can pause, resume or call it back.
 export default api => {
   const b = api.bot, { h, choice } = api.ui;
-  if (b.moving && b.near) { b.stop(); api.sound("switch"); return; }
+  if ((b.status === "clean" || b.status === "wait") && b.near) { b.stop(); api.sound("switch"); return; }
   const rooms = b.rooms, chosen = new Set(b.chosen);
   const labels = {
     idle: "Ready", clean: "Cleaning", return: "Returning to the dock", home: "Heading home",
-    wait: "Waiting for a clear path", service: "Servicing: draining, refilling, emptying",
+    wait: "Waiting for a clear path", paused: "Paused", stuck: "Cannot work, returning soon", service: "Servicing: draining, refilling, emptying",
   };
   const body = h("div", { class: "bh-list" });
   if (!rooms.length) body.appendChild(h("p", { class: "bh-text" }, "No rooms yet. Use the Room tool in build mode to outline the areas to clean."));
@@ -32,9 +33,12 @@ export default api => {
     api.sound("switch");
     b.start([...chosen]);
   } });
+  if (b.status === "clean" || b.status === "wait") buttons.push({ label: "Pause", kind: "blue", onClick: () => { api.closeModal(); b.stop(); } });
+  if (b.paused) buttons.push({ label: "Resume", kind: "green", onClick: () => { api.closeModal(); b.resume(); } });
+  if (b.working && b.status !== "service") buttons.push({ label: "Call back", kind: "blue", onClick: () => { api.closeModal(); b.recall(); } });
   api.modal({
     title: "Cleaning Robot",
-    subtitle: labels[b.status] + (b.moving ? " - catch it and press E to stop it" : ""),
+    subtitle: labels[b.status] + (b.status === "clean" ? " - catch it and press E to pause it" : ""),
     body, buttons,
   });
 };
