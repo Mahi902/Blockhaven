@@ -1,0 +1,4 @@
+name=Potted Plant
+description=Keeps the room looking alive. Decoration only.
+block=1
+function=

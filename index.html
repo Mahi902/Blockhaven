@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blockhaven</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <div id="topbar" class="hidden">
+    <div id="topLeft"></div>
+    <div id="topRight"></div>
+  </div>
+
+  <div id="buildUI" class="hidden"></div>
+
+  <button id="prompt" class="bh-btn bh-gold hidden" type="button"><kbd>E</kbd><span id="promptText">Use</span></button>
+
+  <div class="bh-dpad" id="dpad">
+    <button data-dir="up" aria-label="Up"></button><button data-dir="left" aria-label="Left"></button>
+    <button data-dir="right" aria-label="Right"></button><button data-dir="down" aria-label="Down"></button>
+  </div>
+
+  <div id="chatbar" class="hidden">
+    <input id="chatInput" class="bh-input" type="text" maxlength="140" placeholder="Press Enter to talk..." autocomplete="off">
+    <button id="chatSend" class="bh-btn bh-blue bh-small" type="button" aria-label="Send"><img class="bh-ico" src="img/icons/chat.svg" alt=""></button>
+  </div>
+
+  <div id="toast"></div>
+  <div id="modalRoot"></div>
+
+  <div id="intro">
+    <div class="bh-panel intro-card">
+      <img src="img/logo.svg" alt="" class="intro-logo">
+      <h1>Blockhaven</h1>
+      <p>Build your home, decorate it, and just live in it. No quests, no rules.</p>
+      <label class="bh-label" for="nameInput">Your name</label>
+      <input id="nameInput" class="bh-input" type="text" maxlength="16" placeholder="Guest" autocomplete="off">
+      <div class="intro-keys"><span><b>WASD</b> move</span><span><b>Click</b> walk / use</span><span><b>E</b> use</span><span><b>Enter</b> talk</span><span><b>B</b> build</span></div>
+      <button id="startBtn" class="bh-btn bh-green" type="button"><span>Enter Blockhaven</span></button>
+    </div>
+  </div>
+
+  <div id="footer"><a href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">Blockhaven</a> &middot; made by <a href="https://github.com/mahi902" target="_blank" rel="noopener">mahi902</a></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

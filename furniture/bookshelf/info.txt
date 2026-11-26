@@ -1,0 +1,4 @@
+name=Bookshelf
+description=Packed with tiny stories.
+block=2
+function=Pick a book

@@ -1,0 +1,4 @@
+name=Floor Lamp
+description=Warm light for late nights.
+block=1
+function=Toggle light

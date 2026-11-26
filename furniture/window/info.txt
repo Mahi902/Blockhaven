@@ -1,0 +1,4 @@
+name=Window
+description=Lets the light in. Decoration only.
+block=0
+function=

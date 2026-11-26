@@ -1,0 +1,4 @@
+name=Nightstand
+description=A small bedside table. Decoration only.
+block=1
+function=

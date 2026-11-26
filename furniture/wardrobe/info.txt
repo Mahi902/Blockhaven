@@ -1,0 +1,4 @@
+name=Wardrobe
+description=Change your shirt colour.
+block=2
+function=Open wardrobe

@@ -1,0 +1,4 @@
+name=Fridge
+description=Cold drinks and questionable leftovers.
+block=1
+function=Grab a snack

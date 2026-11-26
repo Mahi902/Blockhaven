@@ -1,0 +1,4 @@
+name=Door
+description=A door in a wall. Open and close it.
+block=0
+function=Open / close door

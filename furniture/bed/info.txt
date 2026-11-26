@@ -1,0 +1,4 @@
+name=Bed
+description=A cosy double bed with two pillows.
+block=6
+function=Lie down and sleep

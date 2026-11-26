@@ -1,0 +1,4 @@
+name=Chair
+description=A simple padded chair.
+block=1
+function=Sit down

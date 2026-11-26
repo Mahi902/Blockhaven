@@ -1,0 +1,4 @@
+name=TV Stand
+description=A TV on a low stand with a tiny remote channel menu.
+block=2
+function=Use the remote

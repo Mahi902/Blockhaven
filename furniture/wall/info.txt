@@ -1,0 +1,4 @@
+name=Wall
+description=Splits rooms apart. Drag along a line to build many at once.
+block=0
+function=

@@ -1,0 +1,4 @@
+name=Dining Table
+description=A sturdy table for four. Purely decorative.
+block=4
+function=

@@ -1,0 +1,4 @@
+name=Couch
+description=A soft three-seater. Perfect for doing absolutely nothing.
+block=3
+function=Sit down
