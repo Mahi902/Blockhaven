@@ -11,6 +11,11 @@ export default api => {
     wait: "Waiting for a clear path", paused: "Paused", stuck: "Cannot work, returning soon", service: "Servicing: draining, refilling, emptying",
   };
   const body = h("div", { class: "bh-list" });
+  const inp = h("input", { value: b.name, maxlength: 16, placeholder: "Robot name", style: "width:100%;box-sizing:border-box;padding:10px;font:700 16px sans-serif;border:3px solid #0f172a;border-radius:10px;margin-bottom:8px;user-select:text" });
+  inp.addEventListener("input", () => b.rename(inp.value));
+  inp.addEventListener("keydown", e => e.stopPropagation());
+  inp.addEventListener("keyup", e => e.stopPropagation());
+  body.appendChild(inp);
   if (!rooms.length) body.appendChild(h("p", { class: "bh-text" }, "No rooms yet. Use the Room tool in build mode to outline the areas to clean."));
   const canStart = b.status === "idle";
   rooms.forEach(r => {

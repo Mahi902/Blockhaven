@@ -73,6 +73,8 @@ export function botApi(it) {
     get near() { return Math.hypot(S.player.x - b().x, S.player.y - b().y) < 52; },
     get rooms() { return W.world.rooms.map(r => ({ id: r.id, name: r.name, w: r.w, h: r.h })); },
     get chosen() { return (st().rooms || []).filter(id => W.byId('room', id)); },
+    get name() { return st().name || ''; },
+    rename: n => { st().name = String(n || '').trim().slice(0, 16); W.touch(); },
     choose: ids => { st().rooms = ids.slice(); },
     start: ids => start(it, ids),
     stop: () => stop(it),
@@ -275,11 +277,11 @@ export function drawBotTags(c) {
   const z = S.camera.zoom;
   for (const it of W.world.items) {
     const d = catalog.get(it.type); if (!d || !d.npc) continue;
-    const b = botOf(it), s = worldToScreen(b.x, b.y - 24), ty = s.y - 8 * z;
+    const b = botOf(it), s = worldToScreen(b.x, b.y - 24), ty = s.y - 8 * z, nm = (it.state && it.state.name) || d.name;
     c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '700 12px "Plus Jakarta Sans", sans-serif';
-    const tw = c.measureText(d.name).width + 14;
+    const tw = c.measureText(nm).width + 14;
     c.fillStyle = 'rgba(2,6,23,.72)'; c.beginPath(); c.roundRect(s.x - tw / 2, ty - 10, tw, 20, 8); c.fill();
-    c.fillStyle = '#fff'; c.fillText(d.name, s.x, ty + 0.5);
+    c.fillStyle = '#fff'; c.fillText(nm, s.x, ty + 0.5);
     if (!b.bubble) continue;
     c.globalAlpha = Math.min(1, b.bubble.ttl / 0.6);
     c.font = '700 14px Fredoka, "Plus Jakarta Sans", sans-serif';
