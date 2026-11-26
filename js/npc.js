@@ -27,7 +27,7 @@ export function botOf(it) {
 function hit(px, py, r, ignore) {
   const t = rc => Math.hypot(Math.max(rc.x - px, 0, px - (rc.x + rc.w)), Math.max(rc.y - py, 0, py - (rc.y + rc.h))) < r;
   for (const it of W.world.items) if (it.id !== ignore && catalog.get(it.type) && t(W.itemRect(it))) return true;
-  for (const e of W.world.edges) if (W.isClosedEdge(e) && t(W.edgeRect(e))) return true;
+  for (const e of W.world.edges) if (W.isClosedEdge(e) && e.type !== 'door' && t(W.edgeRect(e))) return true;
   return false;
 }
 const playerNear = (x, y, r) => S.started && Math.hypot(S.player.x - x, S.player.y - y) < r;
@@ -48,9 +48,10 @@ function bfs(it, b, noPlayer) {
   return { dist, prev, start: keyOf(sx, sy) };
 }
 function pathTo(res, k) {
-  const out = [];
+  const out = [], sc = { x: ctr(res.start % 100), y: ctr(Math.floor(res.start / 100)) };
   while (k !== res.start && k != null) { out.push({ x: ctr(k % 100), y: ctr(Math.floor(k / 100)) }); k = res.prev.get(k); }
-  return out.reverse();
+  out.reverse(); out.unshift(sc);
+  return out;
 }
 
 // ---- speech
@@ -100,7 +101,15 @@ function stop(it) {
 }
 
 // ---- brain
+function openDoors(b) {
+  for (const e of W.world.edges) {
+    if (e.type !== 'door' || !W.isClosedEdge(e)) continue;
+    const r = W.edgeRect(e);
+    if (Math.hypot(Math.max(r.x - b.x, 0, b.x - (r.x + r.w)), Math.max(r.y - b.y, 0, b.y - (r.y + r.h))) < 30) { (e.state || (e.state = {})).open = true; W.touch(); }
+  }
+}
 function move(b, tx, ty, dt) {
+  openDoors(b);
   const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy), s = SPEED * dt;
   if (d > 0.5) { let da = Math.atan2(dy, dx) - b.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); b.ang += da * Math.min(1, dt * 12); }
   if (d <= s) { b.x = tx; b.y = ty; return true; }
@@ -108,9 +117,9 @@ function move(b, tx, ty, dt) {
 }
 function giveUp(b) { npcSay(b, "I can't do it"); b.mode = 'idle'; b.path = null; b.todo = new Set(); b.fails = 0; }
 function waitFor(b, after) {
-  if (++b.fails > 4) return giveUp(b);
+  if (++b.fails > 10) return giveUp(b);
   if (b.fails === 1) npcSay(b, "I can't do it");
-  b.mode = 'wait'; b.after = after; b.wait = 2.5; b.path = null;
+  b.mode = 'wait'; b.after = after; b.wait = 1.5; b.path = null;
 }
 function goDock(it, b) {
   const dc = W.itemCenter(it), k = keyOf(cellOf(dc.x), cellOf(dc.y));
@@ -131,7 +140,7 @@ function planClean(it, b) {
 }
 function blocked(it, b, wp) {
   const dx = wp.x - b.x, dy = wp.y - b.y, d = Math.hypot(dx, dy) || 1, ax = b.x + dx / d * 20, ay = b.y + dy / d * 20;
-  return hit(ax, ay, 12, it.id) || hit(wp.x, wp.y, 12, it.id) || playerNear(ax, ay, 30) || playerNear(wp.x, wp.y, 30);
+  return hit(wp.x, wp.y, R - 1, it.id) || playerNear(ax, ay, 30) || playerNear(wp.x, wp.y, 30);
 }
 function follow(it, b, dt, replan) {
   const wp = b.path[0];
@@ -164,6 +173,7 @@ function step(it, b, dt) {
     if (!b.path || !b.path.length) { if (b.mode === 'return') goDock(it, b); else b.mode = 'idle'; return; }
     follow(it, b, dt, () => { if (b.mode === 'return') goDock(it, b); else b.mode = 'idle'; });
   } else if (b.mode === 'wait') {
+    b.ang += dt * 4;   // turns on the spot, looking for a way round
     if ((b.wait -= dt) <= 0) { b.mode = b.after || 'clean'; b.path = null; if (b.mode === 'return') goDock(it, b); }
   } else if (b.mode === 'service') {
     const s = b.sv; s.t += dt;
