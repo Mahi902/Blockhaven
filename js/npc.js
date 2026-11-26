@@ -30,7 +30,7 @@ export function botOf(it) {
 // ---- world queries
 function hit(px, py, r, ignore) {
   const t = rc => Math.hypot(Math.max(rc.x - px, 0, px - (rc.x + rc.w)), Math.max(rc.y - py, 0, py - (rc.y + rc.h))) < r;
-  for (const it of W.world.items) if (it.id !== ignore && it.id !== ign2 && catalog.get(it.type) && t(W.itemRect(it))) return true;
+  for (const it of W.world.items) if (it.id !== ignore && it.id !== ign2 && it.type !== 'cat' && catalog.get(it.type) && t(W.itemRect(it))) return true;
   for (const e of W.world.edges) if (W.isClosedEdge(e) && e.type !== 'door' && t(W.edgeRect(e))) return true;
   return false;
 }

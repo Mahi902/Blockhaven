@@ -114,7 +114,7 @@ export const isClosedEdge = e => !(e.state && e.state.open === true);
 /** Does a circle at (px,py) touch furniture or a closed wall piece? */
 export function circleHits(px, py, r) {
   const hit = rc => Math.hypot(Math.max(rc.x - px, 0, px - (rc.x + rc.w)), Math.max(rc.y - py, 0, py - (rc.y + rc.h))) < r;
-  for (const it of world.items) if (catalog.get(it.type) && hit(itemRect(it))) return true;
+  for (const it of world.items) if (catalog.get(it.type) && it.type !== 'cat' && hit(itemRect(it))) return true;
   for (const e of world.edges) if (isClosedEdge(e) && hit(edgeRect(e))) return true;
   return false;
 }

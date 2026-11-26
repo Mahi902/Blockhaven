@@ -49,6 +49,7 @@ function rr(c, x, y, w, h, r) {
 
 // ---------------------------------------------------------------- drawing pieces
 function drawItem(c, it) {
+  if (it.type === 'cat') return;   // the live cat is drawn by npc.js
   const d = catalog.get(it.type); if (!d) return;
   const img = getImage(d, it.color); if (!img) return;
   const f = W.footprint(it);

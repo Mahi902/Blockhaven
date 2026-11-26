@@ -1,5 +1,5 @@
 name=Cat
-description=A pet cat. Sit it or stand it to follow you, rename it. It purrs, goes to a cat bed and curls up to sleep when it gets dark.
+description=A pet cat. Sit it or stand it to follow you, rename it. It purrs, and curls up to sleep at night, in a cat bed if you have one.
 block=1
 function=Cat
 npc=1
