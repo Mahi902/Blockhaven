@@ -36,7 +36,7 @@ export function initInput(canvas, h) {
   chat.addEventListener('keydown', e => {
     e.stopPropagation();
     if (e.key === 'Enter') { sendChat(chat); }
-    else if (e.key === 'Escape') { chat.value = ''; chat.blur(); }
+    else if (e.key === 'Escape') { chat.value = ''; }
   });
   document.getElementById('chatSend').addEventListener('click', () => sendChat(chat));
 }
@@ -44,8 +44,8 @@ export function initInput(canvas, h) {
 function sendChat(input) {
   const t = input.value.trim();
   input.value = '';
-  if (t) { say(t); sound('chat'); } 
-  input.blur();
+  if (t) { say(t); sound('chat'); }
+  input.focus();   // keep the chat box open and ready for the next message
 }
 
 export function doInteract() {

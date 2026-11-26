@@ -39,7 +39,7 @@ function syncBar() {
   bar.ceil.classList.toggle('hidden', !build);
   bar.night.querySelector('img').src = `img/icons/${S.night ? 'sun' : 'moon'}.svg`;
   bar.snd.querySelector('img').src = `img/icons/sound-${soundOn ? 'on' : 'off'}.svg`;
-  $('chatbar').classList.toggle('hidden', build);
+  applyChat();
   $('dpad').classList.toggle('off', build);
 }
 
@@ -90,13 +90,19 @@ function openSettings() {
   openModal({ title: 'Settings', body, onClose: applyName });
 }
 
-function toggleChat() {
-  const cb = $('chatbar'), open = cb.classList.contains('hidden');
-  cb.classList.toggle('hidden', !open);
-  bar.chat.classList.toggle('on', open);
-  if (open) $('chatInput').focus(); else $('chatInput').blur();
+let chatOpen = false;   // user's own open/closed choice; only the chat button / Escape change it
+function applyChat() {
+  const show = chatOpen && S.mode !== 'build';
+  $('chatbar').classList.toggle('hidden', !show);
+  bar.chat.classList.toggle('on', show);
 }
-function closeChat() { $('chatbar').classList.add('hidden'); bar.chat.classList.remove('on'); }
+function toggleChat() {
+  if (S.mode === 'build') return;
+  chatOpen = !chatOpen;
+  applyChat();
+  if (chatOpen) $('chatInput').focus(); else $('chatInput').blur();
+}
+function closeChat() { chatOpen = false; applyChat(); $('chatInput').blur(); }
 
 function updatePrompt() {
   const el = $('prompt');
@@ -149,8 +155,7 @@ async function boot() {
   B.initBuild(); buildBar();
   initInput(canvas, { toggleBuild });
   $('prompt').addEventListener('click', doInteract);
-  $('chatSend').addEventListener('click', closeChat);
-  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === 'Escape') closeChat(); });
+  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Escape') closeChat(); });
   const noSelect = e => { if (!e.target.closest('input')) e.preventDefault(); };
   document.addEventListener('contextmenu', noSelect);
   document.addEventListener('selectstart', noSelect);
