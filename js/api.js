@@ -3,7 +3,8 @@ import { COLOR_NAMES, COLOR_HEX, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_CO
 import { S } from './state.js';
 import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
-import { hooks, sitOn, runOn, swimIn, standUp, say, setLook } from './player.js';
+import { hooks, sitOn, runOn, swimIn, standUp, say, setLook, spinOn, lockPlayer, unlockPlayer } from './player.js';
+import { flyCloth } from './fx.js';
 import { sound, soundOn, audioReady } from './audio.js';
 import { playMusic, stopMusic, musicNow, setMusicVolume, playNote, TRACK_LIST } from './music.js';
 import { HAIR_STYLES } from './hair.js';
@@ -34,6 +35,13 @@ function makeApi(kind, obj) {
     run: (rate = 1, offset) => runOn(obj, rate, offset),   // stand on it and run in place
     swim: () => swimIn(obj),                               // get in and swim around (bathtub)
     stand: () => standUp(),
+    spin: () => spinOn(obj),                               // sit on a spinning chair: arrows spin you
+    lock: o => lockPlayer(Object.assign({ face: W.itemCenter(obj) }, o)),   // freeze the player for o.ms with an animation
+    unlock: () => unlockPlayer(),
+    get locked() { return !!S.player.lock; },
+    get itemPos() { return W.itemCenter(obj); },
+    flyCloth,
+    get clothes() { return { shirt: S.player.look.shirt, pants: S.player.look.pants, skin: S.player.look.skin }; },
     say, toast,
     setLook,
     setNight: v => { S.night = !!v; document.dispatchEvent(new CustomEvent('bh-night')); },

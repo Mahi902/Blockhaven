@@ -1,6 +1,7 @@
 // Blockhaven - canvas renderer
 import { TILE, COLOR_HEX } from './config.js';
 import { S, worldToScreen } from './state.js';
+import { drawItemFx, drawFlies, drawScrub, wobbleOf } from './fx.js';
 import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
 import { sprites } from './player.js';
@@ -50,10 +51,12 @@ function drawItem(c, it) {
   const d = catalog.get(it.type); if (!d) return;
   const img = getImage(d, it.color); if (!img) return;
   const f = W.footprint(it);
+  const wb = wobbleOf(it) || { dx: 0, dy: 0, rot: 0 };
   c.save();
-  c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE);
-  c.rotate(it.rot * Math.PI / 2);
+  c.translate((f.x + f.w / 2) * TILE + wb.dx, (f.y + f.h / 2) * TILE + wb.dy);
+  c.rotate(it.rot * Math.PI / 2 + wb.rot);
   c.drawImage(img, -d.w * TILE / 2, -d.h * TILE / 2, d.w * TILE, d.h * TILE);
+  if (it.state) drawItemFx(c, it);
   c.restore();
   const badge = badgeOf(it);
   if (badge) {
@@ -158,13 +161,25 @@ function drawPlayer(c) {
   if (!P.seat || P.seat.run) {
     c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(P.x, P.y + 9, 12, 5, 0, 0, Math.PI * 2); c.fill();
   }
-  const bob = P.moving ? -Math.abs(Math.sin(P.walk)) * 3 : 0;
+  let bob = P.moving ? -Math.abs(Math.sin(P.walk)) * 3 : 0;
+  let ox = 0, extraRot = 0;
+  if (P.lock && P.lock.anim === 'scrub') { ox = Math.sin(performance.now() / 55) * 1.6; bob = -Math.abs(Math.sin(performance.now() / 110)) * 1.5; }
+  if (P.lock && P.lock.anim === 'suck') { const k = (performance.now() - P.lock.t0) / P.lock.ms, tw = P.lock.toward; if (tw) { ox = Math.sign(tw.x - P.x) * Math.min(1, k * 3) * 6 + Math.sin(performance.now() / 40) * 1.5; } extraRot = Math.sin(performance.now() / 70) * 0.09; }
+  if (P.seat && P.seat.spin) { extraRot = Math.sin(performance.now() / 420) * 0.07; }
   const tilt = P.moving ? Math.sin(P.walk) * 0.07 : 0;
   c.translate(P.x, P.y + 9 + (P.seat && !P.seat.run ? 5 : 0));
-  c.rotate(tilt);
+  c.translate(ox, 0);
+  c.rotate(tilt + extraRot);
   if (P.seat && !P.seat.run) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
   c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
   c.restore();
+  if (P.lock && P.lock.anim === 'scrub') drawScrub(c, P);
+  if (P.seat && P.seat.spin && Math.abs(P.seat.spin.v) > 5) {   // motion swirl
+    c.save(); c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 2;
+    const a0 = performance.now() / 90 * Math.sign(P.seat.spin.v);
+    for (let i = 0; i < 3; i++) { c.beginPath(); c.ellipse(P.x, P.y + 4, 20, 8, 0, a0 + i * 2.1, a0 + i * 2.1 + 1.1); c.stroke(); }
+    c.restore();
+  }
 }
 
 // ---------------------------------------------------------------- main render
@@ -217,6 +232,7 @@ export function render() {
   let py = P.y + 10;
   if (P.seat) { const it = W.byId('item', P.seat.id); if (it) py = (W.footprint(it).y + W.footprint(it).h) * TILE + 0.5; }
   list.push({ y: py, fn: () => drawPlayer(c) });
+  list.push({ y: 1e9, fn: () => drawFlies(c) });
   list.sort((a, b) => a.y - b.y);
   for (const o of list) o.fn();
 

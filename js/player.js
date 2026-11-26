@@ -140,6 +140,23 @@ export function runOn(item, rate = 1, offset = { x: 0, y: 0 }) {
   sound('sit');
 }
 
+/** Rocking chair that spins: arrow keys / A D spin you left or right. */
+export function spinOn(item) {
+  sitOn(item, false);
+  P_spin(item);
+}
+function P_spin(item) { S.player.seat.spin = { a: 0, v: 0, t: 0, snd: 0 }; }
+
+/** Freeze the player for a while (washing hands, laundry). opts: { ms, face:{x,y}, anim:'scrub'|'suck', toward:{x,y} } */
+export function lockPlayer(opts) {
+  const P = S.player;
+  if (P.seat) standUp();
+  P.moving = false; S.path = null; S.pendingInteract = null;
+  if (opts.face) { const dx = opts.face.x - P.x, dy = opts.face.y - P.y; P.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
+  P.lock = { until: Date.now() + (opts.ms || 1000), anim: opts.anim || null, toward: opts.toward || null, t0: performance.now(), ms: opts.ms || 1000 };
+}
+export function unlockPlayer() { S.player.lock = null; S.path = null; }
+
 export function standUp() {
   const P = S.player;
   if (!P.seat) return;
@@ -186,7 +203,24 @@ export function updatePlayer(dt) {
   if (k['s'] || k['arrowdown'] || t.down) dy += 1;
   const manual = dx !== 0 || dy !== 0;
 
+  if (P.lock) {
+    if (Date.now() >= P.lock.until) { P.lock = null; S.path = null; }
+    else { P.moving = false; S.path = null; S.pendingInteract = null; return; }
+  }
+
   if (P.seat) {
+    if (P.seat.spin) {
+      const sp = P.seat.spin;
+      if (dy !== 0) { leaveSeat(W.byId('item', P.seat.id)); return; }     // up / down gets you off
+      sp.v += dx * 16 * dt;
+      sp.v *= Math.pow(0.32, dt);
+      sp.v = Math.max(-11, Math.min(11, sp.v));
+      sp.a += sp.v * dt; sp.t += dt; sp.snd -= dt;
+      const q = Math.round(sp.a / (Math.PI / 2)); P.dir = FACE[((q % 4) + 4) % 4];
+      P.moving = false;
+      if (Math.abs(sp.v) > 2 && sp.snd <= 0) { sound('step'); sp.snd = 0.35 - Math.min(0.2, Math.abs(sp.v) * 0.015); }
+      return;
+    }
     if (P.seat.swim) { updateSwim(dt, dx, dy, manual); return; }      // paddling around the tub: keys swim, E / click climbs out
     if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
     if (P.seat.run) {                         // running in place: keep the stride going
