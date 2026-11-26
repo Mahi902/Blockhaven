@@ -27,4 +27,4 @@ export const HAIR_COLORS = ['#1e1b4b', '#3b2314', '#6b3e1f', '#c59a4b', '#e8d28a
 export const SHIRT_COLORS = ['#0284c7', '#e11d48', '#16a34a', '#f59e0b', '#7c3aed', '#0f172a', '#f1f5f9', '#ec4899'];
 export const PANTS_COLORS = ['#1e293b', '#334155', '#78350f', '#14532d', '#4c1d95', '#7f1d1d', '#d6d3d1'];
 
-export const DEFAULT_LOOK = { skin: '#f1c27d', hair: '#1e1b4b', shirt: '#0284c7', pants: '#1e293b' };
+export const DEFAULT_LOOK = { style: 'short', skin: '#f1c27d', hair: '#1e1b4b', shirt: '#0284c7', pants: '#1e293b' };

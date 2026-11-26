@@ -326,7 +326,7 @@ def gen_floors():
 
 # -------------------------------------------------------------------- player
 def player_svg(direction):
-    """48x64 character. {{skin}} {{hair}} {{shirt}} {{pants}} are replaced at runtime."""
+    """48x64 character. {{skin}} {{shirt}} {{pants}} and the {{hairBack}} / {{hairFront}} hairstyle slots (see js/hair.js) are filled in at runtime."""
     sk, hr, sh, pn = '{{skin}}', '{{hair}}', '{{shirt}}', '{{pants}}'
     out = '#1b2336'
     b = '<ellipse cx="24" cy="58" rx="13" ry="4.5" fill="#000" opacity=".3"/>'
@@ -335,16 +335,13 @@ def player_svg(direction):
         b += rect(11, 27, 26, 22, sh, 8, out, 1.6)
         b += rect(6, 29, 7, 16, sh, 4, out, 1.4) + rect(35, 29, 7, 16, sh, 4, out, 1.4)
         b += circ(9.5, 46, 3.4, sk, out, 1.2) + circ(38.5, 46, 3.4, sk, out, 1.2)
+        b += '{{hairBack}}'
         b += circ(24, 17, 13, sk, out, 1.6)
+        b += '{{hairFront}}'   # hairstyle shapes live in js/hair.js
         if direction == 'down':
-            b += (f'<path d="M10.5 14 Q11 3 24 3.5 Q37 3 37.5 14 Q31 9 24 10 Q17 9 10.5 14Z" '
-                  f'fill="{hr}" stroke="{out}" stroke-width="1.4"/>')
             b += circ(19, 18, 2, out) + circ(29, 18, 2, out)
             b += f'<path d="M20 23 Q24 26 28 23" fill="none" stroke="{out}" stroke-width="1.3" stroke-linecap="round"/>'
             b += circ(16, 22, 2.2, '#ff7a8a', None, op=.35) + circ(32, 22, 2.2, '#ff7a8a', None, op=.35)
-        else:
-            b += (f'<path d="M10.5 18 Q9 3 24 3 Q39 3 37.5 18 Q36 25 24 26 Q12 25 10.5 18Z" '
-                  f'fill="{hr}" stroke="{out}" stroke-width="1.4"/>')
     else:
         sgn = 1 if direction == 'right' else -1
         cx = 24
@@ -352,10 +349,9 @@ def player_svg(direction):
         b += rect(cx - 9, 27, 18, 22, sh, 7, out, 1.6)
         b += rect(cx - 3, 29, 7, 16, sh, 4, out, 1.4)
         b += circ(cx, 46, 3.4, sk, out, 1.2)
+        b += '{{hairBack}}'
         b += circ(cx, 17, 13, sk, out, 1.6)
-        hx = cx - sgn * 3
-        b += (f'<path d="M{cx - 12} 17 Q{cx - 12} 3 {cx} 3.5 Q{cx + 12} 3 {cx + 12} 15 '
-              f'Q{cx + 3 * sgn} 8 {hx} 12 Q{cx - 6 * sgn} 12 {cx - 12} 17Z" fill="{hr}" stroke="{out}" stroke-width="1.4"/>')
+        b += '{{hairFront}}'
         b += circ(cx + sgn * 6, 18, 2, out)
         b += (f'<path d="M{cx + sgn * 4} 23 Q{cx + sgn * 7} 25 {cx + sgn * 9} 22.5" fill="none" '
               f'stroke="{out}" stroke-width="1.2" stroke-linecap="round"/>')

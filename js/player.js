@@ -1,5 +1,6 @@
 // Blockhaven - the player character: sprites, movement, sitting/lying, click-to-move pathfinding
-import { TILE } from './config.js';
+import { TILE, VERSION } from './config.js';
+import { hairParts } from './hair.js';
 import { S } from './state.js';
 import { catalog } from './catalog.js';
 import * as W from './world.js';
@@ -14,14 +15,17 @@ const templates = {};
 export const sprites = {};
 
 export async function loadPlayerTemplates() {
-  await Promise.all(DIRS.map(async d => { templates[d] = await (await fetch(`${PLAYER_BASE}${d}.svg`)).text(); }));
+  await Promise.all(DIRS.map(async d => { templates[d] = await (await fetch(`${PLAYER_BASE}${d}.svg?v=${VERSION}`)).text(); }));
   rebuildSprites();
 }
 
 export function rebuildSprites() {
   for (const d of DIRS) {
     if (!templates[d]) continue;
-    const svg = templates[d].replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
+    const hair = hairParts(S.player.look.style, d);
+    const svg = templates[d]
+      .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
+      .replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     sprites[d] = img;
