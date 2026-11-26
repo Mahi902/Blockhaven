@@ -33,7 +33,7 @@ function env(a, t, vol, dur) {
   return g;
 }
 
-/** low, round "thock": a sine that dips a little in pitch */
+/** low, round "thock" (kept below ~220 Hz so it reads as a soft thud, never a beep) */
 function thock(freq, dur, vol, delay = 0, slideTo = null) {
   const a = ac(), t = a.currentTime + delay;
   const o = a.createOscillator(); o.type = 'sine';
@@ -54,15 +54,15 @@ function tick(cutoff, dur, vol, delay = 0) {
 
 const SOUNDS = {
   step: () => tick(380 + Math.random() * 160, 0.035, 0.28),
-  click: () => { tick(1300, 0.022, 0.30); thock(240, 0.04, 0.10); },
-  pop: () => thock(330, 0.06, 0.16, 0, 210),
-  place: () => { thock(210, 0.08, 0.16, 0, 120); tick(850, 0.03, 0.14); },
+  click: () => { tick(1500, 0.016, 0.18); tick(520, 0.03, 0.16, 0.004); },   // noise only: no pitch, so no beep
+  pop: () => { tick(900, 0.035, 0.24); tick(380, 0.05, 0.2, 0.004); },
+  place: () => { thock(170, 0.08, 0.16, 0, 110); tick(850, 0.03, 0.14); },
   delete: () => { tick(650, 0.08, 0.16); thock(150, 0.1, 0.14, 0, 80); },
   error: () => { thock(150, 0.07, 0.16); thock(115, 0.09, 0.16, 0.09); },
   sit: () => { thock(130, 0.13, 0.20, 0, 90); tick(420, 0.07, 0.10); },
   door: () => { thock(105, 0.11, 0.18, 0, 80); tick(300, 0.09, 0.12, 0.02); },
-  good: () => { thock(330, 0.08, 0.13); thock(415, 0.08, 0.13, 0.08); thock(495, 0.12, 0.13, 0.16); },
-  chat: () => { tick(1200, 0.02, 0.15); thock(380, 0.04, 0.09); },
+  good: () => { tick(700, 0.035, 0.22); tick(950, 0.035, 0.22, 0.08); tick(1250, 0.05, 0.22, 0.16); },
+  chat: () => { tick(1300, 0.018, 0.20); tick(600, 0.03, 0.16, 0.004); },
   switch: () => { tick(1500, 0.016, 0.18); tick(1000, 0.022, 0.14, 0.035); },
   snack: () => { tick(800, 0.03, 0.14); tick(700, 0.03, 0.14, 0.06); },
 };
