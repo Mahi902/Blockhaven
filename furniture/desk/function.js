@@ -1,10 +1,10 @@
 // A tiny desktop computer: boots up, then you can use Notes, Paint, Calculator, a little Browser and Settings.
 // Notes and the wallpaper are remembered.
 const WALLS = [
-  ["Sunrise", "linear-gradient(160deg,#ff9a76,#ffd27a 55%,#8cc8ff)"],
-  ["Ocean", "linear-gradient(180deg,#1e5fbf,#2bc9d8 70%,#bff0ff)"],
-  ["Forest", "linear-gradient(160deg,#14532d,#2fa953 60%,#9ee03a)"],
-  ["Night", "linear-gradient(180deg,#0b1020,#2b2263 70%,#6a4bb3)"],
+  ["Teal", "#1f7a7a"],
+  ["Blue", "#2b5797"],
+  ["Gray", "#596273"],
+  ["Black", "#14161c"],
 ];
 const PAGES = {
   home: ["Blockhaven Web", "Welcome! Pick a page:\n\n- Cats: the internet's favourite subject\n- Weather: always sunny in Blockhaven\n- News: very important stories", ["cats", "weather", "news"]],
@@ -25,9 +25,9 @@ export default api => {
   // ---------- boot
   const boot = () => {
     screen.innerHTML = "";
-    const bar = h("div", { style: css({ height: "100%", width: "0%", background: "#8cc8ff", transition: "width 1.4s linear" }) });
+    const bar = h("div", { style: css({ height: "100%", width: "0%", background: "#c0c0c0", transition: "width 1.4s linear" }) });
     screen.append(h("div", { style: css({ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px" }) },
-      h("div", { style: css({ font: "700 26px Fredoka, sans-serif", letterSpacing: ".15em" }) }, "BLOCK OS"),
+      h("div", { style: css({ font: "14px monospace" }) }, "Starting Block OS..."),
       h("div", { style: css({ width: "160px", height: "8px", background: "#222", borderRadius: "4px", overflow: "hidden" }) }, bar)));
     setTimeout(() => { bar.style.width = "100%"; }, 30);
     setTimeout(() => { if (screen.isConnected) desktop(); }, 1500);
@@ -38,36 +38,36 @@ export default api => {
   const desktop = () => {
     screen.innerHTML = ""; win = null;
     const wp = h("div", { style: css({ position: "absolute", inset: 0, background: WALLS[wall][1] }) });
-    const icons = [["Notes", "\u{1F4DD}", notes], ["Paint", "\u{1F3A8}", paint], ["Calculator", "\u{1F9EE}", calc], ["Browser", "\u{1F310}", browser], ["Settings", "\u2699\uFE0F", settings]];
+    const icons = [["Notes", "#f4f4f4", notes], ["Paint", "#f4f4f4", paint], ["Calculator", "#f4f4f4", calc], ["Browser", "#f4f4f4", browser], ["Settings", "#f4f4f4", settings]];
     const grid = h("div", { style: css({ position: "absolute", left: "10px", top: "10px", display: "grid", gridTemplateColumns: "repeat(1, 70px)", gap: "10px" }) },
       icons.map(([n, e, fn]) => {
-        const b = h("button", { type: "button", style: css({ background: "none", border: "none", color: "#fff", cursor: "pointer", textAlign: "center", textShadow: "0 1px 3px #000", font: "600 11px sans-serif" }) },
-          h("div", { style: css({ fontSize: "30px", lineHeight: "34px" }) }, e), n);
+        const b = h("button", { type: "button", style: css({ background: "none", border: "none", color: "#fff", cursor: "pointer", textAlign: "center", textShadow: "0 1px 2px #000", font: "11px sans-serif" }) },
+          h("div", { style: css({ width: "26px", height: "32px", margin: "0 auto 3px", background: "#f4f4f4", border: "1px solid #222", borderTop: "7px solid #3a6ea5" }) }), n);
         b.addEventListener("click", () => { api.sound("click"); fn(); });
         return b;
       }));
     clock = h("span", { style: css({ font: "600 12px sans-serif" }) }, "");
     const upd = () => { const d = new Date(); clock.textContent = d.getHours().toString().padStart(2, "0") + ":" + d.getMinutes().toString().padStart(2, "0"); };
     upd(); tick = setInterval(upd, 5000);
-    const start = h("button", { type: "button", style: css({ background: "#3166e0", color: "#fff", border: "none", borderRadius: "6px", padding: "3px 10px", font: "700 12px sans-serif", cursor: "pointer" }) }, "\u229E Start");
+    const start = h("button", { type: "button", style: css({ background: "#d4d0c8", color: "#000", border: "2px outset #fff", borderRadius: "0", padding: "2px 12px", font: "bold 12px sans-serif", cursor: "pointer" }) }, "Start");
     start.addEventListener("click", () => {
       api.sound("click");
       if (menuEl) { menuEl.remove(); menuEl = null; return; }
-      menuEl = h("div", { style: css({ position: "absolute", left: "6px", bottom: "34px", background: "#1f2433", border: "1px solid #444", borderRadius: "8px", padding: "6px", minWidth: "140px", zIndex: 5 }) },
-        ...icons.map(([n, e, fn]) => { const r = h("div", { style: css({ padding: "6px 8px", cursor: "pointer", font: "600 13px sans-serif" }) }, e + "  " + n); r.addEventListener("click", () => { menuEl.remove(); menuEl = null; fn(); }); return r; }),
-        (() => { const r = h("div", { style: css({ padding: "6px 8px", cursor: "pointer", font: "600 13px sans-serif", borderTop: "1px solid #444", marginTop: "4px", color: "#ff8a8a" }) }, "\u23FB  Shut down"); r.addEventListener("click", () => { api.closeModal(); api.say("Computer off."); }); return r; })());
+      menuEl = h("div", { style: css({ position: "absolute", left: "6px", bottom: "34px", background: "#c0c0c0", color: "#000", border: "2px outset #fff", padding: "2px", minWidth: "140px", zIndex: 5 }) },
+        ...icons.map(([n, e, fn]) => { const r = h("div", { style: css({ padding: "6px 8px", cursor: "pointer", font: "13px sans-serif" }) }, n); r.addEventListener("click", () => { menuEl.remove(); menuEl = null; fn(); }); return r; }),
+        (() => { const r = h("div", { style: css({ padding: "6px 8px", cursor: "pointer", font: "600 13px sans-serif", borderTop: "1px solid #666", marginTop: "3px" }) }, "Shut down"); r.addEventListener("click", () => { api.closeModal(); api.say("Computer off."); }); return r; })());
       screen.append(menuEl);
     });
-    const bar = h("div", { style: css({ position: "absolute", left: 0, right: 0, bottom: 0, height: "30px", background: "rgba(15,18,30,.92)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }) }, start, clock);
+    const bar = h("div", { style: css({ position: "absolute", left: 0, right: 0, bottom: 0, height: "30px", background: "#c0c0c0", color: "#000", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px" }) }, start, clock);
     screen.append(wp, grid, bar);
   };
 
   const openWin = (title, content, onClose) => {
     if (win) win.remove();
     if (menuEl) { menuEl.remove(); menuEl = null; }
-    const x = h("button", { type: "button", style: css({ background: "#e03c3c", color: "#fff", border: "none", borderRadius: "4px", width: "22px", height: "20px", cursor: "pointer", font: "700 12px sans-serif" }) }, "\u2715");
-    win = h("div", { style: css({ position: "absolute", left: "84px", right: "10px", top: "10px", bottom: "40px", background: "#f4f5f8", color: "#222", borderRadius: "8px", boxShadow: "0 6px 20px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", overflow: "hidden" }) },
-      h("div", { style: css({ background: "#3166e0", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 8px", font: "700 13px sans-serif" }) }, title, x),
+    const x = h("button", { type: "button", style: css({ background: "#c0c0c0", color: "#000", border: "2px outset #fff", borderRadius: "0", width: "20px", height: "18px", padding: "0", cursor: "pointer", font: "bold 11px sans-serif" }) }, "x");
+    win = h("div", { style: css({ position: "absolute", left: "84px", right: "10px", top: "10px", bottom: "40px", background: "#c0c0c0", color: "#000", border: "2px outset #fff", borderRadius: "0", boxShadow: "2px 2px 0 rgba(0,0,0,.5)", display: "flex", flexDirection: "column", overflow: "hidden" }) },
+      h("div", { style: css({ background: "#1a3f7a", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 4px 2px 6px", font: "bold 12px sans-serif" }) }, title, x),
       h("div", { style: css({ flex: 1, padding: "8px", overflow: "auto", display: "flex", flexDirection: "column", gap: "6px" }) }, content));
     x.addEventListener("click", () => { if (onClose) onClose(); win.remove(); win = null; api.sound("click"); });
     screen.append(win);
@@ -121,13 +121,13 @@ export default api => {
     const [title, text, links] = PAGES[pg];
     const addr = h("div", { style: css({ background: "#fff", border: "1px solid #bbb", borderRadius: "14px", padding: "3px 10px", font: "12px monospace", color: "#555" }) }, "blockhaven://" + pg);
     const content = h("div", { style: css({ flex: 1, background: "#fff", border: "1px solid #ddd", borderRadius: "6px", padding: "10px", font: "14px/1.5 sans-serif", whiteSpace: "pre-wrap", userSelect: "text" }) }, h("div", { style: css({ font: "700 18px Fredoka, sans-serif", marginBottom: "6px" }) }, title), text);
-    const nav = h("div", { style: css({ display: "flex", gap: "6px", flexWrap: "wrap" }) }, ...links.map(l => { const b = h("button", { type: "button", style: css({ padding: "4px 10px", cursor: "pointer", borderRadius: "6px", border: "1px solid #3166e0", background: "#e8efff", color: "#1d3f99", font: "700 12px sans-serif" }) }, "\u2192 " + PAGES[l][0]); b.addEventListener("click", () => { api.sound("click"); browser(l); }); return b; }));
+    const nav = h("div", { style: css({ display: "flex", gap: "6px", flexWrap: "wrap" }) }, ...links.map(l => { const b = h("button", { type: "button", style: css({ padding: "4px 10px", cursor: "pointer", borderRadius: "6px", border: "2px outset #fff", background: "#d4d0c8", color: "#000", font: "700 12px sans-serif" }) }, PAGES[l][0]); b.addEventListener("click", () => { api.sound("click"); browser(l); }); return b; }));
     openWin("Browser", [addr, content, nav]);
   };
 
   const settings = () => {
     const opts = WALLS.map(([n, bg], i) => { const b = h("button", { type: "button", style: css({ height: "54px", borderRadius: "8px", border: i === wall ? "3px solid #3166e0" : "2px solid #999", background: bg, color: "#fff", font: "700 12px sans-serif", textShadow: "0 1px 2px #000", cursor: "pointer" }) }, n); b.addEventListener("click", () => { wall = i; st.wall = i; api.save(); desktop(); settings(); }); return b; });
-    openWin("Settings", [h("div", { style: css({ font: "700 13px sans-serif" }) }, "Wallpaper"), h("div", { style: css({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }) }, ...opts), h("div", { style: css({ font: "11px sans-serif", color: "#666", marginTop: "8px" }) }, "Block OS 1.0 - Blockhaven")]);
+    openWin("Settings", [h("div", { style: css({ font: "bold 13px sans-serif" }) }, "Wallpaper"), h("div", { style: css({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }) }, ...opts), h("div", { style: css({ font: "11px sans-serif", color: "#666", marginTop: "8px" }) }, "Block OS 1.0 - Blockhaven")]);
   };
 
   api.modal({ title: "Computer", subtitle: "Block OS", wide: true, body, onClose: () => { clearInterval(tick); api.glow(null); } });
