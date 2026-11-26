@@ -5,7 +5,7 @@ import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
 import { hooks, sitOn, runOn, swimIn, standUp, say, setLook, spinOn, lockPlayer, unlockPlayer, stepInto } from './player.js';
 import { flyCloth } from './fx.js';
-import { botApi } from './npc.js';
+import { botApi, catsList, callCat } from './npc.js';
 import { sound, soundOn, audioReady } from './audio.js';
 import { playMusic, stopMusic, musicNow, setMusicVolume, playNote, TRACK_LIST } from './music.js';
 import { HAIR_STYLES } from './hair.js';
@@ -30,6 +30,8 @@ function makeApi(kind, obj) {
     get isNight() { return S.night; },
     colors: COLOR_NAMES, colorHex: COLOR_HEX, palette,
     ui,
+    get cats() { return catsList(); },
+    callCat: id => callCat(id, obj),
     get bot() { return botApi(obj); },   // NPC pieces only (Cleaning Robot)
     // --- the player
     sit: () => sitOn(obj, false),

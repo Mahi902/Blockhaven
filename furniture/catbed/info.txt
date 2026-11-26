@@ -1,4 +1,4 @@
 name=Cat Bed
-description=A round bed with a very sleepy cat.
+description=A round, cosy bed. Your cats curl up in it at night, and you can call a cat over to it.
 block=1
-function=Pet the cat
+function=Call Cat

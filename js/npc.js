@@ -342,10 +342,12 @@ function catStep(it, b, dt) {
   if (b.bubble && (b.bubble.ttl -= dt) <= 0) b.bubble = null;
   const st = it.state || (it.state = {}), pose = st.pose || 'sit';
   const bed = S.night ? nearestBed(b) : null;
-  ign2 = bed ? bed.id : null;
+  ign2 = b.call ? b.call.bed : bed ? bed.id : null;
   b.walking = false;
   let goal = null, stopAt = 0;
-  if (S.night) {
+  if (b.call) {
+    if (Math.hypot(b.call.x - b.x, b.call.y - b.y) > 3) goal = b.call; else { b.call = null; npcSay(b, 'Mew!'); }
+  } else if (S.night) {
     if (bed) { const c = W.itemCenter(bed); if (Math.hypot(c.x - b.x, c.y - b.y) > 3) { goal = c; stopAt = 0; } }
   } else if (pose === 'stand' && S.started) {
     const d = Math.hypot(S.player.x - b.x, S.player.y - b.y);
@@ -413,4 +415,17 @@ function drawCat(c, it) {
   c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 0.6;
   for (const sy of [-1, 1]) { c.beginPath(); c.moveTo(hx + 4, sy * 1.2); c.lineTo(hx + 9, sy * 3.6); c.moveTo(hx + 4, sy * 0.6); c.lineTo(hx + 9, sy * 1.2); c.stroke(); }
   c.restore();
+}
+
+export function catsList() {
+  const out = [];
+  for (const it of W.world.items) if (isCat(it)) { const b = catOf(it), st = it.state || {}; out.push({ id: it.id, name: st.name || 'Cat', color: it.color || 'white', sleeping: b.mode === 'sleep', pose: st.pose || 'sit' }); }
+  return out;
+}
+export function callCat(id, bed) {
+  const it = W.world.items.find(o => o.id === id && isCat(o)); if (!it) return;
+  const b = catOf(it), c = W.itemCenter(bed);
+  b.call = { x: c.x, y: c.y, bed: bed.id }; b.path = null; b.replan = 0;
+  if (b.mode === 'sleep') b.mode = 'stand';
+  npcSay(b, 'Coming!');
 }

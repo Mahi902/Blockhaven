@@ -1,11 +1,10 @@
-// Pet the sleepy cat. It remembers how often you have, and glows happily while it purrs.
-const LINES = ["Purr... purr...", "The cat stretches and yawns.", "The cat leans into your hand.", "Mrrp? ...and back to sleep.", "A tiny, happy snore."];
+// Cat Bed: call any of your cats over. A sitting or sleeping cat wakes, stands up and trots to the bed.
 export default api => {
-  const pets = (api.state.pets || 0) + 1;
-  api.state.pets = pets;
-  const loved = pets % 5 === 0;
-  api.sound("snack");
-  api.glow(loved ? "#ff9bd0" : "#ffd9b0", loved ? 2.5 : 1.5);
-  api.say(loved ? "The cat loves you. Obviously. (" + pets + " pets)" : LINES[Math.floor(Math.random() * LINES.length)]);
-  api.after(loved ? 2600 : 1400, () => { api.glow(null); api.save(); });
+  const { h, choice } = api.ui, cats = api.cats;
+  const body = h("div", { class: "bh-list" });
+  if (!cats.length) body.appendChild(h("p", { class: "bh-text" }, "No cats yet. Place one from the NPC section."));
+  cats.forEach(c => body.appendChild(choice(c.name, c.color + (c.sleeping ? " - sleeping" : c.pose === "stand" ? " - standing" : " - sitting"), () => {
+    api.closeModal(); api.sound("meow"); api.callCat(c.id);
+  })));
+  api.modal({ title: "Call Cat", subtitle: cats.length ? "Pick a cat to call over" : "", body, buttons: [] });
 };

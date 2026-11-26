@@ -395,7 +395,7 @@ export function nearestInteractive(reach = 46, filter = null) {
   let best = null, bd = reach;
   for (const it of W.world.items) {
     const d = catalog.get(it.type);
-    if (!d || !d.hasFunction) continue;
+    if (!d || !d.hasFunction || it.type === 'cat') continue;
     const dd = distToRect(P.x, P.y, W.itemRect(it));
     const e = { kind: 'item', obj: it, def: d };
     if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }

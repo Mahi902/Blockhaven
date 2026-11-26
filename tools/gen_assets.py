@@ -376,10 +376,7 @@ def catbed(c):
     b = circ(26, 27, 20, '#000', op=.2)
     b += circ(24, 24, 20, c, shade(c, -.5), 2)
     b += circ(24, 24, 14, shade(c, .3), shade(c, -.2), 1.2)
-    b += '<ellipse cx="24" cy="25" rx="9" ry="7.5" fill="#e8a45c" stroke="#a8692b" stroke-width="1"/>'
-    b += '<circle cx="19" cy="22" r="4.4" fill="#e8a45c" stroke="#a8692b" stroke-width="1"/>'
-    b += '<path d="M16 19.2 l1.2 -3.2 l2.2 2.4z M20.6 18.2 l2.2 -2.6 l.8 3.4z" fill="#e8a45c" stroke="#a8692b" stroke-width=".8"/>'
-    b += '<path d="M31 27 Q36 23 33.5 19" fill="none" stroke="#a8692b" stroke-width="2.4" stroke-linecap="round"/>'
+    b += circ(24, 24, 9, shade(c, .42), shade(c, -.1), .8, op=.8)
     return svg(48, 48, b)
 
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
@@ -495,7 +492,7 @@ FURNITURE = [
     ("arcade", "Arcade Machine", "Insert imaginary coin. Chase a high score.", 1, "Play a game", arcade),
     ("microwave", "Microwave", "Beep. Beep. Beep.", 1, "Heat something", microwave),
     ("punchbag", "Punching Bag", "Work out your frustrations.", 1, "Punch it", punchbag),
-    ("catbed", "Cat Bed", "A round bed with a very sleepy cat.", 1, "Pet the cat", catbed),
+    ("catbed", "Cat Bed", "A round, cosy bed. Your cats curl up in it at night, and you can call a cat over to it.", 1, "Call Cat", catbed),
     ("shower", "Shower", "Step inside, pick a temperature and get properly clean.", 1, "Take a shower", shower),
     ("fan", "Standing Fan", "Blows a steady breeze in front of it (rotate to aim) and shoves you back. Off, low, medium, high.", 1, "Set fan speed", fan),
     ("gclock", "Grandfather Clock", "Tells the real time and strikes the hour with the Westminster chimes.", 1, "Check the time", gclock),
