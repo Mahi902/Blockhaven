@@ -1,0 +1,4 @@
+name=Grandfather Clock
+description=Tells the real time and strikes the hour with the Westminster chimes.
+block=1
+function=Check the time

@@ -383,6 +383,62 @@ def catbed(c):
     return svg(48, 48, b)
 
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
+def shower(c):
+    d = shade(c, -.45)
+    b = shadow(4, 4, 40, 40, 4)
+    b += rect(4, 4, 40, 40, '#e8edf2', 4, d, 1.8)
+    b += rect(7, 7, 34, 34, '#cfe9f7', 3, shade(c, -.3), 1)
+    for x in (18, 30):
+        b += rect(x, 9, 1, 28, '#ffffff', 0, op=.5)
+    b += circ(24, 29, 3.4, '#8aa0ae', '#566b78', 1)
+    b += rect(20, 28.4, 8, 1.2, '#566b78', .6) + rect(23.4, 25, 1.2, 8, '#566b78', .6)
+    b += rect(22, 4, 4, 8, '#b9c0c8', 1.5, '#6a727c', .8)
+    b += circ(24, 16, 7, '#d9dde2', '#6a727c', 1.2)
+    for ang in range(0, 360, 45):
+        b += circ(24 + 4 * math.cos(math.radians(ang)), 16 + 4 * math.sin(math.radians(ang)), .9, '#6a727c')
+    b += circ(24, 16, .9, '#6a727c')
+    b += circ(10.5, 10.5, 2.6, c, d, 1) + circ(37.5, 10.5, 2.6, shade(c, .2), d, 1)
+    b += rect(4, 39.5, 40, 4.5, c, 2, d, 1)
+    b += rect(7, 40.6, 34, 1.2, shade(c, .4), 0.6, op=.7)
+    return svg(48, 48, b)
+
+def fan(c):
+    d = shade(c, -.45)
+    b = circ(26, 27, 19, '#000', op=.2)
+    b += circ(24, 24, 19, '#f1f3f5', '#7d848d', 2, op=.92)
+    for ang in range(0, 360, 120):
+        a = math.radians(ang)
+        x, y = 24 + 8.5 * math.cos(a), 24 + 8.5 * math.sin(a)
+        b += (f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="9" ry="4.6" transform="rotate({ang} {x:.1f} {y:.1f})" '
+              f'fill="{c}" stroke="{d}" stroke-width="1.2"/>')
+    b += circ(24, 24, 12.5, 'none', '#7d848d', 1, op=.55)
+    for ang in range(0, 360, 45):
+        a = math.radians(ang)
+        b += (f'<line x1="{24 + 4.5 * math.cos(a):.1f}" y1="{24 + 4.5 * math.sin(a):.1f}" '
+              f'x2="{24 + 19 * math.cos(a):.1f}" y2="{24 + 19 * math.sin(a):.1f}" stroke="#7d848d" stroke-width="1" opacity=".55"/>')
+    b += circ(24, 24, 4.2, d, '#222', 1) + circ(24, 24, 1.6, shade(c, .5))
+    return svg(48, 48, b)
+
+def gclock(c):
+    d = shade(c, -.5)
+    b = shadow(8, 4, 32, 40, 4)
+    b += rect(8, 4, 32, 40, c, 3, d, 1.8)
+    b += rect(6, 3, 36, 7, shade(c, -.2), 2, d, 1.4)
+    b += rect(10, 4.5, 28, 2, shade(c, .35), 1, op=.6)
+    b += circ(24, 20, 9.5, '#fff8e0', '#c9a227', 1.8)
+    for i in range(12):
+        a = math.radians(i * 30)
+        r1 = 7.2 if i % 3 == 0 else 8
+        b += (f'<line x1="{24 + r1 * math.sin(a):.1f}" y1="{20 - r1 * math.cos(a):.1f}" '
+              f'x2="{24 + 8.8 * math.sin(a):.1f}" y2="{20 - 8.8 * math.cos(a):.1f}" stroke="#4a3a1a" stroke-width="1"/>')
+    b += '<line x1="24" y1="20" x2="21" y2="15.2" stroke="#222" stroke-width="1.4" stroke-linecap="round"/>'
+    b += '<line x1="24" y1="20" x2="29.2" y2="17.6" stroke="#222" stroke-width="1" stroke-linecap="round"/>'
+    b += circ(24, 20, 1.3, '#222')
+    b += rect(15, 31, 18, 11, shade(c, -.3), 2, d, 1) + rect(17, 32.5, 14, 8, '#2b2118', 1.5)
+    b += '<line x1="24" y1="32.5" x2="24" y2="37.6" stroke="#c9a227" stroke-width="1"/>'
+    b += circ(24, 38.4, 2.6, '#e8c547', '#8a6d12', .8)
+    return svg(48, 48, b)
+
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
     ("bed", "Bed", "A cosy double bed with two pillows.", 6, "Lie down and sleep", bed),
@@ -415,6 +471,9 @@ FURNITURE = [
     ("microwave", "Microwave", "Beep. Beep. Beep.", 1, "Heat something", microwave),
     ("punchbag", "Punching Bag", "Work out your frustrations.", 1, "Punch it", punchbag),
     ("catbed", "Cat Bed", "A round bed with a very sleepy cat.", 1, "Pet the cat", catbed),
+    ("shower", "Shower", "A glass stall with a rain head. Pick your water temperature.", 1, "Take a shower", shower),
+    ("fan", "Standing Fan", "Cools the room down. Three speeds and an off switch.", 1, "Set fan speed", fan),
+    ("gclock", "Grandfather Clock", "Tells the real time and strikes the hour with the Westminster chimes.", 1, "Check the time", gclock),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)

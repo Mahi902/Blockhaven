@@ -1,0 +1,4 @@
+name=Standing Fan
+description=Cools the room down. Three speeds and an off switch.
+block=1
+function=Set fan speed
