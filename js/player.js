@@ -75,6 +75,54 @@ export function sitOn(item, lying = false) {
   sound('sit');
 }
 
+/** Get in a tub and swim: WASD / arrows paddle you around inside it (local tub coordinates), E / click climbs out. */
+const SWIM_SPEED = 80, SW_X = [-30, 40], SW_Y = [6, 14];
+const clampTo = (v, r) => Math.max(r[0], Math.min(r[1], v));
+export function swimIn(item) {
+  const P = S.player;
+  if (P.seat) standUp();
+  const back = { x: P.x, y: P.y };
+  const sw = { lx: 0, ly: 10, t: 0, stroke: 0, dist: 0, rip: [], drops: [], bub: [], ripT: 0, bubT: 0.4, splT: 0 };
+  P.seat = { id: item.id, lying: false, swim: sw, back, rot: item.rot };
+  P.dir = 'down'; P.moving = false;
+  S.path = null; S.pendingInteract = null;
+  placeSwimmer(item, sw);
+  for (let i = 0; i < 9; i++) sw.drops.push({ x: P.x, y: P.y - 8, vx: (Math.random() - .5) * 90, vy: -60 - Math.random() * 70, life: 0.5 + Math.random() * 0.3 });
+  sw.rip.push({ x: P.x, y: P.y - 4, r: 6, a: 0.7 });
+  sound('splash');
+}
+function placeSwimmer(it, sw) {
+  const c = W.itemCenter(it), th = it.rot * Math.PI / 2, cs = Math.cos(th), sn = Math.sin(th);
+  S.player.x = c.x + sw.lx * cs - sw.ly * sn;
+  S.player.y = c.y + sw.lx * sn + sw.ly * cs;
+}
+function updateSwim(dt, dx, dy, manual) {
+  const P = S.player, sw = P.seat.swim, it = W.byId('item', P.seat.id);
+  if (!it) { standUp(); return; }
+  sw.t += dt; sw.splT -= dt; sw.ripT -= dt; sw.bubT -= dt;
+  let moved = false;
+  if (manual) {
+    const th = it.rot * Math.PI / 2, cs = Math.cos(th), sn = Math.sin(th), len = Math.hypot(dx, dy) || 1;
+    const vx = dx / len * SWIM_SPEED * dt, vy = dy / len * SWIM_SPEED * dt;
+    const nx = clampTo(sw.lx + vx * cs + vy * sn, SW_X), ny = clampTo(sw.ly - vx * sn + vy * cs, SW_Y);
+    moved = Math.hypot(nx - sw.lx, ny - sw.ly) > 0.01;
+    sw.dist += Math.hypot(nx - sw.lx, ny - sw.ly); sw.lx = nx; sw.ly = ny;
+    if (Math.abs(dx) > Math.abs(dy)) P.dir = dx > 0 ? 'right' : 'left'; else P.dir = dy > 0 ? 'down' : 'up';
+  }
+  P.moving = moved;
+  if (moved) sw.stroke += dt * 7;
+  placeSwimmer(it, sw);
+  if (moved && sw.splT <= 0) {
+    sw.splT = 0.42; sound('splash');
+    for (let i = 0; i < 4; i++) sw.drops.push({ x: P.x + (Math.random() - .5) * 26, y: P.y - 6, vx: (Math.random() - .5) * 70, vy: -45 - Math.random() * 55, life: 0.4 + Math.random() * 0.25 });
+  }
+  if (sw.ripT <= 0) { sw.ripT = moved ? 0.22 : 0.9; sw.rip.push({ x: P.x, y: P.y - 2, r: 5, a: moved ? 0.6 : 0.35 }); }
+  if (sw.bubT <= 0) { sw.bubT = 0.5 + Math.random() * 0.7; sw.bub.push({ x: P.x + (Math.random() - .5) * 40, y: P.y - 4, r: 1.5 + Math.random() * 2.5, life: 1.3 }); }
+  sw.rip.forEach(r => { r.r += 26 * dt; r.a -= 0.55 * dt; }); sw.rip = sw.rip.filter(r => r.a > 0);
+  sw.drops.forEach(d => { d.vy += 260 * dt; d.x += d.vx * dt; d.y += d.vy * dt; d.life -= dt; }); sw.drops = sw.drops.filter(d => d.life > 0);
+  sw.bub.forEach(b => { b.y -= 14 * dt; b.life -= dt; }); sw.bub = sw.bub.filter(b => b.life > 0);
+}
+
 /** Stand ON an item and run in place (treadmill). The runner faces the sprite's left (console) side.
  *  `rate` scales the stride/step speed; `offset` shifts the spot along the sprite (px, rotates with it). */
 export function runOn(item, rate = 1, offset = { x: 0, y: 0 }) {
@@ -139,6 +187,7 @@ export function updatePlayer(dt) {
   const manual = dx !== 0 || dy !== 0;
 
   if (P.seat) {
+    if (P.seat.swim) { updateSwim(dt, dx, dy, manual); return; }      // paddling around the tub: keys swim, E / click climbs out
     if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
     if (P.seat.run) {                         // running in place: keep the stride going
       const rate = P.seat.rate || 1;

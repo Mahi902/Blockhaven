@@ -1,4 +1,4 @@
 name=Arcade Machine
-description=Insert imaginary coin. Chase a high score.
+description=Four real games and a high-score table.
 block=1
 function=Play a game

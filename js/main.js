@@ -128,7 +128,7 @@ function updatePrompt() {
   const el = $('prompt');
   let text = null;
   if (S.mode === 'play' && !S.modalOpen) {
-    if (S.player.seat) text = S.player.seat.run ? 'Stop running' : 'Stand up';
+    if (S.player.seat) text = S.player.seat.run ? 'Stop running' : (S.player.seat.swim ? 'Climb out' : 'Stand up');
     else if (S.nearby) text = S.nearby.def.tip;
   }
   el.classList.toggle('hidden', !text);

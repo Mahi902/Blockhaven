@@ -1,4 +1,4 @@
 name=Bathtub
 description=Warm water and plenty of bubbles.
 block=3
-function=Take a bath
+function=Hop in and swim

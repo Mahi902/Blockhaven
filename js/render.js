@@ -94,8 +94,45 @@ function drawEdge(c, e) {
   c.restore();
 }
 
+/** Swimming in a tub: head and shoulders above a wavy waterline, arms paddling, ripples, bubbles and splashes. */
+function drawSwimmer(c) {
+  const P = S.player, sw = P.seat.swim, img = sprites[P.dir] || sprites.down;
+  if (!img || !img.complete) return;
+  const sc = 0.82, dw = 48 * sc, dh = 64 * sc, look = S.player.look;
+  for (const r of sw.rip) { c.strokeStyle = `rgba(255,255,255,${Math.max(0, r.a)})`; c.lineWidth = 1.6; c.beginPath(); c.ellipse(r.x, r.y, r.r, r.r * 0.4, 0, 0, Math.PI * 2); c.stroke(); }
+  const bob = Math.sin(sw.t * 2.6) * 1.5 + (P.moving ? Math.sin(sw.stroke * 2) * 1.3 : 0);
+  c.save();
+  c.translate(P.x, P.y + 4 + bob);
+  const WL = -14;                                         // waterline, relative to the swimmer
+  c.save(); c.beginPath(); c.rect(-30, -70, 60, 70 + WL); c.clip();
+  c.drawImage(img, -dw / 2, -dh * 0.89, dw, dh);
+  c.restore();
+  // arms: resting on the surface, or alternating front-crawl strokes while moving
+  for (const side of [-1, 1]) {
+    const ph = sw.stroke + (side > 0 ? Math.PI : 0);
+    const reach = P.moving ? Math.max(0, Math.sin(ph)) : 0;
+    const hx = side * (17 + (P.moving ? Math.cos(ph) * 3 : 0)), hy = WL - 1 - reach * 13 + (P.moving ? 0 : Math.sin(sw.t * 2 + side) * 1.2);
+    c.strokeStyle = look.shirt || '#4a6fd8'; c.lineWidth = 6; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(side * 12, -21); c.lineTo(hx, hy); c.stroke();
+    c.fillStyle = look.skin || '#f1c27d'; c.beginPath(); c.arc(hx, hy, 3.4, 0, Math.PI * 2); c.fill();
+  }
+  // water over the body, with a little foam line
+  c.beginPath(); c.moveTo(-22, WL + 11);
+  for (let x = -22; x <= 22; x += 4) c.lineTo(x, WL + Math.sin(x * 0.28 + sw.t * 4) * 1.3);
+  c.lineTo(22, WL + 11); c.closePath();
+  c.fillStyle = 'rgba(160,220,255,0.88)'; c.fill();
+  c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = 1.2; c.beginPath();
+  for (let x = -22; x <= 22; x += 4) { const y = WL + Math.sin(x * 0.28 + sw.t * 4) * 1.3; if (x === -22) c.moveTo(x, y); else c.lineTo(x, y); }
+  c.stroke();
+  c.restore();
+  for (const b of sw.bub) { c.strokeStyle = `rgba(255,255,255,${Math.min(1, b.life)})`; c.fillStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 1; c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.fill(); c.stroke(); }
+  c.fillStyle = 'rgba(255,255,255,0.9)';
+  for (const d of sw.drops) { c.beginPath(); c.arc(d.x, d.y, 1.8, 0, Math.PI * 2); c.fill(); }
+}
+
 function drawPlayer(c) {
   const P = S.player;
+  if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
   const img = sprites[P.dir] || sprites.down;
   if (!img || !img.complete) return;
   const sc = 0.82, dw = 48 * sc, dh = 64 * sc;

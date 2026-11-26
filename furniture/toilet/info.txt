@@ -1,4 +1,4 @@
 name=Toilet
 description=Every home needs one.
 block=1
-function=Use the toilet
+function=Sit on the toilet
