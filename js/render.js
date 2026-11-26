@@ -141,14 +141,14 @@ function stepJig(bob) {
   const drive = Math.max(-260, Math.min(260, acc));
   jig.cv += (-170 * jig.c - 9 * jig.cv - drive * 0.055) * dt; jig.c += jig.cv * dt;
   jig.hv += (-150 * jig.h - 8 * jig.hv + drive * 0.04) * dt; jig.h += jig.hv * dt;
-  jig.c = Math.max(-1.6, Math.min(1.6, jig.c)); jig.h = Math.max(-1.3, Math.min(1.3, jig.h));
+  jig.c = Math.max(-2.24, Math.min(2.24, jig.c)); jig.h = Math.max(-1.82, Math.min(1.82, jig.h));
 }
 function drawSliced(c, img, dw, dh, bob) {
   stepJig(bob);
   const k = img.width / 48, u = dw / 48, x0 = -dw / 2, y0 = -dh * 0.89 + bob;
   const band = (a, b, off, sq) => c.drawImage(img, 0, a * k, img.width, (b - a) * k, x0 - dw * 0.5 * sq, y0 + a * u + off, dw * (1 + sq), (b - a) * u + 0.4);
-  band(41, 64, jig.h * u * 0.9, jig.h * 0.012);          // hips
-  band(26.5, 42, jig.c * u * 1.1, -jig.c * 0.014);       // chest
+  band(41, 64, jig.h * u * 1.26, jig.h * 0.0168);          // hips
+  band(26.5, 42, jig.c * u * 1.54, -jig.c * 0.0196);       // chest
   band(0, 27.2, 0, 0);                                   // head and shoulders
 }
 
