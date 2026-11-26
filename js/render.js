@@ -218,7 +218,8 @@ function glows() {
     const g = it.state && (it.state.glow || it.state._glow); if (!g || !catalog.get(it.type)) continue;
     if (g.until && Date.now() > g.until) continue;
     const ctr = W.itemCenter(it);
-    out.push({ x: ctr.x, y: ctr.y, r: g.r * TILE, color: g.color });
+    const col = Array.isArray(g.color) ? g.color[Math.floor(performance.now() / 650) % g.color.length] : g.color;
+    out.push({ x: ctr.x, y: ctr.y, r: g.r * TILE, color: col });
   }
   return out;
 }

@@ -141,6 +141,71 @@ export const TRACKS = {
     },
   },
 };
+// ---- TV channel soundtracks (radio: false, so the stereo does not list them) -------------------
+let longNoise = null;
+function ambientNoise() {
+  if (!longNoise) {
+    longNoise = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
+    const d = longNoise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return longNoise;
+}
+TRACKS['tv-cartoons'] = {
+  name: 'Cartoons', bpm: 150,
+  step(i, t, sd, st) {
+    const bar = Math.floor(i / 16) % 4, s = i % 16, r = st.r;
+    const roots = [48, 53, 55, 48], root = roots[bar];
+    if (s % 4 === 0) tone(s % 8 === 0 ? root : root + 7, t, sd * 1.5, { type: 'triangle', vol: 0.22, lp: 700 });
+    if (s % 8 === 2) [0, 4, 7].forEach(n => tone(root + 12 + n, t, sd * 1.2, { type: 'triangle', vol: 0.05, lp: 2200 }));
+    if (s % 8 === 6) noise(t, 0.04, { vol: 0.12, bp: 1200 });
+    if (s % 2 === 0 && r() < 0.35) tone(pick(r, [72, 76, 79, 81, 84]), t, sd * 2, { type: 'square', vol: 0.03, lp: 2500, slide: pick(r, [5, -5, 12]) });
+    if (s === 0) kick(t, 0.25);
+  },
+};
+TRACKS['tv-news'] = {
+  name: 'News', bpm: 100,
+  step(i, t, sd, st) {
+    const bar = Math.floor(i / 16) % 4, s = i % 16;
+    if (i % 64 === 0) { tone(38, t, sd * 62, { type: 'sawtooth', vol: 0.05, lp: 300, atk: 0.4 }); tone(45, t, sd * 62, { type: 'sawtooth', vol: 0.04, lp: 300, atk: 0.4, det: 7 }); }
+    if (bar === 0 && s % 2 === 0 && s < 8) tone([67, 72, 76, 79][s / 2], t, sd * 2.5, { type: 'triangle', vol: 0.08, lp: 3000 });
+    if (s % 4 === 0) noise(t, 0.02, { vol: 0.05, hp: 2500 });
+    if (bar % 2 === 1 && s === 8) tone(88, t, sd * 0.8, { vol: 0.04 });
+  },
+};
+TRACKS['tv-nature'] = {
+  name: 'Nature', bpm: 60,
+  init() {
+    const src = ctx.createBufferSource(); src.buffer = ambientNoise(); src.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 500;
+    const g = ctx.createGain(); g.gain.value = 0.04;
+    src.connect(f); f.connect(g); g.connect(out); src.start();
+    return { wind: src, gust: g };
+  },
+  stop(st) { try { st.wind.stop(); } catch (e) { /* ignore */ } },
+  step(i, t, sd, st) {
+    const bar = Math.floor(i / 16), s = i % 16, r = st.r;
+    if (s === 0) st.gust.gain.setTargetAtTime(0.025 + r() * 0.05, t, 1.5);
+    if (s === 0 && bar % 2 === 0) [48, 52, 55, 59, 62].forEach(n => tone(n, t, sd * 30, { vol: 0.03, atk: 0.8 }));
+    if (s % 2 === 0 && r() < 0.1) {
+      const k = 1 + Math.floor(r() * 3), base = 100 + Math.floor(r() * 8);
+      for (let j = 0; j < k; j++) tone(base, t + j * 0.11, 0.09, { vol: 0.03, atk: 0.005, slide: pick(r, [4, -4, 7]) });
+    }
+  },
+};
+TRACKS['tv-movie'] = {
+  name: 'Late Movie', bpm: 58,
+  step(i, t, sd, st) {
+    const bar = Math.floor(i / 16) % 4, s = i % 16, r = st.r;
+    const chords = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [52, 56, 59]], roots = [45, 41, 48, 40];
+    if (s === 0) {
+      chords[bar].forEach(n => { tone(n, t, sd * 15, { type: 'sawtooth', vol: 0.025, lp: 700, atk: 0.5, det: -8 }); tone(n, t, sd * 15, { type: 'sawtooth', vol: 0.025, lp: 700, atk: 0.5, det: 8 }); });
+      tone(roots[bar], t, sd * 8, { vol: 0.2 });
+    }
+    if ((s === 0 || s === 6 || s === 10) && r() < 0.6) tone(pick(r, [69, 72, 76, 74, 71, 67]), t, sd * 5, { type: 'triangle', vol: 0.07, lp: 2500 });
+  },
+};
+
 export const TRACK_LIST = Object.entries(TRACKS).filter(([, v]) => v.radio).map(([id, v]) => [id, v.name]);
 
 // ---- player ---------------------------------------------------------------------------------
