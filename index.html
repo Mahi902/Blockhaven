@@ -35,14 +35,24 @@
   <div id="modalRoot"></div>
 
   <div id="intro">
-    <div class="bh-panel intro-card">
-      <img src="img/logo.svg" alt="" class="intro-logo">
-      <h1>Blockhaven</h1>
-      <p>Build your home, decorate it, and just live in it. No quests, no rules.</p>
-      <label class="bh-label" for="nameInput">Your name</label>
-      <input id="nameInput" class="bh-input" type="text" maxlength="16" placeholder="Guest" autocomplete="off">
-      <div class="intro-keys"><span><b>WASD</b> move</span><span><b>Click</b> walk / use</span><span><b>E</b> use</span><span><b>Enter</b> talk</span><span><b>B</b> build</span></div>
-      <button id="startBtn" class="bh-btn bh-green" type="button"><span>Enter Blockhaven</span></button>
+    <div class="sky">
+      <img class="cloud c1" src="img/cloud.svg" alt=""><img class="cloud c2" src="img/cloud.svg" alt=""><img class="cloud c3" src="img/cloud.svg" alt="">
+      <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i><i class="blk b4"></i><i class="blk b5"></i>
+    </div>
+    <img class="town" src="img/title-bg.svg" alt="">
+    <div class="title-wrap">
+      <div class="title-logo"><img src="img/logo.svg" alt=""><h1>BLOCK<span>HAVEN</span></h1><p>Build it. Decorate it. Live in it.</p></div>
+      <div class="menu bh-panel">
+        <div class="menu-tabs"><button id="tabPlay" class="bh-tab on" type="button">Play</button><button id="tabLook" class="bh-tab" type="button">Look</button></div>
+        <div id="panePlayTitle">
+          <div class="who"><div class="preview"><div class="spot"></div><img id="preview" alt=""></div>
+            <div class="who-r"><label class="bh-label" for="nameInput">Your name</label>
+              <input id="nameInput" class="bh-input" type="text" maxlength="16" placeholder="Guest" autocomplete="off"></div></div>
+          <button id="startBtn" class="bh-btn bh-green play-big" type="button"><img class="bh-ico" src="img/icons/play.svg" alt=""><span>PLAY</span></button>
+          <div class="intro-keys"><span><b>WASD</b> move</span><span><b>E</b> use</span><span><b>Enter</b> chat</span><span><b>B</b> build</span></div>
+        </div>
+        <div id="paneLook" class="hidden"><div class="look-wrap"><div class="preview small"><div class="spot"></div><img id="preview2" alt=""></div><div id="lookSwatches"></div></div></div>
+      </div>
     </div>
   </div>
 

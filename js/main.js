@@ -1,15 +1,15 @@
 // Blockhaven - boot, game loop and top bar
-import { TILE, PLAYER_KEY, SETTINGS_KEY } from './config.js';
+import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_COLORS } from './config.js';
 import { S } from './state.js';
 import * as W from './world.js';
 import { loadCatalog, catalog } from './catalog.js';
-import { loadPlayerTemplates, updatePlayer, nearestInteractive } from './player.js';
+import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, doInteract, setZoom, clampCamera } from './input.js';
 import * as B from './build.js';
 import { buildStarter, SPAWN } from './starter.js';
 import { setSound, soundOn } from './audio.js';
-import { button, toast, h, openModal } from './ui.js';
+import { button, toast, h, openModal, swatches } from './ui.js';
 import './api.js';
 
 const $ = id => document.getElementById(id);
@@ -156,9 +156,24 @@ async function boot() {
   placeAtSpawn();
   S.camera.x = S.player.x; S.camera.y = S.player.y;
   syncBar();
+  buildLook();
   $('startBtn').addEventListener('click', start);
+  const tabs = { Play: ['tabPlay', 'panePlayTitle'], Look: ['tabLook', 'paneLook'] };
+  Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
   requestAnimationFrame(frame);
+}
+
+function refreshPreview() {
+  const src = sprites.down && sprites.down.src;
+  if (src) { $('preview').src = src; $('preview2').src = src; }
+}
+function buildLook() {
+  const L = S.player.look, box = $('lookSwatches');
+  const row = (label, key, colors) => [h('div', { class: 'bh-label' }, label), swatches({ colors, value: L[key], onPick: c => setLook({ [key]: c }) })];
+  box.append(...row('Skin', 'skin', SKIN_TONES), ...row('Hair', 'hair', HAIR_COLORS), ...row('Shirt', 'shirt', SHIRT_COLORS), ...row('Pants', 'pants', PANTS_COLORS));
+  document.addEventListener('bh-look', refreshPreview);
+  refreshPreview();
 }
 
 function savePlayer() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ name: S.player.name, look: S.player.look })); } catch (e) { /* ignore */ } }
