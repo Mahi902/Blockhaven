@@ -65,6 +65,15 @@ const SOUNDS = {
   chat: () => { tick(1300, 0.018, 0.20); tick(600, 0.03, 0.16, 0.004); },
   switch: () => { tick(1500, 0.016, 0.18); tick(1000, 0.022, 0.14, 0.035); },
   splash: () => { tick(950, 0.10, 0.24); tick(520, 0.14, 0.16, 0.035); thock(230, 0.09, 0.10, 0, 140); },
+  purr: () => {
+    const a = ac(), t = a.currentTime, s = a.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 120; f.Q.value = 1.1;
+    const g = a.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.45, t + 0.3); g.gain.linearRampToValueAtTime(0.0001, t + 1.6);
+    const l = a.createOscillator(); l.frequency.value = 25; const lg = a.createGain(); lg.gain.value = 0.3; l.connect(lg); lg.connect(g.gain);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t + 1.7); l.start(t); l.stop(t + 1.7);
+    thock(62, 1.3, 0.05, 0.05);
+  },
+  meow: () => { thock(520, 0.28, 0.07, 0, 380); thock(780, 0.2, 0.04, 0.02, 560); },
   snack: () => { tick(800, 0.03, 0.14); tick(700, 0.03, 0.14, 0.06); },
 };
 

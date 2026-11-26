@@ -4,6 +4,10 @@ import { TILE, COLOR_HEX } from './config.js';
 import { S, worldToScreen } from './state.js';
 import * as W from './world.js';
 import { catalog } from './catalog.js';
+import { sound } from './audio.js';
+
+const isCat = it => it.type === 'cat';
+let ign2 = null;   // an extra item the cat may walk through (its bed)
 
 const SPEED = 62, R = 14;
 const bots = new Map();   // item id -> live robot
@@ -26,7 +30,7 @@ export function botOf(it) {
 // ---- world queries
 function hit(px, py, r, ignore) {
   const t = rc => Math.hypot(Math.max(rc.x - px, 0, px - (rc.x + rc.w)), Math.max(rc.y - py, 0, py - (rc.y + rc.h))) < r;
-  for (const it of W.world.items) if (it.id !== ignore && catalog.get(it.type) && t(W.itemRect(it))) return true;
+  for (const it of W.world.items) if (it.id !== ignore && it.id !== ign2 && catalog.get(it.type) && t(W.itemRect(it))) return true;
   for (const e of W.world.edges) if (W.isClosedEdge(e) && e.type !== 'door' && t(W.edgeRect(e))) return true;
   return false;
 }
@@ -59,6 +63,7 @@ export function npcSay(b, text) { b.bubble = { text, ttl: 3.2 + Math.min(4, text
 
 // ---- control (used by api.bot)
 export function botApi(it) {
+  if (isCat(it)) return catApi(it);
   const b = () => botOf(it);
   const st = () => it.state || (it.state = {});
   return {
@@ -128,9 +133,9 @@ function openDoors(b) {
     if (Math.hypot(Math.max(r.x - b.x, 0, b.x - (r.x + r.w)), Math.max(r.y - b.y, 0, b.y - (r.y + r.h))) < 30) { (e.state || (e.state = {})).open = true; W.touch(); }
   }
 }
-function move(b, tx, ty, dt) {
+function move(b, tx, ty, dt, sp = SPEED) {
   openDoors(b);
-  const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy), s = SPEED * dt;
+  const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy), s = sp * dt;
   if (d > 0.5) { let da = Math.atan2(dy, dx) - b.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); b.ang += da * Math.min(1, dt * 12); }
   if (d <= s) { b.x = tx; b.y = ty; return true; }
   b.x += dx / d * s; b.y += dy / d * s; return false;
@@ -218,15 +223,17 @@ export function updateNpcs(dt) {
   const seen = new Set();
   for (const it of W.world.items) {
     const d = catalog.get(it.type); if (!d || !d.npc) continue;
-    seen.add(it.id); step(it, botOf(it), dt);
+    seen.add(it.id);
+    if (isCat(it)) catStep(it, catOf(it), dt); else step(it, botOf(it), dt);
   }
   for (const id of [...bots.keys()]) if (!seen.has(id)) bots.delete(id);
+  for (const id of [...cats.keys()]) if (!seen.has(id)) cats.delete(id);
 }
 
 /** Distance from (px,py) to the robot's body, for "chase it and press E". */
-export function botDist(it, px, py) { const b = botOf(it); return Math.hypot(px - b.x, py - b.y) - 17; }
-export function botRect(it) { const b = botOf(it); return { x: b.x - 20, y: b.y - 20, w: 40, h: 40 }; }
-export const botDepth = it => botOf(it).y + 12;
+export function botDist(it, px, py) { const b = isCat(it) ? catOf(it) : botOf(it); return Math.hypot(px - b.x, py - b.y) - 17; }
+export function botRect(it) { const b = isCat(it) ? catOf(it) : botOf(it); return { x: b.x - 20, y: b.y - 20, w: 40, h: 40 }; }
+export const botDepth = it => isCat(it) ? catOf(it).y + 8 : botOf(it).y + 12;
 
 // ---- drawing
 function shade(hex, f) {
@@ -235,6 +242,7 @@ function shade(hex, f) {
   return `rgb(${m(r)},${m(g)},${m(bl)})`;
 }
 export function drawBot(c, it) {
+  if (isCat(it)) return drawCat(c, it);
   const b = botOf(it), base = COLOR_HEX[it.color] || '#f4f4f2', mv = ['clean', 'return', 'home'].includes(b.mode);
   for (const s of b.shine) { c.fillStyle = `rgba(255,255,255,${(s.a * 0.35).toFixed(3)})`; c.fillRect(s.x * TILE + 3, s.y * TILE + 3, TILE - 6, TILE - 6); }
   c.save(); c.translate(b.x, b.y);
@@ -277,7 +285,7 @@ export function drawBotTags(c) {
   const z = S.camera.zoom;
   for (const it of W.world.items) {
     const d = catalog.get(it.type); if (!d || !d.npc) continue;
-    const b = botOf(it), s = worldToScreen(b.x, b.y - 24), ty = s.y - 8 * z, nm = (it.state && it.state.name) || d.name;
+    const b = isCat(it) ? catOf(it) : botOf(it), s = worldToScreen(b.x, b.y - 24), ty = s.y - 8 * z, nm = (it.state && it.state.name) || d.name;
     c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = '700 12px "Plus Jakarta Sans", sans-serif';
     const tw = c.measureText(nm).width + 14;
     c.fillStyle = 'rgba(2,6,23,.72)'; c.beginPath(); c.roundRect(s.x - tw / 2, ty - 10, tw, 20, 8); c.fill();
@@ -297,4 +305,112 @@ export function drawBotTags(c) {
     lines.forEach((l, i) => c.fillText(l, bx + bw / 2, by + 8 + lh / 2 + i * lh));
     c.globalAlpha = 1;
   }
+}
+
+// ================= Cat =================
+const cats = new Map();
+function catOf(it) {
+  let b = cats.get(it.id);
+  if (!b) { const d = W.itemCenter(it); b = { x: d.x, y: d.y, ang: Math.PI / 2, mode: 'sit', path: null, bubble: null, t: Math.random() * 9, purrT: 1, replan: 0, walking: false, bed: null, bubbleCool: 0 }; cats.set(it.id, b); }
+  return b;
+}
+function catApi(it) {
+  const st = () => it.state || (it.state = {});
+  return {
+    get name() { return st().name || ''; },
+    rename: n => { st().name = String(n || '').trim().slice(0, 16); W.touch(); },
+    get pose() { return st().pose || 'sit'; },
+    get sleeping() { return catOf(it).mode === 'sleep'; },
+    setPose: p => { st().pose = p; const b = catOf(it); npcSay(b, p === 'sit' ? 'Mrrp' : 'Mew!'); sound('meow'); W.touch(); },
+  };
+}
+function nearestBed(b) {
+  let best = null, bd = 1e9;
+  for (const o of W.world.items) if (o.type === 'catbed') { const c = W.itemCenter(o), d = Math.hypot(c.x - b.x, c.y - b.y); if (d < bd) { bd = d; best = o; } }
+  return best;
+}
+function catGo(it, b, tx, ty) {
+  const res = bfs(it, b, true), k = keyOf(cellOf(tx), cellOf(ty));
+  if (res.dist.has(k)) { b.path = pathTo(res, k); return true; }
+  let bk = null, bd = 1e9;   // closest reachable cell
+  for (const kk of res.dist.keys()) { const d = Math.hypot(ctr(kk % 100) - tx, ctr(Math.floor(kk / 100)) - ty); if (d < bd) { bd = d; bk = kk; } }
+  if (bk == null) { b.path = null; return false; }
+  b.path = pathTo(res, bk); return true;
+}
+function catStep(it, b, dt) {
+  b.t += dt; b.purrT -= dt; b.replan -= dt; b.bubbleCool = Math.max(0, b.bubbleCool - dt);
+  if (b.bubble && (b.bubble.ttl -= dt) <= 0) b.bubble = null;
+  const st = it.state || (it.state = {}), pose = st.pose || 'sit';
+  const bed = S.night ? nearestBed(b) : null;
+  ign2 = bed ? bed.id : null;
+  b.walking = false;
+  let goal = null, stopAt = 0;
+  if (S.night) {
+    if (bed) { const c = W.itemCenter(bed); if (Math.hypot(c.x - b.x, c.y - b.y) > 3) { goal = c; stopAt = 0; } }
+  } else if (pose === 'stand' && S.started) {
+    const d = Math.hypot(S.player.x - b.x, S.player.y - b.y);
+    if (d > 46) { goal = { x: S.player.x, y: S.player.y }; stopAt = 40; }
+  }
+  if (goal) {
+    if (!b.path || !b.path.length || b.replan <= 0) { catGo(it, b, goal.x, goal.y); b.replan = 0.6; }
+    if (b.path && b.path.length) {
+      let wp = b.path[0];
+      if (hit(wp.x, wp.y, R - 4, it.id) && wp !== goal) { b.path = null; b.replan = 0; }
+      else {
+        const far = Math.hypot(goal.x - b.x, goal.y - b.y) > 200;
+        b.walking = true; b.mode = 'walk';
+        if (move(b, wp.x, wp.y, dt, far ? 120 : 78)) b.path.shift();
+        if (stopAt && Math.hypot(goal.x - b.x, goal.y - b.y) < stopAt) { b.path = null; b.walking = false; }
+      }
+    } else b.walking = false;
+  } else b.path = null;
+  if (!b.walking) {
+    if (S.night) { if (b.mode !== 'sleep') { b.mode = 'sleep'; npcSay(b, 'Zzz...'); } }
+    else if (b.mode === 'sleep') { b.mode = pose === 'stand' ? 'stand' : 'sit'; npcSay(b, 'Mew!'); sound('meow'); }
+    else b.mode = pose === 'stand' ? 'stand' : 'sit';
+  }
+  b.purring = b.mode !== 'sleep' && S.started && Math.hypot(S.player.x - b.x, S.player.y - b.y) < 240;
+  if (b.purring && b.purrT <= 0) { sound('purr'); b.purrT = 2.4; }
+  ign2 = null;
+}
+function drawCat(c, it) {
+  const b = catOf(it), base = COLOR_HEX[it.color] || '#f4f4f2', dk = shade(base, -0.5), lt = shade(base, 0.35), t = b.t;
+  const vib = b.purring ? Math.sin(t * 60) * 0.5 : 0;
+  c.save(); c.translate(b.x + vib, b.y);
+  c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(1, 4, b.mode === 'sleep' ? 12 : 13, b.mode === 'sleep' ? 10 : 8, 0, 0, 7); c.fill();
+  c.strokeStyle = dk; c.lineWidth = 1.3; c.fillStyle = base;
+  const eye = (x, y, closed) => { if (closed) { c.beginPath(); c.moveTo(x - 1.4, y); c.lineTo(x + 1.4, y); c.stroke(); } else { c.fillStyle = '#16181d'; c.beginPath(); c.arc(x, y, 1, 0, 7); c.fill(); c.fillStyle = base; } };
+  const ears = (hx, hy) => { for (const sy of [-1, 1]) { c.beginPath(); c.moveTo(hx - 1, hy + sy * 2); c.lineTo(hx - 4, hy + sy * 5.6); c.lineTo(hx + 2.4, hy + sy * 4); c.closePath(); c.fill(); c.stroke(); } };
+  if (b.mode === 'sleep') {
+    c.rotate(0.5);
+    c.beginPath(); c.ellipse(0, 0, 11, 9, 0, 0, 7); c.fill(); c.stroke();
+    c.strokeStyle = dk; c.lineWidth = 4; c.lineCap = 'round'; c.beginPath(); c.arc(0, 0, 9, 0.5, 3.3); c.strokeStyle = base; c.stroke();
+    c.lineWidth = 1.3; c.strokeStyle = dk;
+    c.beginPath(); c.arc(-7, -3, 5, 0, 7); c.fill(); c.stroke(); ears(-7, -3); c.beginPath(); c.arc(-7, -3, 5, 0, 7); c.fill(); c.stroke();
+    eye(-9, -5, true); eye(-5.5, -5.5, true);
+    c.restore();
+    c.fillStyle = '#fff'; c.strokeStyle = '#334155'; c.lineWidth = 2; c.font = '700 11px Fredoka, sans-serif'; c.textAlign = 'center';
+    for (let i = 0; i < 3; i++) { const p = (t * 0.45 + i / 3) % 1; c.globalAlpha = 1 - p; c.font = `700 ${8 + p * 6}px Fredoka, sans-serif`; c.strokeText('z', b.x + 10 + p * 8, b.y - 12 - p * 18); c.fillText('z', b.x + 10 + p * 8, b.y - 12 - p * 18); }
+    c.globalAlpha = 1; return;
+  }
+  c.rotate(b.ang);
+  const sit = b.mode === 'sit', w = b.walking ? Math.sin(t * 14) : 0;
+  const sw = Math.sin(t * 2.2) * (sit ? 0.5 : 0.28);
+  c.strokeStyle = base; c.lineWidth = 3.4; c.lineCap = 'round'; c.beginPath();
+  if (sit) { c.moveTo(-6, 4); c.quadraticCurveTo(-13, 6 + sw * 8, -9, -4); } else { c.moveTo(-11, 0); c.quadraticCurveTo(-18, sw * 12 + w * 3, -19 + sw * 3, -5 + sw * 10); }
+  c.stroke(); c.strokeStyle = dk; c.lineWidth = 1; c.stroke(); c.lineCap = 'butt'; c.lineWidth = 1.3;
+  if (!sit) for (const [lx, ly, ph] of [[6, -5, 0], [6, 5, Math.PI], [-7, -5, Math.PI], [-7, 5, 0]]) { c.fillStyle = lt; c.beginPath(); c.ellipse(lx + Math.sin(t * 14 + ph) * (b.walking ? 3 : 0), ly + (ly > 0 ? 1.5 : -1.5), 2.6, 2, 0, 0, 7); c.fill(); c.stroke(); }
+  c.fillStyle = base; c.beginPath();
+  if (sit) c.ellipse(-1, 0, 8.5, 9, 0, 0, 7); else c.ellipse(-1, 0, 12.5, 6.8 + (b.purring ? Math.sin(t * 6) * 0.3 : 0), 0, 0, 7);
+  c.fill(); c.stroke();
+  c.fillStyle = lt; c.beginPath(); c.ellipse(sit ? 3 : 2, 0, sit ? 3.5 : 5, sit ? 4 : 2.6, 0, 0, 7); c.fill();
+  if (sit) for (const sy of [-1, 1]) { c.fillStyle = lt; c.beginPath(); c.ellipse(7, sy * 4.2, 3, 2, 0, 0, 7); c.fill(); c.stroke(); }
+  const hx = sit ? 8 : 12; c.fillStyle = base; ears(hx, 0);
+  c.beginPath(); c.arc(hx, 0, 5.4, 0, 7); c.fill(); c.stroke();
+  const blink = Math.sin(t * 0.9) > 0.985 || (b.purring && sit && Math.sin(t * 1.3) > 0.2);
+  eye(hx + 2.6, -2.2, blink); eye(hx + 2.6, 2.2, blink);
+  c.fillStyle = '#f08aa0'; c.beginPath(); c.arc(hx + 5, 0, 0.9, 0, 7); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 0.6;
+  for (const sy of [-1, 1]) { c.beginPath(); c.moveTo(hx + 4, sy * 1.2); c.lineTo(hx + 9, sy * 3.6); c.moveTo(hx + 4, sy * 0.6); c.lineTo(hx + 9, sy * 1.2); c.stroke(); }
+  c.restore();
 }
