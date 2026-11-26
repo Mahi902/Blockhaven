@@ -364,6 +364,24 @@ def gen_player():
 # --------------------------------------------------------------------- icons
 STROKE = 'fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"'
 
+def ceiling_tiles(cols=4, rows=3):
+    """Ceiling seen from below: rows of tiles that get narrower with distance (perspective grid)."""
+    cx, top, bot, w_top, w_bot, gap = 12, 4.5, 19.5, 22.0, 14.0, 1.3
+    rh = (bot - top - (rows - 1) * 1.6) / rows
+    width = lambda y: w_top + (w_bot - w_top) * (y - top) / (bot - top)
+    out = ''
+    for r in range(rows):
+        y0 = top + r * (rh + 1.6); y1 = y0 + rh
+        pts = lambda y, c, side: cx - width(y) / 2 + (c + side) * width(y) / cols + (gap / 2 if side == 0 else -gap / 2)
+        for c in range(cols):
+            out += (f'<path d="M{pts(y0, c, 0):.2f} {y0:.2f}H{pts(y0, c, 1):.2f}L{pts(y1, c, 1):.2f} {y1:.2f}'
+                    f'H{pts(y1, c, 0):.2f}Z"/>')
+    return out
+
+def icon_fill(name, body):
+    write(os.path.join(ROOT, 'img', 'icons', name + '.svg'),
+          f'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><g fill="#fff" stroke="none">{body}</g></svg>\n')
+
 def icon(name, body):
     write(os.path.join(ROOT, 'img', 'icons', name + '.svg'),
           f'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><g {STROKE}>{body}</g></svg>\n')
@@ -394,7 +412,7 @@ def gen_icons():
     icon('upload', '<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 19.5h14"/>')
     icon('moon', '<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z" fill="#fff"/>')
     icon('sun', '<circle cx="12" cy="12" r="4" fill="#fff"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>')
-    icon('ceiling', '<path d="M3 4.5h18"/><path d="M12 4.5v5"/><path d="M6.5 17c0-4 2.5-7.5 5.5-7.5s5.5 3.5 5.5 7.5z"/><path d="M10 20.5h4"/>')
+    icon_fill('ceiling', ceiling_tiles())
     icon('zoom-in', '<circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/>')
     icon('zoom-out', '<circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5M8.5 11h5"/>')
     icon('hand', '<path d="M8 12V6.5a1.5 1.5 0 013 0V11M11 11V5a1.5 1.5 0 013 0v6M14 11V6.5a1.5 1.5 0 013 0V14c0 4-2 6.5-5.5 6.5S7 18.5 6 15.5L4.7 12a1.4 1.4 0 012.3-1.4z"/>')
