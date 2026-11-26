@@ -394,7 +394,7 @@ def gen_icons():
     icon('upload', '<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 19.5h14"/>')
     icon('moon', '<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z" fill="#fff"/>')
     icon('sun', '<circle cx="12" cy="12" r="4" fill="#fff"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>')
-    icon('ceiling', '<path d="M3 11l9-6.5 9 6.5"/><path d="M5.5 10v9.5h13V10"/>')
+    icon('ceiling', '<path d="M3 4.5h18"/><path d="M12 4.5v5"/><path d="M6.5 17c0-4 2.5-7.5 5.5-7.5s5.5 3.5 5.5 7.5z"/><path d="M10 20.5h4"/>')
     icon('zoom-in', '<circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/>')
     icon('zoom-out', '<circle cx="11" cy="11" r="6"/><path d="M16 16l4.5 4.5M8.5 11h5"/>')
     icon('hand', '<path d="M8 12V6.5a1.5 1.5 0 013 0V11M11 11V5a1.5 1.5 0 013 0v6M14 11V6.5a1.5 1.5 0 013 0V14c0 4-2 6.5-5.5 6.5S7 18.5 6 15.5L4.7 12a1.4 1.4 0 012.3-1.4z"/>')
