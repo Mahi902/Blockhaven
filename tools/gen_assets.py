@@ -434,6 +434,23 @@ def gclock(c):
     b += rect(17, 36, 14, 2.6, '#e8c547', 1.2, '#8a6d12', .6)
     return svg(48, 48, b)
 
+def beanbag(c):
+    """Plan view of a bean bag: a squashy round blob with panel seams, a dent in the middle and a carry loop."""
+    d = shade(c, -.5)
+    b = circ(26, 26, 21, '#000', op=.2)
+    b += circ(24, 24, 21, c, d, 1.8)
+    for k in range(6):
+        a = math.radians(k * 60 + 15)
+        b += (f'<line x1="{24 + 9 * math.cos(a):.1f}" y1="{24 + 9 * math.sin(a):.1f}" '
+              f'x2="{24 + 19.6 * math.cos(a):.1f}" y2="{24 + 19.6 * math.sin(a):.1f}" '
+              f'stroke="{shade(c, -.35)}" stroke-width="1.2" stroke-dasharray="2.2 1.6" stroke-linecap="round"/>')
+    b += circ(24, 24, 10.5, shade(c, -.14), shade(c, -.35), 1)
+    b += circ(24, 23, 6.5, shade(c, .12), None)
+    b += (f'<path d="M 12 14 A 17 17 0 0 1 28 7" fill="none" stroke="{shade(c, .45)}" stroke-width="2.2" '
+          f'stroke-linecap="round" opacity=".55"/>')
+    b += rect(20, 1.8, 8, 4.4, shade(c, -.25), 2, d, 1)
+    return svg(48, 48, b)
+
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
     ("bed", "Bed", "A cosy double bed with two pillows.", 6, "Lie down and sleep", bed),
@@ -469,6 +486,7 @@ FURNITURE = [
     ("shower", "Shower", "Step inside, pick a temperature and get properly clean.", 1, "Take a shower", shower),
     ("fan", "Standing Fan", "Blows a steady breeze in front of it (rotate to aim) and shoves you back. Off, low, medium, high.", 1, "Set fan speed", fan),
     ("gclock", "Grandfather Clock", "Tells the real time and strikes the hour with the Westminster chimes.", 1, "Check the time", gclock),
+    ("beanbag", "Bean Bag", "A squishy bean bag. Fluff it up, then plop down and sink in.", 1, "Use bean bag", beanbag),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)

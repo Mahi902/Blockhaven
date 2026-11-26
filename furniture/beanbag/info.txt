@@ -1,0 +1,4 @@
+name=Bean Bag
+description=A squishy bean bag. Fluff it up, then plop down and sink in.
+block=1
+function=Use bean bag

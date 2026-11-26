@@ -39,6 +39,18 @@ export function wobbleOf(it) {
       return { dx: Math.sin(now / 38) * k, dy: Math.cos(now / 47) * k * 0.7, rot: 0 };
     }
   }
+  if (it.type === 'beanbag' && st) {
+    const seated = S.player.seat && S.player.seat.id === it.id;
+    if (st._fluff && now - st._fluff < 800) {                          // fluffing: shaken left and right, settling
+      const p = (now - st._fluff) / 800, k = (1 - p) * 2.6;
+      return { dx: Math.sin(now / 45) * k, dy: Math.cos(now / 60) * k * 0.6, rot: Math.sin(now / 55) * 0.05 * (1 - p) };
+    }
+    if (st._plop && now - st._plop < 600) {                            // plop: squashes down, then settles
+      const p = (now - st._plop) / 600;
+      return { dx: 0, dy: Math.sin(p * Math.PI * 3) * (1 - p) * 2.2, rot: 0 };
+    }
+    if (seated) return { dx: 0, dy: Math.sin(now / 900) * 0.5, rot: 0 };   // slow breathing while you sit in it
+  }
   if (it.type === 'rocker' && S.player.seat && S.player.seat.id === it.id) {
     const sp = S.player.seat.spin;
     return { dx: 0, dy: 0, rot: Math.sin(now / 420) * 0.07 + (sp ? Math.max(-0.12, Math.min(0.12, sp.v * 0.012)) : 0) };
