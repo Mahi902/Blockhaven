@@ -55,6 +55,20 @@ function drawItem(c, it) {
   c.rotate(it.rot * Math.PI / 2);
   c.drawImage(img, -d.w * TILE / 2, -d.h * TILE / 2, d.w * TILE, d.h * TILE);
   c.restore();
+  const badge = badgeOf(it);
+  if (badge) {
+    c.save(); c.font = '22px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(badge, (f.x + f.w / 2) * TILE, f.y * TILE - 6 + Math.sin(performance.now() / 350) * 2);
+    c.restore();
+  }
+}
+
+/** Floating emoji above a piece: state.badge (saved) or state._badge (temporary), {t, until?, then?, seat?} */
+function badgeOf(it) {
+  const st = it.state; const b = st && (st.badge || st._badge); if (!b) return null;
+  if (b.seat && !(S.player.seat && S.player.seat.id === it.id)) return null;
+  if (b.until && Date.now() > b.until) return b.then || null;
+  return b.t;
 }
 
 function drawEdge(c, e) {
@@ -201,7 +215,8 @@ export function render() {
 function glows() {
   const out = [];
   for (const it of W.world.items) {
-    const g = it.state && it.state.glow; if (!g || !catalog.get(it.type)) continue;
+    const g = it.state && (it.state.glow || it.state._glow); if (!g || !catalog.get(it.type)) continue;
+    if (g.until && Date.now() > g.until) continue;
     const ctr = W.itemCenter(it);
     out.push({ x: ctr.x, y: ctr.y, r: g.r * TILE, color: g.color });
   }

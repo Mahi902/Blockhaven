@@ -5,10 +5,12 @@ import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
 import { hooks, sitOn, runOn, standUp, say, setLook } from './player.js';
 import { sound } from './audio.js';
+import { playMusic, stopMusic, musicNow, setMusicVolume, TRACK_LIST } from './music.js';
 import { HAIR_STYLES } from './hair.js';
 import { h, button, choice, swatches, openModal, closeModal, toast } from './ui.js';
 
 const ui = { h, button, choice, swatches, toast };
+const fmtTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's'; };
 const palette = { hairStyles: HAIR_STYLES.map(s => s.id), skin: SKIN_TONES, hair: HAIR_COLORS, shirt: SHIRT_COLORS, pants: PANTS_COLORS };
 
 function makeApi(kind, obj) {
@@ -35,10 +37,31 @@ function makeApi(kind, obj) {
     setLook,
     setNight: v => { S.night = !!v; document.dispatchEvent(new CustomEvent('bh-night')); },
     // --- the furniture
-    glow: (color, radius = 3) => {
+    // glow(color, radius, opt): opt = ms (fades by itself) or { ms, temp } (temp = not saved with the room)
+    glow: (color, radius = 3, opt) => {
       const st = obj.state || (obj.state = {});
-      if (color) st.glow = { color, r: radius }; else delete st.glow;
+      const o = typeof opt === 'number' ? { ms: opt } : (opt || {});
+      delete st.glow; delete st._glow;
+      if (color) st[o.temp ? '_glow' : 'glow'] = { color, r: radius, until: o.ms ? Date.now() + o.ms : 0 };
       W.touch();
+    },
+    // badge(emoji, opt): floating emoji above the piece. opt = { ms, then, temp, seat }
+    badge: (t, o = {}) => {
+      const st = obj.state || (obj.state = {});
+      delete st.badge; delete st._badge;
+      if (t) st[o.temp ? '_badge' : 'badge'] = { t, until: o.ms ? Date.now() + o.ms : 0, then: o.then || null, seat: !!o.seat };
+      W.touch();
+    },
+    exists: () => !!W.byId('item', obj.id),
+    fmtTime,
+    music: {
+      tracks: TRACK_LIST,
+      get now() { const m = musicNow(); return m && m.owner === obj.id ? m.id : null; },
+      play: id => playMusic(id, obj.id, () => {
+        if (obj.state) { delete obj.state._glow; delete obj.state._badge; W.touch(); }
+      }),
+      stop: () => { const m = musicNow(); if (m && m.owner === obj.id) stopMusic(); },
+      volume: v => setMusicVolume(v),
     },
     save: () => W.touch(),
     // --- feedback / UI

@@ -71,3 +71,16 @@ export function sound(name) {
   if (!soundOn) return;
   try { (SOUNDS[name] || SOUNDS.click)(); } catch (e) { /* audio can be blocked until a gesture */ }
 }
+
+
+// ---- music bus: full-range (the effects above are deliberately muffled; music is not) ----
+let musicBus = null;
+export function musicContext() {
+  const a = ac();
+  if (!musicBus) {
+    musicBus = a.createGain(); musicBus.gain.value = 0.55;
+    const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 9000;
+    musicBus.connect(lp); lp.connect(a.destination);
+  }
+  return { ctx: a, bus: musicBus, noise: noiseBuf };
+}

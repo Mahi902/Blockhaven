@@ -5,6 +5,7 @@ import * as Wm from './worlds.js';
 import { S } from './state.js';
 import * as W from './world.js';
 import { loadCatalog, catalog } from './catalog.js';
+import { stopMusic } from './music.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, doInteract, setZoom, clampCamera } from './input.js';
@@ -214,6 +215,7 @@ function buildLook() {
 function savePlayer() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ name: S.player.name, look: S.player.look })); } catch (e) { /* ignore */ } }
 
 function start() {
+  stopMusic();
   S.player.name = $('nameInput').value.trim() || 'Guest';
   savePlayer();
   if (!Wm.get(curId)) curId = Wm.list()[0].id;
@@ -229,7 +231,7 @@ function start() {
 }
 
 function exitToMenu() {
-  closeModal(); W.save(); Wm.setLast(curId);
+  stopMusic(); closeModal(); W.save(); Wm.setLast(curId);
   S.started = false; S.player.seat = null; B.setMode('play'); syncBar();
   renderWorlds();
   $('intro').classList.remove('hidden');

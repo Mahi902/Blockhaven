@@ -3,7 +3,7 @@ export const TILE = 48;          // world pixels per grid cell
 export const WALL_T = 12;        // wall thickness in world pixels
 export const WORLD_W = 40;       // plot size in cells
 export const WORLD_H = 30;
-export const VERSION = '1.11';
+export const VERSION = '1.12';
 export const REPO = 'mahi902/Blockhaven';   // used by the GitHub-API catalog fallback
 
 export const SAVE_KEY = 'blockhaven.world.v1';

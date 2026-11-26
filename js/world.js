@@ -9,7 +9,7 @@ let undoStack = [], redoStack = [], saveTimer = 0, saveKey = null;
 const MAX_UNDO = 60;
 
 function fresh() { return { w: WORLD_W, h: WORLD_H, next: 1, items: [], edges: [], floors: {}, rooms: [] }; }
-const snap = () => JSON.stringify(world);
+const snap = () => JSON.stringify(world, (k, v) => (k[0] === '_' ? undefined : v));   // "_" keys = transient, not saved
 export const ckey = (x, y) => `${x},${y}`;
 export const inBounds = (x, y) => x >= 0 && y >= 0 && x < world.w && y < world.h;
 const nid = () => world.next++;
