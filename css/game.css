@@ -51,15 +51,14 @@ canvas{display:block;width:100%;height:100%}
 #topbar{position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
 #topLeft,#topRight{display:flex;gap:8px;align-items:center;pointer-events:auto}
 /* prompt, chat, dpad */
-#prompt{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20}
-#prompt:active{transform:translate(-50%,4px)}
+#prompt{position:absolute;left:12px;bottom:12px;z-index:20;max-width:55vw}
 #chatbar{position:absolute;right:10px;top:62px;width:min(340px,calc(100% - 20px));z-index:20;display:flex;gap:8px}
 .bh-dpad{position:absolute;right:12px;bottom:12px;width:132px;height:132px;z-index:20;display:none;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:4px}
 .bh-dpad.off{display:none!important}
 .bh-dpad button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;outline:0;border:3px solid #0f172a;border-radius:12px;background:rgba(51,65,85,.85);box-shadow:0 4px 0 #0f172a}
 .bh-dpad button:active{background:rgba(253,224,71,.8);transform:translateY(3px)}
 .bh-dpad [data-dir=up]{grid-area:1/2}.bh-dpad [data-dir=left]{grid-area:2/1}.bh-dpad [data-dir=right]{grid-area:2/3}.bh-dpad [data-dir=down]{grid-area:3/2}
-@media (pointer:coarse){.bh-dpad{display:grid}#prompt{bottom:156px}}
+@media (pointer:coarse){.bh-dpad{display:grid}}
 /* build UI */
 #buildUI{position:absolute;inset:56px 8px 8px 8px;z-index:15;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
 #buildUI>*{pointer-events:auto}
@@ -107,7 +106,7 @@ canvas{display:block;width:100%;height:100%}
   .bh-swatch{width:22px;height:22px}.bh-swatch-tex{width:26px;height:26px}
   .bh-props{width:min(210px,58vw);padding:8px;top:0;max-height:calc(100% - 150px)}
   .bh-modal-card{padding:10px}.bh-modal-title{font-size:17px}
-  #prompt{bottom:12px}
+  #prompt{left:8px;bottom:8px}
   .intro-card{padding:14px}.intro-logo{width:64px}.intro-card h1{font-size:26px}
   #footer{font-size:9px}
 }

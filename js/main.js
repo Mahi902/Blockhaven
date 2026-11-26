@@ -70,7 +70,13 @@ function openSettings() {
     } });
     return h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, label), h('div', { class: 'bh-set-s' }, sub)), b);
   };
+  const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 16, value: S.player.name, placeholder: 'Guest' });
+  const applyName = () => { S.player.name = nameIn.value.trim() || 'Guest'; nameIn.value = S.player.name; savePlayer(); };
+  nameIn.addEventListener('change', applyName);
+  nameIn.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { applyName(); nameIn.blur(); } });
   const body = h('div', { class: 'bh-stack' },
+    h('div', { class: 'bh-setrow' }, h('div', { style: { flex: '1' } }, h('div', { class: 'bh-set-t' }, 'Your name'), nameIn),
+      button('Save', { kind: 'blue', small: true, onClick: applyName })),
     row('Click to move', 'Tap or click the ground to walk there. Off = keyboard / d-pad only.', () => S.settings.clickMove, v => { S.settings.clickMove = v; if (!v) { S.path = null; S.pendingInteract = null; } }),
     row('Sound', 'Sound effects.', () => soundOn, v => setSound(v)),
     h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Reset home'), h('div', { class: 'bh-set-s' }, 'Go back to the starter apartment. Removes your changes.')),
@@ -78,7 +84,7 @@ function openSettings() {
         if (!confirm('Reset your home to the starter apartment? This removes your changes.')) return;
         buildStarter(); placeAtSpawn(); B.select(null); toast('Home reset'); import('./ui.js').then(u => u.closeModal());
       } })));
-  openModal({ title: 'Settings', body });
+  openModal({ title: 'Settings', body, onClose: applyName });
 }
 
 function toggleChat() {
