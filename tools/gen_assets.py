@@ -277,6 +277,61 @@ def washer(c):
     b += '<path d="M16 28 Q20 24 24 28 T32 28" fill="none" stroke="#ffffff" stroke-width="1.4" opacity=".8"/>'
     return svg(48, 48, b)
 
+def desklamp(c):
+    d = shade(c, -.4)
+    b = circ(26, 27, 17, '#000', op=.2)
+    b += circ(24, 24, 17, c, d, 2)
+    b += circ(24, 24, 12, shade(c, .35), None, op=.55)
+    b += circ(24, 24, 6, '#fff6c8', shade(c, -.5), 1)
+    b += circ(24, 24, 2.4, shade(c, -.55))
+    b += circ(24, 24, 20.5, 'none', shade(c, -.55), 1, op=.4)
+    return svg(48, 48, b)
+
+def treadmill(c):
+    b = shadow(3, 5, 90, 38, 6)
+    b += rect(3, 5, 90, 38, shade(c, -.3), 6, shade(c, -.55), 1.8)
+    b += rect(24, 9, 66, 30, '#2a2c33', 4, '#14151a', 1.2)
+    for i in range(6):
+        b += rect(32 + i * 10, 12, 3, 24, '#3b3e47', 1)
+    b += rect(6, 8, 15, 32, c, 4, shade(c, -.5), 1.2)
+    b += rect(8, 11, 11, 7, '#15171d', 1.5) + rect(9, 13, 6, 2, '#8ff0a4', 1)
+    b += circ(13, 26, 2.2, shade(c, -.5)) + circ(13, 33, 2.2, shade(c, -.5))
+    b += rect(24, 7, 66, 3, shade(c, .3), 1.5, op=.7)
+    return svg(96, 48, b)
+
+def aquarium(c):
+    b = shadow(3, 5, 90, 38, 5)
+    b += rect(3, 5, 90, 38, c, 5, shade(c, -.5), 1.8)
+    b += rect(8, 10, 80, 28, '#7fd0ee', 3, shade(c, -.45), 1.4)
+    b += rect(8, 10, 80, 8, '#b9ecff', 3, op=.55)
+    b += rect(8, 33, 80, 5, '#e3cf9a', 2)
+    for x, h in ((16, 12), (74, 15), (80, 10)):
+        b += rect(x, 33 - h, 3, h, '#2fa953', 1.5)
+    fish = ((30, 22, '#f28a2e'), (52, 27, '#f6d43c'), (62, 19, '#e03c3c'))
+    for x, y, fc in fish:
+        b += f'<ellipse cx="{x}" cy="{y}" rx="5" ry="3" fill="{fc}"/><path d="M{x - 5} {y} l-4 -3 v6z" fill="{fc}"/>'
+        b += circ(x + 2.5, y - .6, .7, '#111')
+    b += circ(44, 16, 1.3, '#ffffff', None, op=.8) + circ(46, 13, 1, '#ffffff', None, op=.8)
+    return svg(96, 48, b)
+
+def mirror(c):
+    b = shadow(4, 6, 40, 36, 5)
+    b += rect(4, 6, 40, 36, c, 5, shade(c, -.5), 1.8)
+    b += f'<ellipse cx="24" cy="17" rx="12" ry="9" fill="{shade(c, -.35)}" stroke="{shade(c, -.6)}" stroke-width="1.2"/>'
+    b += '<ellipse cx="24" cy="17" rx="9.5" ry="7" fill="#dff3ff"/>'
+    b += '<path d="M18 14 Q22 11 27 13" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".9"/>'
+    b += rect(9, 30, 30, 8, shade(c, -.08), 2, shade(c, -.32), 1) + rect(21, 33, 6, 2.5, shade(c, -.55), 1.2)
+    return svg(48, 48, b)
+
+def rocker(c):
+    b = shadow(7, 5, 34, 38, 6)
+    b += rect(9, 3, 4, 42, shade(c, -.55), 2) + rect(35, 3, 4, 42, shade(c, -.55), 2)
+    b += rect(7, 5, 34, 9, shade(c, -.3), 4, shade(c, -.5))
+    b += rect(12, 13, 24, 28, c, 6, shade(c, -.4))
+    b += rect(15, 17, 18, 5, shade(c, .3), 3, op=.55)
+    b += rect(8, 14, 5, 22, shade(c, -.15), 2.5) + rect(35, 14, 5, 22, shade(c, -.15), 2.5)
+    return svg(48, 48, b)
+
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
@@ -300,6 +355,11 @@ FURNITURE = [
     ("sink", "Sink", "Running water, as advertised.", 1, "Wash hands", sink),
     ("toilet", "Toilet", "Every home needs one.", 1, "Use the toilet", toilet),
     ("washer", "Washing Machine", "Spins your shirts. Sometimes returns your socks.", 1, "Do laundry", washer),
+    ("desklamp", "Desk Lamp", "A small round lamp. Great for night owls.", 1, "Toggle light", desklamp),
+    ("treadmill", "Treadmill", "Run for miles without leaving the room.", 2, "Start running", treadmill),
+    ("aquarium", "Aquarium", "Three fish and zero opinions.", 2, "Feed the fish", aquarium),
+    ("mirror", "Vanity Mirror", "A dresser with a mirror. Try a new hairstyle.", 1, "Change hairstyle", mirror),
+    ("rocker", "Rocking Chair", "Rock back and forth. Peaceful.", 1, "Sit and rock", rocker),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)

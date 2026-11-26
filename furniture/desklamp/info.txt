@@ -1,0 +1,4 @@
+name=Desk Lamp
+description=A small round lamp. Great for night owls.
+block=1
+function=Toggle light

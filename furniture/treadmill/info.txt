@@ -1,0 +1,4 @@
+name=Treadmill
+description=Run for miles without leaving the room.
+block=2
+function=Start running

@@ -1,0 +1,4 @@
+name=Vanity Mirror
+description=A dresser with a mirror. Try a new hairstyle.
+block=1
+function=Change hairstyle

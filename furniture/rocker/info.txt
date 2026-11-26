@@ -1,0 +1,4 @@
+name=Rocking Chair
+description=Rock back and forth. Peaceful.
+block=1
+function=Sit and rock
