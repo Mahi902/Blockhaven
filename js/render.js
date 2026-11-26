@@ -1,7 +1,7 @@
 // Blockhaven - canvas renderer
 import { TILE, COLOR_HEX } from './config.js';
 import { S, worldToScreen } from './state.js';
-import { drawItemFx, drawFlies, drawScrub, wobbleOf } from './fx.js';
+import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater } from './fx.js';
 import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
 import { sprites } from './player.js';
@@ -177,23 +177,25 @@ function drawPlayer(c) {
     c.restore();
     return;
   }
-  if (!P.seat || P.seat.run) {
+  const stand = P.seat && (P.seat.run || P.seat.stand);
+  const scrub = (P.lock && P.lock.anim === 'scrub') || (P.seat && P.seat.scrub);
+  if (!P.seat || stand) {
     c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(P.x, P.y + 9, 12, 5, 0, 0, Math.PI * 2); c.fill();
   }
   let bob = P.moving ? -Math.abs(Math.sin(P.walk)) * 3 : 0;
   let ox = 0, extraRot = 0;
-  if (P.lock && P.lock.anim === 'scrub') { ox = Math.sin(performance.now() / 55) * 1.6; bob = -Math.abs(Math.sin(performance.now() / 110)) * 1.5; }
+  if (scrub) { ox = Math.sin(performance.now() / 55) * 1.6; bob = -Math.abs(Math.sin(performance.now() / 110)) * 1.5; }
   if (P.lock && P.lock.anim === 'suck') { const k = (performance.now() - P.lock.t0) / P.lock.ms, tw = P.lock.toward; if (tw) { ox = Math.sign(tw.x - P.x) * Math.min(1, k * 3) * 6 + Math.sin(performance.now() / 40) * 1.5; } extraRot = Math.sin(performance.now() / 70) * 0.09; }
   if (P.seat && P.seat.spin) { extraRot = Math.sin(performance.now() / 420) * 0.07; }
   const tilt = P.moving ? Math.sin(P.walk) * 0.07 : 0;
-  c.translate(P.x, P.y + 9 + (P.seat && !P.seat.run ? 5 : 0));
+  c.translate(P.x, P.y + 9 + (P.seat && !stand ? 5 : 0));
   c.translate(ox, 0);
   c.rotate(tilt + extraRot);
-  if (P.seat && !P.seat.run) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
+  if (P.seat && !stand) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
   if (P.look.gender === 'female' && !(P.seat && P.seat.lying)) drawSliced(c, img, dw, dh, bob);
   else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
   c.restore();
-  if (P.lock && P.lock.anim === 'scrub') drawScrub(c, P);
+  if (scrub) drawScrub(c, P);
   if (P.seat && P.seat.spin && Math.abs(P.seat.spin.v) > 5) {   // motion swirl
     c.save(); c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 2;
     const a0 = performance.now() / 90 * Math.sign(P.seat.spin.v);
@@ -247,6 +249,7 @@ export function render() {
     if (!catalog.get(it.type)) continue;
     const f = W.footprint(it);
     list.push({ y: (f.y + f.h) * TILE, fn: () => drawItem(c, it), it });
+    if (it.type === 'shower' && it.state && it.state._shower) list.push({ y: (f.y + f.h) * TILE + 0.9, fn: () => drawShowerWater(c, it, W.itemCenter(it)) });   // water falls over whoever is inside
   }
   const P = S.player;
   let py = P.y + 10;

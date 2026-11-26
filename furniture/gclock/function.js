@@ -1,4 +1,5 @@
-// A grandfather clock that shows your real local time (live, to the second) and strikes it with the
+// A grandfather clock. Its hands on the floor plan show your real local time live, the menu shows it to the
+// second, and it strikes it with the
 // Westminster chimes (the traditional 1793 Cambridge chime tune, public domain): four phrases, then one low
 // bong per hour. You can also play just a quarter-hour chime.
 const T = { B3: 59, E4: 64, Fs4: 66, Gs4: 68, E3: 52 };
@@ -31,12 +32,11 @@ export default api => {
     api.closeModal();
     playing = 1;
     api.glow("#ffd27a", 2, { temp: true });
-    api.badge("\u{1F514}", { temp: true });
     let t = 200;
     phrases.forEach(p => p.forEach(m => { api.after(t, () => { if (api.exists()) api.note(m, 1.6, 0.6); }); t += NOTE_GAP; }));
     t += 500;
     for (let i = 0; i < strikes; i++) { api.after(t, () => { if (api.exists()) api.note(T.E3, 2.4, 0.8); }); t += BONG_GAP; }
-    api.after(t, () => { playing = 0; if (api.exists()) { api.glow(null); api.badge(null); } });
+    api.after(t, () => { playing = 0; if (api.exists()) api.glow(null); });
     api.say(strikes ? "Bong! It is " + (new Date().getHours() % 12 || 12) + " o'clock." : "\u266a A quarter-hour chime.");
   };
 

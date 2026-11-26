@@ -169,6 +169,19 @@ export function runOn(item, rate = 1, offset = { x: 0, y: 0 }) {
   sound('sit');
 }
 
+/** Step INSIDE an item (shower): glide into it and stand there. E / click / a move key steps back out.
+ *  opts: { offset:{x,y} px from the item centre (rotates with it), scrub:bool (lather animation) } */
+export function stepInto(item, opts = {}) {
+  const P = S.player;
+  if (P.seat) standUp();
+  const back = { x: P.x, y: P.y };
+  const c = W.itemCenter(item), th = item.rot * Math.PI / 2, o = opts.offset || { x: 0, y: 0 };
+  const tx = c.x + o.x * Math.cos(th) - o.y * Math.sin(th), ty = c.y + o.x * Math.sin(th) + o.y * Math.cos(th) + 2;
+  P.seat = { id: item.id, lying: false, stand: true, scrub: !!opts.scrub, back, rot: item.rot, glide: { fx: P.x, fy: P.y, tx, ty, t: 0 } };
+  P.moving = true; S.path = null; S.pendingInteract = null;
+  sound('door');
+}
+
 /** Rocking chair that spins: arrow keys / A D spin you left or right. */
 export function spinOn(item) {
   sitOn(item, false);
@@ -250,6 +263,23 @@ export function updatePlayer(dt) {
       if (Math.abs(sp.v) > 2 && sp.snd <= 0) { sound('step'); sp.snd = 0.35 - Math.min(0.2, Math.abs(sp.v) * 0.015); }
       return;
     }
+    if (P.seat.stand) {                       // standing inside a stall: walk in, then just stand there
+      const g = P.seat.glide;
+      if (g) {
+        if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
+        g.t = Math.min(1, g.t + dt / 0.42);
+        const e = g.t * g.t * (3 - 2 * g.t);
+        P.x = g.fx + (g.tx - g.fx) * e; P.y = g.fy + (g.ty - g.fy) * e;
+        P.moving = true; P.walk += dt * 11;
+        const ddx = g.tx - g.fx, ddy = g.ty - g.fy;
+        P.dir = Math.abs(ddx) > Math.abs(ddy) ? (ddx > 0 ? 'right' : 'left') : (ddy > 0 ? 'down' : 'up');
+        if (g.t >= 1) { P.seat.glide = null; P.moving = false; P.dir = 'down'; }
+        return;
+      }
+      if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
+      P.moving = false;
+      return;
+    }
     if (P.seat.swim) { updateSwim(dt, dx, dy, manual); return; }      // paddling around the tub: keys swim, E / click climbs out
     if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
     if (P.seat.run) {                         // running in place: keep the stride going
@@ -262,6 +292,8 @@ export function updatePlayer(dt) {
     P.moving = false;
     return;
   }
+
+  windPush(dt);
 
   if (manual) { S.path = null; S.pendingInteract = null; stuck = 0; }
   else if (S.path && S.path.length) {
@@ -296,6 +328,25 @@ export function updatePlayer(dt) {
       const door = nearestInteractive(55, e => e.kind === 'edge' && W.isClosedEdge(e.obj));
       if (door && hooks.interact) { hooks.interact('edge', door.obj); }
       else { S.path = null; S.pendingInteract = null; }
+    }
+  }
+}
+
+/** A running fan blows you straight back, at your own walking speed, while you stand in front of it.
+ *  The fan faces down at rotation 0 (R rotates it); wind reach grows with its speed setting. */
+export const FAN_REACH = [0, 2, 3, 4];          // tiles of wind (from the fan's centre) for off / low / medium / high
+export function windPush(dt) {
+  const P = S.player;
+  if (P.seat || P.lock) return;
+  for (const it of W.world.items) {
+    if (it.type !== 'fan') continue;
+    const sp = (it.state && it.state.speed) | 0; if (sp < 1) continue;
+    const c = W.itemCenter(it), th = it.rot * Math.PI / 2, fx = -Math.sin(th), fy = Math.cos(th);
+    const rx = P.x - c.x, ry = P.y - c.y;
+    const along = rx * fx + ry * fy, side = -rx * fy + ry * fx;
+    if (along > 4 && along < FAN_REACH[Math.min(3, sp)] * TILE && Math.abs(side) < 26) {
+      tryMove(fx * SPEED * dt, fy * SPEED * dt);
+      return;
     }
   }
 }

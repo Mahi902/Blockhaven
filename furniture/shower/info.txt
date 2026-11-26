@@ -1,4 +1,4 @@
 name=Shower
-description=A glass stall with a rain head. Pick your water temperature.
+description=Step inside, pick a temperature and get properly clean.
 block=1
 function=Take a shower

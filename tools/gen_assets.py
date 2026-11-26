@@ -384,59 +384,57 @@ def catbed(c):
 
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
 def shower(c):
+    """Plan view: a tray with glass walls, the rain head overhead and a tap. The player steps inside."""
     d = shade(c, -.45)
     b = shadow(4, 4, 40, 40, 4)
-    b += rect(4, 4, 40, 40, '#e8edf2', 4, d, 1.8)
-    b += rect(7, 7, 34, 34, '#cfe9f7', 3, shade(c, -.3), 1)
-    for x in (18, 30):
-        b += rect(x, 9, 1, 28, '#ffffff', 0, op=.5)
-    b += circ(24, 29, 3.4, '#8aa0ae', '#566b78', 1)
-    b += rect(20, 28.4, 8, 1.2, '#566b78', .6) + rect(23.4, 25, 1.2, 8, '#566b78', .6)
-    b += rect(22, 4, 4, 8, '#b9c0c8', 1.5, '#6a727c', .8)
-    b += circ(24, 16, 7, '#d9dde2', '#6a727c', 1.2)
-    for ang in range(0, 360, 45):
-        b += circ(24 + 4 * math.cos(math.radians(ang)), 16 + 4 * math.sin(math.radians(ang)), .9, '#6a727c')
-    b += circ(24, 16, .9, '#6a727c')
-    b += circ(10.5, 10.5, 2.6, c, d, 1) + circ(37.5, 10.5, 2.6, shade(c, .2), d, 1)
-    b += rect(4, 39.5, 40, 4.5, c, 2, d, 1)
-    b += rect(7, 40.6, 34, 1.2, shade(c, .4), 0.6, op=.7)
+    b += rect(4, 4, 40, 40, c, 4, d, 1.8)
+    b += rect(8, 8, 32, 32, '#e9eef2', 3, shade(c, -.3), 1)
+    b += rect(10, 10, 28, 28, '#cfe9f7', 3)
+    for k in (17, 24, 31):
+        b += rect(k, 10, .8, 28, '#ffffff', 0, op=.55) + rect(10, k, 28, .8, '#ffffff', 0, op=.55)
+    b += circ(24, 30, 3.2, '#8aa0ae', '#566b78', 1)
+    b += rect(20.6, 29.5, 6.8, 1, '#566b78', .5) + rect(23.5, 26.6, 1, 6.8, '#566b78', .5)
+    b += rect(22.5, 9, 3, 6, '#b9c0c8', 1, '#6a727c', .6)
+    b += circ(24, 17, 6.5, '#d9dde2', '#6a727c', 1.2)
+    for ang in range(0, 360, 60):
+        b += circ(24 + 3.6 * math.cos(math.radians(ang)), 17 + 3.6 * math.sin(math.radians(ang)), .8, '#6a727c')
+    b += circ(24, 17, .8, '#6a727c')
+    b += circ(11, 11.5, 2.2, shade(c, .25), d, .9) + circ(37, 11.5, 2.2, '#e8554e', d, .9)
+    b += rect(4, 4, 3.2, 40, '#bfe8ff', 1.2, '#6a9fc0', .8, op=.55) + rect(40.8, 4, 3.2, 40, '#bfe8ff', 1.2, '#6a9fc0', .8, op=.55)
+    b += rect(8, 41.2, 32, 2.4, '#bfe8ff', 1, '#6a9fc0', .7, op=.8) + rect(34, 40.6, 4, 1.2, '#9aa6b0', .6)
     return svg(48, 48, b)
 
 def fan(c):
+    """Plan view of a pedestal fan facing down: round foot, pole, motor and the guard seen edge-on.
+    The spinning blades are drawn live by the game (js/fx.js)."""
     d = shade(c, -.45)
-    b = circ(26, 27, 19, '#000', op=.2)
-    b += circ(24, 24, 19, '#f1f3f5', '#7d848d', 2, op=.92)
-    for ang in range(0, 360, 120):
-        a = math.radians(ang)
-        x, y = 24 + 8.5 * math.cos(a), 24 + 8.5 * math.sin(a)
-        b += (f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="9" ry="4.6" transform="rotate({ang} {x:.1f} {y:.1f})" '
-              f'fill="{c}" stroke="{d}" stroke-width="1.2"/>')
-    b += circ(24, 24, 12.5, 'none', '#7d848d', 1, op=.55)
-    for ang in range(0, 360, 45):
-        a = math.radians(ang)
-        b += (f'<line x1="{24 + 4.5 * math.cos(a):.1f}" y1="{24 + 4.5 * math.sin(a):.1f}" '
-              f'x2="{24 + 19 * math.cos(a):.1f}" y2="{24 + 19 * math.sin(a):.1f}" stroke="#7d848d" stroke-width="1" opacity=".55"/>')
-    b += circ(24, 24, 4.2, d, '#222', 1) + circ(24, 24, 1.6, shade(c, .5))
+    b = circ(26, 22, 15, '#000', op=.2)
+    b += circ(24, 20, 14, '#d9dde2', '#6a727c', 1.6)
+    b += circ(24, 20, 10, 'none', '#9aa1aa', 1, op=.8)
+    b += rect(19, 19, 10, 13, c, 4, d, 1.3)
+    b += rect(20.5, 20.5, 7, 2, shade(c, .45), 1, op=.7)
+    b += circ(24, 22, 2.2, d)
+    b += rect(5, 32, 38, 10, '#eef1f4', 5, '#7d848d', 1.6)
+    for x in range(9, 41, 4):
+        b += rect(x, 33.5, .8, 7, '#aeb4bb', 0)
+    b += rect(8, 41.6, 32, 1, '#ffffff', 0, op=.8)
     return svg(48, 48, b)
 
 def gclock(c):
+    """Plan view of a tall case clock: moulded hood with the dial on it. The hands are drawn live
+    from your real time by the game (js/fx.js)."""
     d = shade(c, -.5)
-    b = shadow(8, 4, 32, 40, 4)
-    b += rect(8, 4, 32, 40, c, 3, d, 1.8)
-    b += rect(6, 3, 36, 7, shade(c, -.2), 2, d, 1.4)
-    b += rect(10, 4.5, 28, 2, shade(c, .35), 1, op=.6)
-    b += circ(24, 20, 9.5, '#fff8e0', '#c9a227', 1.8)
+    b = shadow(6, 5, 36, 38, 4)
+    b += rect(6, 5, 36, 38, c, 4, d, 1.8)
+    b += rect(9, 8, 30, 32, shade(c, .12), 3, shade(c, -.3), 1)
+    b += rect(11, 9.5, 26, 2.4, shade(c, .45), 1, op=.55)
+    b += circ(24, 22, 11.5, '#fff8e0', '#c9a227', 2)
     for i in range(12):
         a = math.radians(i * 30)
-        r1 = 7.2 if i % 3 == 0 else 8
-        b += (f'<line x1="{24 + r1 * math.sin(a):.1f}" y1="{20 - r1 * math.cos(a):.1f}" '
-              f'x2="{24 + 8.8 * math.sin(a):.1f}" y2="{20 - 8.8 * math.cos(a):.1f}" stroke="#4a3a1a" stroke-width="1"/>')
-    b += '<line x1="24" y1="20" x2="21" y2="15.2" stroke="#222" stroke-width="1.4" stroke-linecap="round"/>'
-    b += '<line x1="24" y1="20" x2="29.2" y2="17.6" stroke="#222" stroke-width="1" stroke-linecap="round"/>'
-    b += circ(24, 20, 1.3, '#222')
-    b += rect(15, 31, 18, 11, shade(c, -.3), 2, d, 1) + rect(17, 32.5, 14, 8, '#2b2118', 1.5)
-    b += '<line x1="24" y1="32.5" x2="24" y2="37.6" stroke="#c9a227" stroke-width="1"/>'
-    b += circ(24, 38.4, 2.6, '#e8c547', '#8a6d12', .8)
+        r1 = 8.2 if i % 3 == 0 else 9.2
+        b += (f'<line x1="{24 + r1 * math.sin(a):.1f}" y1="{22 - r1 * math.cos(a):.1f}" '
+              f'x2="{24 + 10.2 * math.sin(a):.1f}" y2="{22 - 10.2 * math.cos(a):.1f}" stroke="#4a3a1a" stroke-width="1"/>')
+    b += rect(17, 36, 14, 2.6, '#e8c547', 1.2, '#8a6d12', .6)
     return svg(48, 48, b)
 
 FURNITURE = [
@@ -471,8 +469,8 @@ FURNITURE = [
     ("microwave", "Microwave", "Beep. Beep. Beep.", 1, "Heat something", microwave),
     ("punchbag", "Punching Bag", "Work out your frustrations.", 1, "Punch it", punchbag),
     ("catbed", "Cat Bed", "A round bed with a very sleepy cat.", 1, "Pet the cat", catbed),
-    ("shower", "Shower", "A glass stall with a rain head. Pick your water temperature.", 1, "Take a shower", shower),
-    ("fan", "Standing Fan", "Cools the room down. Three speeds and an off switch.", 1, "Set fan speed", fan),
+    ("shower", "Shower", "Step inside, pick a temperature and get properly clean.", 1, "Take a shower", shower),
+    ("fan", "Standing Fan", "Blows a steady breeze in front of it (rotate to aim) and shoves you back. Off, low, medium, high.", 1, "Set fan speed", fan),
     ("gclock", "Grandfather Clock", "Tells the real time and strikes the hour with the Westminster chimes.", 1, "Check the time", gclock),
 ]
 

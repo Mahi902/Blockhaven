@@ -1,5 +1,6 @@
 // Blockhaven - visual effects for furniture: washer drum, sink foam, flying clothes, wobbles
 import { S } from './state.js';
+import { COLOR_HEX } from './config.js';
 
 const flies = [];
 export function flyCloth(from, to, type, color, ms = 900, delay = 0, done) {
@@ -58,6 +59,8 @@ export function washerPhase(L, now = Date.now()) {
 export function drawItemFx(c, it) {
   const st = it.state; if (!st) return;
   const now = Date.now();
+  if (it.type === 'fan') { drawFan(c, it, st, now); return; }
+  if (it.type === 'gclock') { drawClockHands(c, now); return; }
   if (it.type === 'sink' && st._sink) {
     const s = st._sink, t = (now - s.start) / 1000;
     if (t > 9) return;
@@ -127,4 +130,90 @@ export function drawScrub(c, P) {
     c.fillStyle = 'rgba(255,255,255,.85)'; c.strokeStyle = 'rgba(140,190,235,.8)'; c.lineWidth = 0.8;
     c.beginPath(); c.arc(P.x + Math.cos(a) * r, P.y - 14 - ((now / 40 + i * 9) % 18), 1.6 + (i % 3), 0, 7); c.fill(); c.stroke();
   }
+}
+
+// ---- fan: blades seen edge-on from above, spinning with the speed setting, plus moving wind streaks in front ----
+const FAN_RPS = [0, 5, 9, 15];             // blade turns per second (off / low / medium / high)
+const FAN_REACH_PX = [0, 96, 144, 192];    // wind length from the fan centre (matches player.js windPush)
+function drawFan(c, it, st, now) {
+  const sp = Math.max(0, Math.min(3, (st.speed | 0)));
+  const col = COLOR_HEX[it.color] || '#8a919a';
+  // local frame: origin = tile centre, the fan faces +y. The guard is the strip y 8..18.
+  const phi = sp ? now / 1000 * FAN_RPS[sp] * Math.PI * 2 : 0.5;
+  if (sp) { c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-17, 9, 34, 8); }
+  c.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const x = Math.cos(phi + i * Math.PI * 2 / 3) * 16;
+    c.strokeStyle = 'rgba(20,24,34,0.55)'; c.lineWidth = 4.4; c.beginPath(); c.moveTo(0, 13); c.lineTo(x, 13); c.stroke();
+    c.strokeStyle = col; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 13); c.lineTo(x, 13); c.stroke();
+  }
+  c.fillStyle = '#4a515b'; c.beginPath(); c.arc(0, 13, 2.2, 0, 7); c.fill();
+  if (!sp) return;
+  const reach = FAN_REACH_PX[sp] - 24, n = 8 + sp * 3, speed = 0.55 + sp * 0.3;
+  for (let i = 0; i < n; i++) {
+    const ph = (now / 1000 * speed + i * 0.6180339) % 1;
+    const x = (((i * 37) % 100) / 100 - 0.5) * 42 + Math.sin(now / 400 + i) * 1.5;
+    const y = 22 + ph * reach, a = Math.sin(ph * Math.PI) * 0.8, len = 7 + sp * 2;
+    c.strokeStyle = `rgba(70,130,200,${a * 0.7})`; c.lineWidth = 3.6; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + len); c.stroke();
+    c.strokeStyle = `rgba(255,255,255,${Math.min(1, a * 1.2)})`; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + len); c.stroke();
+  }
+}
+
+// ---- grandfather clock: the hands show your real local time ----
+function drawClockHands(c, now) {
+  const d = new Date(now), ms = d.getMilliseconds() / 1000, s = d.getSeconds() + ms, m = d.getMinutes() + s / 60, h = (d.getHours() % 12) + m / 60;
+  const hand = (turn, len, w, col) => {
+    const a = turn * Math.PI * 2; c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, -2); c.lineTo(Math.sin(a) * len, -2 - Math.cos(a) * len); c.stroke();
+  };
+  hand(h / 12, 6, 2.2, '#2a2a2a'); hand(m / 60, 9, 1.5, '#2a2a2a'); hand(s / 60, 9.6, 0.8, '#d13b3b');
+  c.fillStyle = '#2a2a2a'; c.beginPath(); c.arc(0, -2, 1.3, 0, 7); c.fill();
+}
+
+// ---- shower: water falls over whoever is inside (drawn above the player), with steam, foam and splashes ----
+export function drawShowerWater(c, it, ctr) {
+  const sh = it.state && it.state._shower; if (!sh) return;
+  const now = performance.now(), t = (Date.now() - sh.start) / 1000;
+  if (t < 0) return;
+  const hot = sh.temp === 'hot', cold = sh.temp === 'cold';
+  const on = Math.min(1, t / 0.5);
+  c.save();
+  // fogged glass
+  c.fillStyle = `rgba(235,246,255,${Math.min(cold ? 0.06 : 0.2, t * 0.03) * on})`;
+  c.fillRect(ctr.x - 22, ctr.y - 24, 44, 48);
+  // falling water from the rain head down over the body to the tray
+  c.lineCap = 'round';
+  for (let i = 0; i < 34; i++) {
+    const ph = (now / 1000 * 1.7 + i * 0.618) % 1;
+    const x = ctr.x + (((i * 41) % 100) / 100 - 0.5) * 34, y = ctr.y - 26 + ph * 46;
+    if (y > ctr.y + 16) continue;
+    c.strokeStyle = 'rgba(120,180,235,0.55)'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 0.5, y + 8); c.stroke();
+    c.strokeStyle = 'rgba(235,248,255,0.95)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 0.5, y + 8); c.stroke();
+  }
+  // splashes on the tray
+  for (let i = 0; i < 7; i++) {
+    const ph = (now / 1000 * 2.2 + i * 0.37) % 1;
+    const x = ctr.x + (((i * 53) % 100) / 100 - 0.5) * 30, y = ctr.y + 15 + ((i * 7) % 5);
+    c.strokeStyle = `rgba(255,255,255,${0.7 * (1 - ph)})`; c.lineWidth = 1;
+    c.beginPath(); c.ellipse(x, y, 2 + ph * 6, 1 + ph * 2.4, 0, 0, 7); c.stroke();
+  }
+  // steam rising (warm and hot water only)
+  if (!cold) {
+    const n = hot ? 9 : 5;
+    for (let i = 0; i < n; i++) {
+      const ph = (now / 1000 * 0.35 + i / n) % 1;
+      const x = ctr.x + Math.sin(i * 2.3 + now / 900) * 14, y = ctr.y - 16 - ph * 40;
+      c.fillStyle = `rgba(255,255,255,${(hot ? 0.3 : 0.18) * Math.sin(ph * Math.PI) * on})`;
+      c.beginPath(); c.arc(x, y, 7 + ph * 9, 0, 7); c.fill();
+    }
+  }
+  // lather foam while scrubbing is handled by drawScrub (player.js seat.scrub); a little foam collects at the feet
+  if (sh.phase === 'lather') {
+    for (let i = 0; i < 9; i++) {
+      const x = ctr.x + (((i * 29) % 100) / 100 - 0.5) * 28, y = ctr.y + 12 + ((i * 11) % 6);
+      c.fillStyle = 'rgba(255,255,255,0.9)'; c.strokeStyle = 'rgba(150,190,230,0.8)'; c.lineWidth = 0.6;
+      c.beginPath(); c.arc(x, y, 2 + (i % 3), 0, 7); c.fill(); c.stroke();
+    }
+  }
+  c.restore();
 }
