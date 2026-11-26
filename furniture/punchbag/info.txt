@@ -1,0 +1,4 @@
+name=Punching Bag
+description=Work out your frustrations.
+block=1
+function=Punch it

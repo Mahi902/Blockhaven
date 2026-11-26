@@ -1,0 +1,4 @@
+name=Cat Bed
+description=A round bed with a very sleepy cat.
+block=1
+function=Pet the cat

@@ -332,6 +332,56 @@ def rocker(c):
     b += rect(8, 14, 5, 22, shade(c, -.15), 2.5) + rect(35, 14, 5, 22, shade(c, -.15), 2.5)
     return svg(48, 48, b)
 
+def coffee(c):
+    b = shadow(5, 6, 38, 36, 5)
+    b += rect(5, 5, 38, 36, c, 5, shade(c, -.5), 1.8)
+    b += rect(9, 8, 30, 7, shade(c, .3), 2, op=.6)
+    b += circ(24, 27, 9, shade(c, -.35), shade(c, -.6), 1.4)
+    b += circ(24, 27, 6, '#f4f4f2', '#9a9a94', 1) + circ(24, 27, 4, '#4a2f1d')
+    b += circ(12, 11.5, 1.7, '#e03c3c') + circ(36, 11.5, 1.7, '#8ff0a4')
+    return svg(48, 48, b)
+
+def arcade(c):
+    b = shadow(6, 4, 36, 40, 5)
+    b += rect(6, 3, 36, 41, c, 5, shade(c, -.5), 1.8)
+    b += rect(9, 6, 30, 6, shade(c, .3), 2, op=.6)
+    b += rect(11, 14, 26, 14, '#15171d', 2, '#000') + rect(13, 16, 22, 10, '#6f8cff', 1, op=.8)
+    b += rect(18, 19, 4, 4, '#ffd27a', 1) + rect(27, 21, 5, 2, '#ff8a8a', 1)
+    b += rect(9, 31, 30, 10, shade(c, -.2), 2, shade(c, -.5), 1)
+    b += circ(17, 36, 3, '#e03c3c', '#600', 1) + circ(29, 36, 2, '#f6d43c') + circ(34, 36, 2, '#2bc9d8')
+    return svg(48, 48, b)
+
+def microwave(c):
+    b = shadow(3, 8, 42, 30, 4)
+    b += rect(3, 7, 42, 30, c, 4, shade(c, -.5), 1.8)
+    b += rect(7, 11, 24, 22, '#1d2026', 3, shade(c, -.55), 1.2)
+    b += rect(9, 13, 20, 18, '#3a4a5c', 2, op=.85)
+    b += rect(9, 13, 20, 4, '#ffffff', 2, op=.18)
+    b += rect(34, 11, 8, 6, '#15171d', 1.5) + rect(35.5, 12.8, 5, 1.6, '#8ff0a4', .8)
+    for i in range(3):
+        for j in range(3):
+            b += rect(34 + j * 3, 20 + i * 4, 2.2, 2.6, shade(c, -.4), .8)
+    return svg(48, 48, b)
+
+def punchbag(c):
+    b = circ(26, 27, 19, '#000', op=.2)
+    b += circ(24, 24, 19, shade(c, -.55), shade(c, -.7), 1.8)
+    b += circ(24, 24, 14.5, c, shade(c, -.5), 2)
+    b += circ(24, 24, 10, shade(c, -.12), None, op=.9)
+    b += circ(21, 21, 4.5, shade(c, .4), None, op=.55)
+    b += circ(24, 24, 2.2, shade(c, -.6))
+    return svg(48, 48, b)
+
+def catbed(c):
+    b = circ(26, 27, 20, '#000', op=.2)
+    b += circ(24, 24, 20, c, shade(c, -.5), 2)
+    b += circ(24, 24, 14, shade(c, .3), shade(c, -.2), 1.2)
+    b += '<ellipse cx="24" cy="25" rx="9" ry="7.5" fill="#e8a45c" stroke="#a8692b" stroke-width="1"/>'
+    b += '<circle cx="19" cy="22" r="4.4" fill="#e8a45c" stroke="#a8692b" stroke-width="1"/>'
+    b += '<path d="M16 19.2 l1.2 -3.2 l2.2 2.4z M20.6 18.2 l2.2 -2.6 l.8 3.4z" fill="#e8a45c" stroke="#a8692b" stroke-width=".8"/>'
+    b += '<path d="M31 27 Q36 23 33.5 19" fill="none" stroke="#a8692b" stroke-width="2.4" stroke-linecap="round"/>'
+    return svg(48, 48, b)
+
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
@@ -360,6 +410,11 @@ FURNITURE = [
     ("aquarium", "Aquarium", "Three fish and zero opinions.", 2, "Feed the fish", aquarium),
     ("mirror", "Vanity Mirror", "A dresser with a mirror. Try a new hairstyle.", 1, "Change hairstyle", mirror),
     ("rocker", "Rocking Chair", "Rock back and forth. Peaceful.", 1, "Sit and rock", rocker),
+    ("coffee", "Coffee Machine", "Fresh coffee, any time of day.", 1, "Brew a coffee", coffee),
+    ("arcade", "Arcade Machine", "Insert imaginary coin. Chase a high score.", 1, "Play a game", arcade),
+    ("microwave", "Microwave", "Beep. Beep. Beep.", 1, "Heat something", microwave),
+    ("punchbag", "Punching Bag", "Work out your frustrations.", 1, "Punch it", punchbag),
+    ("catbed", "Cat Bed", "A round bed with a very sleepy cat.", 1, "Pet the cat", catbed),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)

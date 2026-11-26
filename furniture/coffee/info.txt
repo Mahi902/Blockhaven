@@ -1,0 +1,4 @@
+name=Coffee Machine
+description=Fresh coffee, any time of day.
+block=1
+function=Brew a coffee
