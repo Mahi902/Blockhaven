@@ -14,7 +14,8 @@ function open(api) {
   const cur = CH.find(c => c[1] === now);
   const rows = CH.map(([name, track, cols, line]) => choice(name, now === track ? "Now showing" : "Channel", () => {
     api.music.volume(vol);
-    if (!api.music.play(track)) { api.say("Just static. (Is sound turned off?)"); return; }
+    if (!api.music.play(track)) { api.say("Just static. (Sound is off - tap the speaker button.)"); return; }
+    if (!api.audioReady) api.ui.toast("Your browser is still blocking sound - tap the screen once more.");
     api.glow(cols, 3, { temp: true });
     api.badge("\u{1F4FA}", { temp: true });
     api.closeModal(); api.sound("switch"); api.say(line);

@@ -1,5 +1,5 @@
 // Blockhaven - procedural music. Original loops, synthesised live with Web Audio (no audio files).
-import { musicContext, soundOn } from './audio.js';
+import { musicContext, soundOn, unlockAudio } from './audio.js';
 import * as W from './world.js';
 
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -222,7 +222,7 @@ function tick() {
 /** Start a track. Only one plays at a time; `owner` is the furniture id, `onEnd` runs when it stops. */
 export function playMusic(id, owner = null, onEnd = null) {
   const tr = TRACKS[id]; if (!tr || !soundOn) return false;
-  stopMusic(); setup();
+  stopMusic(); setup(); unlockAudio();
   out = ctx.createGain(); out.gain.value = 1; out.connect(bus);       // each track gets its own gain so stop() is instant
   bus.gain.setTargetAtTime(volume, ctx.currentTime, 0.02);
   const rng = mulberry32((Math.random() * 1e9) | 0);
@@ -252,7 +252,7 @@ export function setMusicVolume(v) {
 /** One piano-like note (MIDI number). Plays over any music; used by api.note(). */
 export function playNote(m, dur = 1.6, vel = 1) {
   if (!soundOn) return;
-  setup();
+  setup(); unlockAudio();
   if (ctx.state === 'suspended') ctx.resume();
   const t = ctx.currentTime + 0.005;
   tone(m, t, dur, { type: 'triangle', vol: 0.22 * vel, atk: 0.004, lp: 3600, dest: bus });

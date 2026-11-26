@@ -4,7 +4,7 @@ import { S } from './state.js';
 import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
 import { hooks, sitOn, runOn, standUp, say, setLook } from './player.js';
-import { sound } from './audio.js';
+import { sound, soundOn, audioReady } from './audio.js';
 import { playMusic, stopMusic, musicNow, setMusicVolume, playNote, TRACK_LIST } from './music.js';
 import { HAIR_STYLES } from './hair.js';
 import { h, button, choice, swatches, openModal, closeModal, toast } from './ui.js';
@@ -55,6 +55,8 @@ function makeApi(kind, obj) {
     exists: () => !!W.byId('item', obj.id),
     note: (midi, dur, vel) => playNote(midi, dur, vel),   // one piano-like note (MIDI number, 60 = middle C)
     fmtTime,
+    get soundOn() { return soundOn; },
+    get audioReady() { return audioReady(); },
     music: {
       tracks: TRACK_LIST,
       get now() { const m = musicNow(); return m && m.owner === obj.id ? m.id : null; },

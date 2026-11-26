@@ -72,6 +72,32 @@ export function sound(name) {
   try { (SOUNDS[name] || SOUNDS.click)(); } catch (e) { /* audio can be blocked until a gesture */ }
 }
 
+// ---- unlocking audio ----
+// Browsers keep audio suspended until a tap / key press, and iOS also mutes Web Audio while the ring switch is
+// on silent unless a media element is playing. The first gesture anywhere in the game fixes both, so the TV
+// and piano are already live by the time you open them.
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+let mediaKick = null, kicked = false;
+export function unlockAudio() {
+  try {
+    const a = ac();
+    if (kicked && a.state === 'running') return true;      // already awake: nothing to do
+    const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource();
+    s.buffer = b; s.connect(a.destination); s.start(0);
+    kicked = a.state === 'running';
+    if (!mediaKick) { mediaKick = new Audio(SILENT_WAV); mediaKick.loop = true; mediaKick.setAttribute('playsinline', ''); }
+    const pr = mediaKick.play(); if (pr && pr.catch) pr.catch(() => {});
+  } catch (e) { /* no audio support */ }
+  return audioReady();
+}
+export const audioReady = () => !!ctx && ctx.state === 'running';
+const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'keydown', 'click'];
+function onGesture() {
+  if (!unlockAudio()) { if (ctx && ctx.resume) ctx.resume().catch(() => {}); }
+  if (audioReady()) UNLOCK_EVENTS.forEach(ev => window.removeEventListener(ev, onGesture, true));
+}
+if (typeof window !== 'undefined' && window.addEventListener) UNLOCK_EVENTS.forEach(ev => window.addEventListener(ev, onGesture, true));
+
 
 // ---- music bus: full-range (the effects above are deliberately muffled; music is not) ----
 let musicBus = null;
@@ -80,7 +106,11 @@ export function musicContext() {
   if (!musicBus) {
     musicBus = a.createGain(); musicBus.gain.value = 0.55;
     const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 9000;
-    musicBus.connect(lp); lp.connect(a.destination);
+    // the synthesised tracks are written quietly, so lift them and let a limiter catch the peaks
+    const lift = a.createGain(); lift.gain.value = 1.8;
+    const lim = a.createDynamicsCompressor();
+    lim.threshold.value = -10; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.003; lim.release.value = 0.2;
+    musicBus.connect(lp); lp.connect(lift); lift.connect(lim); lim.connect(a.destination);
   }
   return { ctx: a, bus: musicBus, noise: noiseBuf };
 }

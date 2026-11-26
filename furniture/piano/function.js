@@ -75,6 +75,7 @@ export default api => {
     ...SONGS.map(([name, notes]) => button(name, { kind: "blue", small: true, onClick: () => { api.say("\u266a " + name); playSong(notes); } })),
     button("Stop", { kind: "red", small: true, onClick: () => { token++; } }));
 
+  if (!api.soundOn) api.ui.toast("Sound is off - tap the speaker button to turn it on.");
   api.glow("#ffd27a", 1.5, { temp: true });
   api.badge("\u{1F3B9}", { temp: true });
   const total = api.state.notes || 0;
