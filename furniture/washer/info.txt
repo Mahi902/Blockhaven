@@ -1,0 +1,4 @@
+name=Washing Machine
+description=Spins your shirts. Sometimes returns your socks.
+block=1
+function=Do laundry

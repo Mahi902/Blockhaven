@@ -1,0 +1,4 @@
+name=Fireplace
+description=A crackling hearth. Light it for a warm glow.
+block=2
+function=Light / put out fire

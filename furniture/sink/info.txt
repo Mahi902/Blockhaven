@@ -1,0 +1,4 @@
+name=Sink
+description=Running water, as advertised.
+block=1
+function=Wash hands

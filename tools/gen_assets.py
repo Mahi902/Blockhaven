@@ -226,6 +226,57 @@ def bathtub(c):
     b += rect(12, 18, 9, 14, '#d5d9de', 3, '#777', 1) + circ(16, 25, 2.5, '#9aa0a8', '#555', .8)
     return svg(144, 48, b)
 
+def fireplace(c):
+    b = shadow(3, 5, 90, 38, 4)
+    b += rect(3, 5, 90, 38, c, 4, shade(c, -.5), 1.8)
+    b += rect(7, 8, 82, 5, shade(c, .3), 2, op=.55)
+    b += rect(26, 16, 44, 25, '#1b1512', 4, shade(c, -.6), 1.5)
+    b += ('<path d="M48 39 Q38 32 44 24 Q46 29 49 26 Q50 20 54 17 Q56 26 60 29 Q64 34 58 39Z" '
+          'fill="#f28a2e" stroke="#c4561b" stroke-width="1"/>')
+    b += '<path d="M49 39 Q45 35 49 31 Q51 34 54 33 Q57 36 55 39Z" fill="#f6d43c"/>'
+    b += rect(36, 37, 24, 3, '#6a4a31', 1.5)
+    return svg(96, 48, b)
+
+def piano(c):
+    b = shadow(3, 5, 90, 38, 5)
+    b += rect(3, 5, 90, 38, c, 5, shade(c, -.5), 1.8)
+    b += rect(7, 8, 82, 8, shade(c, -.15), 2) + rect(36, 10, 24, 4, shade(c, .35), 1, op=.5)
+    b += rect(7, 19, 82, 21, '#fbfbf9', 2, '#9a9a94', 1)
+    for i in range(1, 14):
+        b += f'<line x1="{7 + i * 82 / 14:.1f}" y1="19" x2="{7 + i * 82 / 14:.1f}" y2="40" stroke="#9a9a94" stroke-width=".8"/>'
+    for i in (1, 2, 4, 5, 6, 8, 9, 11, 12):
+        b += rect(7 + i * 82 / 14 - 2, 19, 4, 12, '#23252b', 1)
+    return svg(96, 48, b)
+
+def sink(c):
+    b = shadow(4, 5, 40, 38, 4)
+    b += rect(4, 5, 40, 38, c, 4, shade(c, -.5), 1.8)
+    b += rect(9, 15, 30, 24, '#d9dde2', 7, shade(c, -.45), 1.5)
+    b += rect(12, 18, 24, 18, '#bfe8ff', 6, '#9aa6b0', 1)
+    b += circ(24, 27, 2.2, '#6a727c')
+    b += rect(21, 8, 6, 6, '#cfd3d8', 2, '#777', 1) + rect(23, 12, 2, 6, '#cfd3d8', 1)
+    b += circ(13, 10, 2.2, shade(c, -.55)) + circ(35, 10, 2.2, shade(c, -.55))
+    return svg(48, 48, b)
+
+def toilet(c):
+    b = shadow(8, 5, 32, 40, 8)
+    b += rect(9, 5, 30, 11, c, 4, shade(c, -.5), 1.5)
+    b += rect(19, 8, 10, 3, shade(c, -.5), 1.5)
+    b += f'<ellipse cx="24" cy="28" rx="14" ry="16" fill="{c}" stroke="{shade(c, -.5)}" stroke-width="1.8"/>'
+    b += f'<ellipse cx="24" cy="29" rx="9.5" ry="11.5" fill="{shade(c, -.08)}" stroke="{shade(c, -.4)}" stroke-width="1"/>'
+    b += '<ellipse cx="24" cy="31" rx="6" ry="7" fill="#9fd3ee" opacity=".8"/>'
+    return svg(48, 48, b)
+
+def washer(c):
+    b = shadow(4, 5, 40, 40, 5)
+    b += rect(4, 4, 40, 40, c, 5, shade(c, -.5), 1.8)
+    b += rect(8, 7, 32, 7, shade(c, -.1), 2, shade(c, -.35), 1)
+    b += circ(14, 10.5, 2.2, shade(c, -.5)) + rect(24, 9, 12, 3, '#15171d', 1.5) + rect(25, 9.8, 5, 1.4, '#6f8cff', .7)
+    b += circ(24, 29, 12.5, shade(c, -.25), shade(c, -.55), 1.8)
+    b += circ(24, 29, 9.5, '#9fd3ee', shade(c, -.4), 1.2, op=.9)
+    b += '<path d="M16 28 Q20 24 24 28 T32 28" fill="none" stroke="#ffffff" stroke-width="1.4" opacity=".8"/>'
+    return svg(48, 48, b)
+
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
@@ -244,6 +295,11 @@ FURNITURE = [
     ("stove", "Stove", "Four burners and a lot of confidence.", 1, "Cook something", stove),
     ("stereo", "Stereo", "A boombox with opinions about music.", 1, "Play music", stereo),
     ("bathtub", "Bathtub", "Warm water and plenty of bubbles.", 3, "Take a bath", bathtub),
+    ("fireplace", "Fireplace", "A crackling hearth. Light it for a warm glow.", 2, "Light / put out fire", fireplace),
+    ("piano", "Piano", "Eighty-eight keys, three of which you know.", 2, "Play a tune", piano),
+    ("sink", "Sink", "Running water, as advertised.", 1, "Wash hands", sink),
+    ("toilet", "Toilet", "Every home needs one.", 1, "Use the toilet", toilet),
+    ("washer", "Washing Machine", "Spins your shirts. Sometimes returns your socks.", 1, "Do laundry", washer),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)
