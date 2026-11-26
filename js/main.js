@@ -259,15 +259,26 @@ function openInfo(id) {
   });
 }
 
+// Step 1: choose what to do. Step 2 (create): name it and pick a starting point.
 function openNewWorld() {
+  openModal({
+    title: 'New world', subtitle: 'What would you like to do?',
+    body: h('div', { class: 'bh-stack' },
+      choice('Create a new world', 'Start fresh with a starter apartment or an empty plot', openCreateWorld),
+      choice('Import a world', 'Load a world you exported earlier (.json file)', () => { closeModal(); $('importFile').click(); })),
+  });
+}
+
+function openCreateWorld() {
   const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 24, value: `World ${Wm.list().length + 1}` });
   nameIn.addEventListener('keydown', e => e.stopPropagation());
   const make = data => { curId = Wm.create(nameIn.value, data); renderWorlds(); closeModal(); };
   openModal({
-    title: 'New world', subtitle: 'Name it and pick a starting point',
+    title: 'Create a new world', subtitle: 'Name it, then pick a starting point',
     body: h('div', { class: 'bh-stack' }, h('div', {}, h('div', { class: 'bh-label' }, 'Name'), nameIn),
       choice('Starter apartment', 'Four furnished rooms to explore', () => make(null)),
-      choice('Empty plot', 'A blank plot to build from scratch', () => make(Wm.emptyWorld()))),
+      choice('Empty plot', 'A blank plot to build from scratch', () => make(Wm.emptyWorld())),
+      button('Back', { kind: 'dark', small: true, onClick: openNewWorld })),
   });
 }
 
@@ -283,9 +294,7 @@ function openCredits() {
 }
 
 function buildHome() {
-  $('menuRow').append(
-    button('New world', { kind: 'blue', small: true, icon: 'plus', onClick: openNewWorld }),
-    button('Import', { kind: 'dark', small: true, icon: 'upload', onClick: () => $('importFile').click() }));
+  $('menuRow').append(button('New world', { kind: 'blue', icon: 'plus', onClick: openNewWorld }));
   $('introCorner').append(button('Credits', { kind: 'dark', small: true, onClick: openCredits }));
   $('importFile').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
