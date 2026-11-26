@@ -410,10 +410,7 @@ def fan(c):
     d = shade(c, -.45)
     b = circ(26, 22, 15, '#000', op=.2)
     b += circ(24, 20, 14, '#d9dde2', '#6a727c', 1.6)
-    b += circ(24, 20, 10, 'none', '#9aa1aa', 1, op=.8)
     b += rect(19, 19, 10, 13, c, 4, d, 1.3)
-    b += rect(20.5, 20.5, 7, 2, shade(c, .45), 1, op=.7)
-    b += circ(24, 22, 2.2, d)
     b += rect(5, 32, 38, 10, '#eef1f4', 5, '#7d848d', 1.6)
     for x in range(9, 41, 4):
         b += rect(x, 33.5, .8, 7, '#aeb4bb', 0)

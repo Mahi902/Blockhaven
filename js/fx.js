@@ -181,39 +181,66 @@ export function drawShowerWater(c, it, ctr) {
   // fogged glass
   c.fillStyle = `rgba(235,246,255,${Math.min(cold ? 0.06 : 0.2, t * 0.03) * on})`;
   c.fillRect(ctr.x - 22, ctr.y - 24, 44, 48);
-  // falling water from the rain head down over the body to the tray
-  c.lineCap = 'round';
-  for (let i = 0; i < 34; i++) {
-    const ph = (now / 1000 * 1.7 + i * 0.618) % 1;
-    const x = ctr.x + (((i * 41) % 100) / 100 - 0.5) * 34, y = ctr.y - 26 + ph * 46;
-    if (y > ctr.y + 16) continue;
-    c.strokeStyle = 'rgba(120,180,235,0.55)'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 0.5, y + 8); c.stroke();
-    c.strokeStyle = 'rgba(235,248,255,0.95)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 0.5, y + 8); c.stroke();
-  }
-  // splashes on the tray
-  for (let i = 0; i < 7; i++) {
-    const ph = (now / 1000 * 2.2 + i * 0.37) % 1;
-    const x = ctr.x + (((i * 53) % 100) / 100 - 0.5) * 30, y = ctr.y + 15 + ((i * 7) % 5);
-    c.strokeStyle = `rgba(255,255,255,${0.7 * (1 - ph)})`; c.lineWidth = 1;
-    c.beginPath(); c.ellipse(x, y, 2 + ph * 6, 1 + ph * 2.4, 0, 0, 7); c.stroke();
+  // rain from the overhead head, seen from above: droplets land on the head and shoulders and ring out
+  for (let i = 0; i < 14; i++) {
+    const ph = (now / 1000 * 1.5 + i * 0.618) % 1, an = i * 2.399, rad = Math.sqrt(((i * 37) % 100) / 100) * 18;
+    const x = ctr.x + Math.cos(an) * rad, y = ctr.y + 2 + Math.sin(an) * rad * 0.95;
+    c.strokeStyle = `rgba(255,255,255,${0.85 * (1 - ph)})`; c.lineWidth = 0.9;
+    c.beginPath(); c.ellipse(x, y, 0.8 + ph * 3.4, 0.8 + ph * 3, 0, 0, 7); c.stroke();
+    if (ph < 0.25) { c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.arc(x, y, 1.5, 0, 7); c.fill(); }
   }
   // steam rising (warm and hot water only)
   if (!cold) {
     const n = hot ? 9 : 5;
     for (let i = 0; i < n; i++) {
       const ph = (now / 1000 * 0.35 + i / n) % 1;
-      const x = ctr.x + Math.sin(i * 2.3 + now / 900) * 14, y = ctr.y - 16 - ph * 40;
+      const x = ctr.x + Math.sin(i * 2.3 + now / 900) * 14, y = ctr.y - 10 - ph * 22;
       c.fillStyle = `rgba(255,255,255,${(hot ? 0.3 : 0.18) * Math.sin(ph * Math.PI) * on})`;
-      c.beginPath(); c.arc(x, y, 7 + ph * 9, 0, 7); c.fill();
+      c.beginPath(); c.arc(x, y, 5 + ph * 6, 0, 7); c.fill();
     }
   }
-  // lather foam while scrubbing is handled by drawScrub (player.js seat.scrub); a little foam collects at the feet
+  // lather foam on the hair and shoulders
   if (sh.phase === 'lather') {
     for (let i = 0; i < 9; i++) {
-      const x = ctr.x + (((i * 29) % 100) / 100 - 0.5) * 28, y = ctr.y + 12 + ((i * 11) % 6);
-      c.fillStyle = 'rgba(255,255,255,0.9)'; c.strokeStyle = 'rgba(150,190,230,0.8)'; c.lineWidth = 0.6;
-      c.beginPath(); c.arc(x, y, 2 + (i % 3), 0, 7); c.fill(); c.stroke();
+      const an = i * 2.1, rad = 1 + ((i * 17) % 7), x = ctr.x + Math.cos(an) * rad * 1.15, y = ctr.y + 1 + Math.sin(an) * rad * 0.9 + Math.sin(now / 250 + i) * 0.8;
+      c.fillStyle = 'rgba(255,255,255,0.92)'; c.strokeStyle = 'rgba(150,190,230,0.8)'; c.lineWidth = 0.6;
+      c.beginPath(); c.arc(x, y, 1.2 + (i % 3) * 0.6, 0, 7); c.fill(); c.stroke();
     }
   }
+  c.restore();
+}
+
+/** The character seen from directly above (used while standing in the shower so nothing sticks out of the stall).
+ *  Faces down the screen. look = the player's look; scrub = arms rub the head. */
+export function drawTopDownPerson(c, look, x, y, scrub) {
+  const now = performance.now(), OL = '#1b2336';
+  const skin = look.skin || '#f1c27d', shirt = look.shirt || '#4a6fd8', hair = look.hair || '#4a3426', style = look.style || 'short';
+  const ell = (cx, cy, rx, ry, fill, stroke, lw) => { c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 1.4; c.stroke(); } };
+  c.save(); c.translate(x + (scrub ? Math.sin(now / 55) * 1.1 : 0), y);
+  ell(0, 4, 16, 12, 'rgba(0,0,0,0.16)');
+  // hair that hangs behind the head
+  if (style === 'long') ell(0, 1, 11.5, 12, hair, OL);
+  if (style === 'ponytail') { ell(0, -11, 3.6, 5, hair, OL); }
+  if (style === 'bun') ell(0, -9.5, 4.8, 4.8, hair, OL);
+  // arms and hands (rubbing the head while lathering)
+  const hand = side => {
+    const sx = side * 13, sy = -1, hx = scrub ? side * (6 + Math.sin(now / 90 + side) * 2.5) : side * 11.5, hy = scrub ? 0 + Math.cos(now / 80 + side) * 2.5 : 8;
+    c.strokeStyle = OL; c.lineWidth = 6.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(sx, sy); c.lineTo(hx, hy); c.stroke();
+    c.strokeStyle = shirt; c.lineWidth = 4.4; c.beginPath(); c.moveTo(sx, sy); c.lineTo(hx, hy); c.stroke();
+    ell(hx, hy, 2.8, 2.8, skin, OL, 1);
+  };
+  if (!scrub) { hand(-1); hand(1); }
+  // shoulders
+  ell(0, -1, 15.5, 7.4, shirt, OL, 1.6);
+  // head: skin, then hair slightly towards the back so a sliver of face shows at the front
+  ell(0, 1, 8.6, 8.6, skin, OL, 1.4);
+  if (style === 'buzz') { c.globalAlpha = 0.5; ell(0, 0.4, 8.6, 8.4, hair); c.globalAlpha = 1; }
+  else if (style === 'mohawk') ell(0, 0.4, 2.8, 8.6, hair, OL, 1);
+  else {
+    if (style === 'spiky') for (let a = 0; a < 7; a++) { const an = a / 7 * Math.PI * 2; ell(Math.cos(an) * 8.4, 0.4 + Math.sin(an) * 8.4, 2.1, 2.1, hair); }
+    ell(0, -0.6, 8.7, 8.2, hair, OL, 1.2);
+  }
+  ell(0, 9.4, 1.7, 1.5, skin);                         // nose, so you can tell which way you face
+  if (scrub) { hand(-1); hand(1); }
   c.restore();
 }

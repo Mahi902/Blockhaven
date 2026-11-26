@@ -1,7 +1,7 @@
 // Blockhaven - canvas renderer
 import { TILE, COLOR_HEX } from './config.js';
 import { S, worldToScreen } from './state.js';
-import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater } from './fx.js';
+import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater, drawTopDownPerson } from './fx.js';
 import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
 import { sprites } from './player.js';
@@ -155,6 +155,7 @@ function drawSliced(c, img, dw, dh, bob) {
 function drawPlayer(c) {
   const P = S.player;
   if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
+  if (P.seat && P.seat.stand && (!P.seat.glide || P.seat.glide.t > 0.55)) { drawTopDownPerson(c, P.look, P.x, P.y, !!P.seat.scrub); return; }   // in the shower: seen from above, fully inside the stall
   const img = sprites[P.dir] || sprites.down;
   if (!img || !img.complete) return;
   const sc = 0.82 * (P.look.gender === 'female' ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
