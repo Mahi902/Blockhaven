@@ -104,14 +104,14 @@ function drawPlayer(c) {
     c.restore();
     return;
   }
-  if (!P.seat) {
+  if (!P.seat || P.seat.run) {
     c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(P.x, P.y + 9, 12, 5, 0, 0, Math.PI * 2); c.fill();
   }
   const bob = P.moving ? -Math.abs(Math.sin(P.walk)) * 3 : 0;
   const tilt = P.moving ? Math.sin(P.walk) * 0.07 : 0;
-  c.translate(P.x, P.y + 9 + (P.seat ? 5 : 0));
+  c.translate(P.x, P.y + 9 + (P.seat && !P.seat.run ? 5 : 0));
   c.rotate(tilt);
-  if (P.seat) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
+  if (P.seat && !P.seat.run) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
   c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
   c.restore();
 }

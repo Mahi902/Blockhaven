@@ -3,7 +3,7 @@ import { COLOR_NAMES, COLOR_HEX, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_CO
 import { S } from './state.js';
 import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
-import { hooks, sitOn, standUp, say, setLook } from './player.js';
+import { hooks, sitOn, runOn, standUp, say, setLook } from './player.js';
 import { sound } from './audio.js';
 import { HAIR_STYLES } from './hair.js';
 import { h, button, choice, swatches, openModal, closeModal, toast } from './ui.js';
@@ -29,6 +29,7 @@ function makeApi(kind, obj) {
     // --- the player
     sit: () => sitOn(obj, false),
     lie: () => sitOn(obj, true),
+    run: (rate = 1, offset) => runOn(obj, rate, offset),   // stand on it and run in place
     stand: () => standUp(),
     say, toast,
     setLook,

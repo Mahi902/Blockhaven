@@ -75,9 +75,27 @@ export function sitOn(item, lying = false) {
   sound('sit');
 }
 
+/** Stand ON an item and run in place (treadmill). The runner faces the sprite's left (console) side.
+ *  `rate` scales the stride/step speed; `offset` shifts the spot along the sprite (px, rotates with it). */
+export function runOn(item, rate = 1, offset = { x: 0, y: 0 }) {
+  const P = S.player;
+  if (P.seat) standUp();
+  const back = { x: P.x, y: P.y };
+  const c = W.itemCenter(item);
+  const th = item.rot * Math.PI / 2;
+  P.x = c.x + offset.x * Math.cos(th) - offset.y * Math.sin(th);
+  P.y = c.y + offset.x * Math.sin(th) + offset.y * Math.cos(th) - 7;   // feet land on the belt
+  P.seat = { id: item.id, lying: false, run: true, rate, back, rot: item.rot };
+  P.dir = ['left', 'up', 'right', 'down'][item.rot % 4];
+  P.moving = true; P.walk = 0;
+  S.path = null; S.pendingInteract = null;
+  sound('sit');
+}
+
 export function standUp() {
   const P = S.player;
   if (!P.seat) return;
+  P.moving = false;
   const it = W.byId('item', P.seat.id);
   const back = P.seat.back;
   P.seat = null;
@@ -121,9 +139,15 @@ export function updatePlayer(dt) {
   const manual = dx !== 0 || dy !== 0;
 
   if (P.seat) {
-    if (!manual) { P.moving = false; return; }
-    const it = W.byId('item', P.seat.id);
-    leaveSeat(it);
+    if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
+    if (P.seat.run) {                         // running in place: keep the stride going
+      const rate = P.seat.rate || 1;
+      P.moving = true; P.walk += dt * 11 * rate;
+      stepClock -= dt;
+      if (stepClock <= 0) { sound('step'); stepClock = 0.3 / rate; }
+      return;
+    }
+    P.moving = false;
     return;
   }
 
