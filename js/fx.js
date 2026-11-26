@@ -72,6 +72,7 @@ export function drawItemFx(c, it) {
   const st = it.state; if (!st) return;
   const now = Date.now();
   if (it.type === 'fan') { drawFan(c, it, st, now); return; }
+  if (it.type === 'exbike') { drawBike(c, st, now); return; }
   if (it.type === 'gclock') { drawClockHands(c, now); return; }
   if (it.type === 'sink' && st._sink) {
     const s = st._sink, t = (now - s.start) / 1000;
@@ -255,4 +256,24 @@ export function drawTopDownPerson(c, look, x, y, scrub) {
   ell(0, 9.4, 1.7, 1.5, skin);                         // nose, so you can tell which way you face
   if (scrub) { hand(-1); hand(1); }
   c.restore();
+}
+
+/** Exercise bike: spinning flywheel, alternating pedals and a lit console while somebody rides it. */
+function drawBike(c, st, now) {
+  const R = st._ride; if (!R) return;
+  const t = (now - R.start) / 1000;
+  let spd = R.mode === 'hill' ? 5 : R.mode === 'interval' ? (Math.floor(t / 4) % 2 ? 6 : 15) : 9;
+  const a = R.a = (R.a || 0) + spd * 0.016;
+  const col = R.mode === 'hill' ? '#ff9a3c' : R.mode === 'interval' ? (spd > 10 ? '#ff5a5a' : '#8ff0a4') : '#8ff0a4';
+  c.fillStyle = '#3b3e47'; c.beginPath(); c.arc(-1, -2, 8, 0, 7); c.fill();
+  c.strokeStyle = '#9aa0ad'; c.lineWidth = 1.2;
+  for (let i = 0; i < 4; i++) {
+    const an = a + i * Math.PI / 2;
+    c.beginPath(); c.moveTo(-1, -2); c.lineTo(-1 + Math.cos(an) * 7.4, -2 + Math.sin(an) * 7.4); c.stroke();
+  }
+  c.fillStyle = '#565a66'; c.beginPath(); c.arc(-1, -2, 2.2, 0, 7); c.fill();
+  c.fillStyle = '#14151a';
+  c.fillRect(-12, 3 + Math.sin(a * 0.6) * 3.5, 5, 7);
+  c.fillRect(5, 3 - Math.sin(a * 0.6) * 3.5, 5, 7);
+  c.fillStyle = col; c.fillRect(-4.5, -13, 7 * (0.35 + 0.65 * Math.abs(Math.sin(t * 1.3))), 1.6);
 }

@@ -451,6 +451,19 @@ def beanbag(c):
     b += rect(20, 1.8, 8, 4.4, shade(c, -.25), 2, d, 1)
     return svg(48, 48, b)
 
+def exbike(c):
+    """Plan view of an exercise bike: console and handlebar at the top, flywheel, saddle at the bottom."""
+    d = shade(c, -.5)
+    b = rect(11, 4, 28, 42, '#000', 6, op=.18)
+    b += rect(9, 2, 28, 42, shade(c, -.2), 6, d, 1.4)
+    b += rect(13, 3, 20, 3.4, '#2a2c33', 1.6, '#14151a', 1)
+    b += rect(18, 7, 10, 7, '#15171d', 1.5, d, .8) + rect(19.5, 9, 7, 1.6, '#8ff0a4', .8)
+    b += circ(23, 22, 8.5, '#3b3e47', '#14151a', 1.4) + circ(23, 22, 5.2, '#565a66', None) + circ(23, 22, 1.6, c, d, .8)
+    b += rect(21, 22, 4, 12, c, 2, d, 1)
+    b += rect(17, 33, 12, 9, '#2a2c33', 4, '#14151a', 1.2) + rect(19, 34.5, 8, 2.2, '#4a4e5a', 1)
+    b += rect(12, 27, 5, 7, '#14151a', 1.4) + rect(29, 24, 5, 7, '#14151a', 1.4)
+    return svg(48, 48, b)
+
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
     ("bed", "Bed", "A cosy double bed with two pillows.", 6, "Lie down and sleep", bed),
@@ -486,6 +499,7 @@ FURNITURE = [
     ("shower", "Shower", "Step inside, pick a temperature and get properly clean.", 1, "Take a shower", shower),
     ("fan", "Standing Fan", "Blows a steady breeze in front of it (rotate to aim) and shoves you back. Off, low, medium, high.", 1, "Set fan speed", fan),
     ("gclock", "Grandfather Clock", "Tells the real time and strikes the hour with the Westminster chimes.", 1, "Check the time", gclock),
+    ("exbike", "Exercise Bike", "Hop on, pick a ride program and pedal. The flywheel spins and the console counts your distance.", 1, "Ride the bike", exbike),
     ("beanbag", "Bean Bag", "A squishy bean bag. Fluff it up, then plop down and sink in.", 1, "Use bean bag", beanbag),
 ]
 

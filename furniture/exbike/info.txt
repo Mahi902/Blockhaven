@@ -1,0 +1,4 @@
+name=Exercise Bike
+description=Hop on, pick a ride program and pedal. The flywheel spins and the console counts your distance.
+block=1
+function=Ride the bike
