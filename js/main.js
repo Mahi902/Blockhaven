@@ -73,8 +73,17 @@ function toggleFullscreen() {
     else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
   } catch (e) { toast('Full screen is not available here'); }
 }
+function fitViewport() {
+  const hh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  document.documentElement.style.setProperty('--ah', Math.round(hh) + 'px');
+  resize(); clampCamera();
+}
+['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, () => { fitViewport(); setTimeout(fitViewport, 250); }));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitViewport);
 function syncFs() {
   const on = !!fsElement();
+  document.body.classList.toggle('fs', on);
+  [0, 120, 400, 900].forEach(ms => setTimeout(fitViewport, ms));
   bar.fs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`;
   bar.fs.title = on ? 'Exit full screen' : 'Full screen';
   bar.fs.classList.toggle('on', on);
@@ -208,7 +217,16 @@ function buildLook() {
   const styleRow = h('div', { class: 'bh-chips' }, ...styleBtns);
   document.addEventListener('bh-look', () => styleBtns.forEach(b => b.classList.toggle('on', b.dataset.style === (S.player.look.style || 'short'))));
   const chips = (key, list, def) => {
-    const bs = list.map(o => { const b = h('button', { class: `bh-tab${(L[key] || def) === o.id ? ' on' : ''}`, type: 'button' }, o.name); b.addEventListener('click', () => { sound('click'); setLook({ [key]: o.id }); }); b.dataset.v = o.id; return b; });
+    const bs = list.map(o => { const b = h('button', { class: `bh-tab${(L[key] || def) === o.id ? ' on' : ''}`, type: 'button' }, o.name); b.addEventListener('click', () => {
+      sound('click');
+      const part = { [key]: o.id };
+      if (key === 'gender') {
+        const st = S.player.look.style || 'short';
+        if (o.id === 'female' && ['short', 'buzz', 'spiky', 'mohawk', 'bald'].includes(st)) part.style = 'long';
+        if (o.id === 'male' && ['long', 'ponytail', 'bun'].includes(st)) part.style = 'short';
+      }
+      setLook(part);
+    }); b.dataset.v = o.id; return b; });
     document.addEventListener('bh-look', () => bs.forEach(b => b.classList.toggle('on', b.dataset.v === (S.player.look[key] || def))));
     return h('div', { class: 'bh-chips' }, ...bs);
   };

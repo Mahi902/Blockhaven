@@ -138,7 +138,7 @@ function drawPlayer(c) {
   if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
   const img = sprites[P.dir] || sprites.down;
   if (!img || !img.complete) return;
-  const sc = 0.82, dw = 48 * sc, dh = 64 * sc;
+  const sc = 0.82 * (P.look.gender === 'female' ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
   c.save();
   if (P.seat && P.seat.lying) {
     const it = W.byId('item', P.seat.id);

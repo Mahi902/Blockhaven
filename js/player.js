@@ -24,15 +24,14 @@ const OL = '#1b2336';
 function femaleBody(tpl, d) {
   let shape;
   if (d === 'down' || d === 'up') {
-    const torso = `<path d="M13 29 Q11 33 10.5 35.5 Q12.5 38 14.8 40 Q12.5 44 11 48 Q24 51 37 48 Q35.5 44 33.2 40 Q35.5 38 37.5 35.5 Q37 33 35 29 Q24 26 13 29Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
-    const hips = `<path d="M12.4 44.6 Q24 47.2 35.6 44.6 Q38.4 48 37.8 50.2 Q24 53.4 10.2 50.2 Q9.6 48 12.4 44.6Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
-    const bust = d === 'down' ? `<path d="M15.5 37 Q19.5 39.6 23.2 37 M24.8 37 Q28.5 39.6 32.5 37" fill="none" stroke="${OL}" stroke-width="0.9" opacity="0.45" stroke-linecap="round"/>` : '';
+    const torso = `<path d="M13.5 29 Q10 31.5 8.6 35.6 Q10 39 14.6 40.6 Q12 44 9 48 Q24 52.5 39 48 Q36 44 33.4 40.6 Q38 39 39.4 35.6 Q38 31.5 34.5 29 Q24 26 13.5 29Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    const hips = `<path d="M12 44.4 Q24 47 36 44.4 Q40.6 48 40.2 51.6 Q24 55 7.8 51.6 Q7.4 48 12 44.4Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    const bust = d === 'down' ? `<path d="M14.4 35.2 Q19 42 23.4 35.2 M24.6 35.2 Q29 42 33.6 35.2" fill="none" stroke="${OL}" stroke-width="1" opacity="0.5" stroke-linecap="round"/>` : `<path d="M16 46 Q24 49.5 32 46" fill="none" stroke="${OL}" stroke-width="0.9" opacity="0.4" stroke-linecap="round"/>`;
     shape = torso + bust + hips;
   } else {
-    const torso = `<path d="M19 28 Q15.5 29 13.8 34 Q13.8 37 16 38.6 Q17.2 41 17 43 Q15.4 46 16 49 Q24 51 33.4 48.6 Q36.4 45 34.6 42 Q33 40 33.2 38 Q35.2 33 32.2 29 Q26 26.6 19 28Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
-    const hips = `<path d="M17 46 Q25 47.6 34.4 46 Q37 49 34 51.2 Q25 52.6 16 51.2 Q14.4 48.6 17 46Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    const torso = `<path d="M19 28 Q14 28.6 11.8 34 Q11.8 38 15.6 39.4 Q17 41.4 16.8 43.4 Q15 46.6 16 49.4 Q25 52 35.4 48.6 Q39 44.6 36.2 41.4 Q34.4 39.6 34.6 37.6 Q36.6 32.6 32.6 29 Q26 26.4 19 28Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    const hips = `<path d="M16.4 45.6 Q25 47.4 36 45.4 Q39.6 49 36 52 Q25 54 14.6 52 Q12.6 48.6 16.4 45.6Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
     shape = d === 'right' ? `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>` : torso + hips;
-    if (d === 'right') shape = `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>`;
   }
   if (d === 'down') tpl = tpl.replace(/(\{\{hairFront\}\})[\s\S]*<\/svg>/, '$1</svg>');
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
@@ -46,7 +45,7 @@ export function rebuildSprites() {
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
     const L = S.player.look, fem = L.gender === 'female';
-    const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 0.97 : 1);
+    const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 1.02 : 1);
     let face = '';
     const O = '#1b2336';
     const eye = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${O}"/><circle cx="${x - 0.9}" cy="${y - 1}" r="${r * 0.38}" fill="#fff"/><circle cx="${x + 0.9}" cy="${y + 0.9}" r="${r * 0.18}" fill="#fff"/>`;
