@@ -56,9 +56,27 @@ function buildBar() {
   $('topLeft').append(bar.mode, bar.ceil);
   bar.set = button('', { kind: 'dark', small: true, icon: 'grid', title: 'Settings', onClick: openSettings });
   zo.classList.add('zoom-btn'); zi.classList.add('zoom-btn');
-  $('topRight').append(bar.chat, bar.night, zo, zi, bar.set);
+  const canFs = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  bar.fs = button('', { kind: 'dark', small: true, icon: 'fullscreen', title: 'Full screen', onClick: toggleFullscreen });
+  $('topRight').append(bar.chat, bar.night, zo, zi, ...(canFs ? [bar.fs] : []), bar.set);
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, syncFs));
   document.addEventListener('bh-night', syncBar);
   $('topbar').classList.remove('hidden');
+}
+
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+function toggleFullscreen() {
+  const d = document, el = d.documentElement;
+  try {
+    if (fsElement()) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  } catch (e) { toast('Full screen is not available here'); }
+}
+function syncFs() {
+  const on = !!fsElement();
+  bar.fs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`;
+  bar.fs.title = on ? 'Exit full screen' : 'Full screen';
+  bar.fs.classList.toggle('on', on);
 }
 
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...S.settings, sound: soundOn })); } catch (e) { /* ignore */ } }
@@ -249,7 +267,10 @@ function openInfo(id) {
     body: h('div', { class: 'bh-stack' }, h('div', {}, h('div', { class: 'bh-label' }, 'Name'), nameIn),
       h('div', { class: 'bh-info' }, rows.map(([k, v]) => h('div', { class: 'bh-inforow' }, h('span', {}, k), h('b', {}, String(v)))))),
     buttons: [
-      { label: 'Save name', kind: 'blue', onClick: () => { Wm.rename(id, nameIn.value); renderWorlds(); closeModal(); } },
+      { label: 'Save name', kind: 'blue', onClick: () => {
+        const want = nameIn.value.trim(); Wm.rename(id, want); renderWorlds(); closeModal();
+        const got = Wm.get(id).name; if (want && got.toLowerCase() !== want.slice(0, 24).toLowerCase()) toast(`That name is taken, so it is now "${got}"`, 3200);
+      } },
       { label: 'Export', kind: 'gold', icon: 'download', onClick: () => { if (inf.fresh) { toast('Play this world once before exporting it'); return; } Wm.exportWorld(id); } },
       { label: 'Delete', kind: 'red', icon: 'trash', onClick: () => {
         if (!confirm(`Delete "${w.name}" forever? Export it first if you want a copy.`)) return;
@@ -270,9 +291,12 @@ function openNewWorld() {
 }
 
 function openCreateWorld() {
-  const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 24, value: `World ${Wm.list().length + 1}` });
+  const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 24, value: Wm.uniqueName(`World ${Wm.list().length + 1}`) });
   nameIn.addEventListener('keydown', e => e.stopPropagation());
-  const make = data => { curId = Wm.create(nameIn.value, data); renderWorlds(); closeModal(); };
+  const make = data => {
+    const want = nameIn.value.trim(); curId = Wm.create(nameIn.value, data); renderWorlds(); closeModal();
+    const got = Wm.get(curId).name; if (want && got.toLowerCase() !== want.slice(0, 24).toLowerCase()) toast(`That name is taken, so it is now "${got}"`, 3200);
+  };
   openModal({
     title: 'Create a new world', subtitle: 'Name it, then pick a starting point',
     body: h('div', { class: 'bh-stack' }, h('div', {}, h('div', { class: 'bh-label' }, 'Name'), nameIn),
@@ -298,7 +322,7 @@ function buildHome() {
   $('introCorner').append(button('Credits', { kind: 'dark', small: true, onClick: openCredits }));
   $('importFile').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try { curId = Wm.importText(await f.text()); renderWorlds(); toast('World imported'); }
+    try { curId = Wm.importText(await f.text()); renderWorlds(); toast('Imported "' + Wm.get(curId).name + '"'); }
     catch (err) { toast(err.message || 'Could not import that file'); }
   });
   renderWorlds();

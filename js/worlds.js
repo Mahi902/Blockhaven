@@ -9,6 +9,38 @@ const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2
 const persist = () => { try { localStorage.setItem(INDEX_KEY, JSON.stringify(idx)); } catch (e) { /* storage blocked */ } };
 export const emptyWorld = () => ({ w: WORLD_W, h: WORLD_H, next: 1, items: [], edges: [], floors: {}, rooms: [] });
 
+// ---- unique names: no two worlds may share a name (case-insensitive).
+// Name ends in a number -> bump it ("World 2" -> "World 3"); no number -> add one ("My Home" -> "My Home 2").
+const MAX_NAME = 24;
+const clean = n => String(n || '').trim().replace(/\s+/g, ' ').slice(0, MAX_NAME);
+export function uniqueName(name, exceptId = null, fallback = 'New World') {
+  const base = clean(name) || fallback;
+  const taken = new Set(idx.worlds.filter(w => w.id !== exceptId).map(w => w.name.toLowerCase()));
+  if (!taken.has(base.toLowerCase())) return base;
+  const m = base.match(/^(.*?)(\d+)$/);
+  const stem = m ? m[1] : base + ' ';
+  let n = m ? parseInt(m[2], 10) : 1;
+  for (let guard = 0; guard < 10000; guard++) {
+    n++;
+    const tail = String(n), cand = stem.slice(0, MAX_NAME - tail.length) + tail;
+    if (!taken.has(cand.toLowerCase())) return cand;
+  }
+  return base.slice(0, MAX_NAME - 4) + Date.now().toString(36).slice(-4);
+}
+function dedupeAll() {          // repairs saves that somehow already contain duplicate names
+  const kept = [];
+  for (const w of [...idx.worlds].sort((a, b) => a.created - b.created)) {
+    if (kept.some(x => x.name.toLowerCase() === w.name.toLowerCase())) {
+      const taken = new Set(kept.map(x => x.name.toLowerCase()));
+      let cand = w.name, n = 1;
+      const m = w.name.match(/^(.*?)(\d+)$/); const stem = m ? m[1] : w.name + ' '; if (m) n = parseInt(m[2], 10);
+      while (taken.has(cand.toLowerCase())) { n++; cand = stem.slice(0, MAX_NAME - String(n).length) + n; }
+      w.name = cand;
+    }
+    kept.push(w);
+  }
+}
+
 export function init() {
   try { const r = JSON.parse(localStorage.getItem(INDEX_KEY) || 'null'); if (r && Array.isArray(r.worlds)) idx = r; } catch (e) { /* start fresh */ }
   if (!idx.worlds.length) {
@@ -16,6 +48,7 @@ export function init() {
     const legacy = localStorage.getItem(SAVE_KEY);           // a home saved before worlds existed
     if (legacy) { try { localStorage.setItem(keyOf(id), legacy); } catch (e) { /* ignore */ } }
   }
+  dedupeAll();
   if (!get(idx.last)) idx.last = idx.worlds[0].id;
   persist();
 }
@@ -28,11 +61,11 @@ export function setLast(id) { idx.last = id; const w = get(id); if (w) w.played 
 /** data = null makes the world start as the starter apartment the first time it is opened. */
 export function create(name, data) {
   const id = newId(), now = Date.now();
-  idx.worlds.push({ id, name: (name || 'New World').trim().slice(0, 24) || 'New World', created: now, played: now });
+  idx.worlds.push({ id, name: uniqueName(name), created: now, played: now });
   if (data) { try { localStorage.setItem(keyOf(id), JSON.stringify(data)); } catch (e) { /* ignore */ } }
   persist(); return id;
 }
-export function rename(id, name) { const w = get(id); if (w) { w.name = (name || '').trim().slice(0, 24) || w.name; persist(); } }
+export function rename(id, name) { const w = get(id); if (w) { w.name = uniqueName(name, id, w.name); persist(); } }
 export function remove(id) {
   idx.worlds = idx.worlds.filter(w => w.id !== id);
   try { localStorage.removeItem(keyOf(id)); } catch (e) { /* ignore */ }

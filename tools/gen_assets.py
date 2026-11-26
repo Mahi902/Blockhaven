@@ -371,6 +371,8 @@ def icon(name, body):
 def gen_icons():
     icon('build', '<path d="M14.5 5.5l4 4-9.5 9.5H5v-4z"/><path d="M13 7l4 4"/>')
     icon('play', '<path d="M8 5l11 7-11 7z" fill="#fff"/>')
+    icon('fullscreen', '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>')
+    icon('fullscreen-exit', '<path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/>')
     icon('sound-on', '<path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="#fff"/><path d="M15.5 9a4 4 0 010 6"/><path d="M18 6.5a8 8 0 010 11"/>')
     icon('sound-off', '<path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z" fill="#fff"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>')
     icon('chat', '<path d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v7a2.5 2.5 0 01-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 014 13.5z"/><path d="M8 8.5h8M8 11.5h5"/>')

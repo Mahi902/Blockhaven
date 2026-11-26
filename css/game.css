@@ -57,6 +57,8 @@ canvas{display:block;width:100%;height:100%}
 .bh-dpad{position:absolute;right:12px;bottom:12px;width:132px;height:132px;z-index:20;display:none;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:4px}
 .bh-dpad.off{display:none!important}
 .bh-dpad button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;outline:0;border:3px solid #0f172a;border-radius:12px;background:rgba(51,65,85,.85);box-shadow:0 4px 0 #0f172a}
+.bh-dpad button{display:flex;align-items:center;justify-content:center;padding:0}
+.bh-dpad svg{width:58%;height:58%;fill:none;stroke:#fff;stroke-opacity:.9;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .bh-dpad button:active{background:rgba(253,224,71,.8);transform:translateY(3px)}
 .bh-dpad [data-dir=up]{grid-area:1/2}.bh-dpad [data-dir=left]{grid-area:2/1}.bh-dpad [data-dir=right]{grid-area:2/3}.bh-dpad [data-dir=down]{grid-area:3/2}
 @media (pointer:coarse){.bh-dpad{display:grid}}
