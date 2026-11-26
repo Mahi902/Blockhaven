@@ -1,5 +1,6 @@
 // Blockhaven - boot, game loop and top bar
-import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_COLORS } from './config.js';
+import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_COLORS, VERSION } from './config.js';
+import * as Wm from './worlds.js';
 import { S } from './state.js';
 import * as W from './world.js';
 import { loadCatalog, catalog } from './catalog.js';
@@ -9,7 +10,7 @@ import { initInput, doInteract, setZoom, clampCamera } from './input.js';
 import * as B from './build.js';
 import { buildStarter, SPAWN } from './starter.js';
 import { setSound, soundOn } from './audio.js';
-import { button, toast, h, openModal, swatches } from './ui.js';
+import { button, toast, h, openModal, closeModal, swatches, choice } from './ui.js';
 import './api.js';
 
 const $ = id => document.getElementById(id);
@@ -79,6 +80,8 @@ function openSettings() {
       button('Save', { kind: 'blue', small: true, onClick: applyName })),
     row('Click to move', 'Tap or click the ground to walk there. Off = keyboard / d-pad only.', () => S.settings.clickMove, v => { S.settings.clickMove = v; if (!v) { S.path = null; S.pendingInteract = null; } }),
     row('Sound', 'Sound effects.', () => soundOn, v => setSound(v)),
+    h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Worlds'), h('div', { class: 'bh-set-s' }, 'Save and go back to the home screen.')),
+      button('Exit', { kind: 'blue', small: true, onClick: exitToMenu })),
     h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Reset home'), h('div', { class: 'bh-set-s' }, 'Go back to the starter apartment. Removes your changes.')),
       button('Reset', { kind: 'red', small: true, onClick: () => {
         if (!confirm('Reset your home to the starter apartment? This removes your changes.')) return;
@@ -141,7 +144,6 @@ async function boot() {
   if (Math.min(window.innerWidth, window.innerHeight) < 600) S.camera.zoom = 0.6;
   await loadCatalog();
   await loadPlayerTemplates();
-  if (!W.load()) buildStarter();
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();
@@ -156,11 +158,12 @@ async function boot() {
   placeAtSpawn();
   S.camera.x = S.player.x; S.camera.y = S.player.y;
   syncBar();
-  buildLook();
+  Wm.init(); curId = Wm.last(); buildLook(); buildHome();
   $('startBtn').addEventListener('click', start);
   const tabs = { Play: ['tabPlay', 'panePlayTitle'], Look: ['tabLook', 'paneLook'] };
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+  $('verTag').textContent = 'v' + VERSION;
   requestAnimationFrame(frame);
 }
 
@@ -181,8 +184,101 @@ function savePlayer() { try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ 
 function start() {
   S.player.name = $('nameInput').value.trim() || 'Guest';
   savePlayer();
+  if (!Wm.get(curId)) curId = Wm.list()[0].id;
+  Wm.setLast(curId);
+  W.useKey(Wm.keyOf(curId));
+  if (!W.load()) buildStarter();
+  S.player.seat = null; S.path = null; S.pendingInteract = null; S.selected = null;
+  B.setMode('play'); placeAtSpawn();
+  S.camera.x = S.player.x; S.camera.y = S.player.y;
+  syncBar();
   S.started = true;
   $('intro').classList.add('hidden');
+}
+
+function exitToMenu() {
+  closeModal(); W.save(); Wm.setLast(curId);
+  S.started = false; S.player.seat = null; B.setMode('play'); syncBar();
+  renderWorlds();
+  $('intro').classList.remove('hidden');
+}
+
+// ---- home screen: worlds, import / export, credits
+let curId = null;
+const fmt = t => new Date(t).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`;
+}
+
+function renderWorlds() {
+  const box = $('worldList'); box.innerHTML = '';
+  for (const w of Wm.list()) {
+    const main = h('div', { class: 'world-main' }, h('div', { class: 'world-n' }, w.name), h('div', { class: 'world-s' }, 'Played ' + ago(w.played)));
+    const row = h('div', { class: 'world' + (w.id === curId ? ' on' : '') }, main,
+      button('', { kind: 'dark', small: true, icon: 'info', title: 'Info and options', onClick: () => openInfo(w.id) }));
+    main.addEventListener('click', () => { curId = w.id; renderWorlds(); });
+    main.addEventListener('dblclick', start);
+    box.append(row);
+  }
+}
+
+function openInfo(id) {
+  const w = Wm.get(id), inf = Wm.info(id);
+  const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 24, value: w.name });
+  nameIn.addEventListener('keydown', e => e.stopPropagation());
+  const rows = [['Created', fmt(inf.created)], ['Last played', fmt(inf.played)],
+    ['Furniture', inf.items], ['Walls, doors and windows', inf.edges], ['Rooms', inf.rooms], ['Floor tiles', inf.floors],
+    ['Save size', inf.fresh ? 'Not built yet' : inf.kb + ' KB']];
+  openModal({
+    title: 'World info', subtitle: 'Rename, export or delete this world',
+    body: h('div', { class: 'bh-stack' }, h('div', {}, h('div', { class: 'bh-label' }, 'Name'), nameIn),
+      h('div', { class: 'bh-info' }, rows.map(([k, v]) => h('div', { class: 'bh-inforow' }, h('span', {}, k), h('b', {}, String(v)))))),
+    buttons: [
+      { label: 'Save name', kind: 'blue', onClick: () => { Wm.rename(id, nameIn.value); renderWorlds(); closeModal(); } },
+      { label: 'Export', kind: 'gold', icon: 'download', onClick: () => { if (inf.fresh) { toast('Play this world once before exporting it'); return; } Wm.exportWorld(id); } },
+      { label: 'Delete', kind: 'red', icon: 'trash', onClick: () => {
+        if (!confirm(`Delete "${w.name}" forever? Export it first if you want a copy.`)) return;
+        Wm.remove(id); if (!Wm.get(curId)) curId = Wm.list()[0].id; renderWorlds(); closeModal();
+      } },
+    ],
+  });
+}
+
+function openNewWorld() {
+  const nameIn = h('input', { class: 'bh-input', type: 'text', maxlength: 24, value: `World ${Wm.list().length + 1}` });
+  nameIn.addEventListener('keydown', e => e.stopPropagation());
+  const make = data => { curId = Wm.create(nameIn.value, data); renderWorlds(); closeModal(); };
+  openModal({
+    title: 'New world', subtitle: 'Name it and pick a starting point',
+    body: h('div', { class: 'bh-stack' }, h('div', {}, h('div', { class: 'bh-label' }, 'Name'), nameIn),
+      choice('Starter apartment', 'Four furnished rooms to explore', () => make(null)),
+      choice('Empty plot', 'A blank plot to build from scratch', () => make(Wm.emptyWorld()))),
+  });
+}
+
+function openCredits() {
+  openModal({
+    title: 'Credits', body: h('div', { class: 'credits' },
+      h('img', { src: 'img/logo.svg', alt: '' }), h('h3', {}, 'Blockhaven'),
+      h('p', {}, 'Version ' + VERSION),
+      h('p', {}, 'Created, designed and developed by'),
+      h('p', {}, h('a', { href: 'https://github.com/mahi902', target: '_blank', rel: 'noopener' }, 'mahi902')),
+      h('p', {}, 'All art, code and sounds in this game are by mahi902.')),
+  });
+}
+
+function buildHome() {
+  $('menuRow').append(
+    button('New world', { kind: 'blue', small: true, icon: 'plus', onClick: openNewWorld }),
+    button('Import', { kind: 'dark', small: true, icon: 'upload', onClick: () => $('importFile').click() }));
+  $('introCorner').append(button('Credits', { kind: 'dark', small: true, onClick: openCredits }));
+  $('importFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { curId = Wm.importText(await f.text()); renderWorlds(); toast('World imported'); }
+    catch (err) { toast(err.message || 'Could not import that file'); }
+  });
+  renderWorlds();
 }
 
 boot().catch(e => { console.error(e); document.body.insertAdjacentHTML('beforeend', '<pre style="position:fixed;inset:auto 8px 8px;color:#fda4af;z-index:99">Blockhaven failed to start: ' + String(e.message).replace(/</g, '&lt;') + '</pre>'); });

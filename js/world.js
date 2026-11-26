@@ -1,11 +1,11 @@
 // Blockhaven - the world model: items, wall/door/window edges, floors, rooms, undo/redo, saving
-import { TILE, WALL_T, WORLD_W, WORLD_H, SAVE_KEY } from './config.js';
+import { TILE, WALL_T, WORLD_W, WORLD_H } from './config.js';
 import { catalog } from './catalog.js';
 
 export let world = fresh();
 export let version = 0;
 export const listeners = [];
-let undoStack = [], redoStack = [], saveTimer = 0;
+let undoStack = [], redoStack = [], saveTimer = 0, saveKey = null;
 const MAX_UNDO = 60;
 
 function fresh() { return { w: WORLD_W, h: WORLD_H, next: 1, items: [], edges: [], floors: {}, rooms: [] }; }
@@ -28,10 +28,12 @@ export function undo() { if (!undoStack.length) return false; redoStack.push(sna
 export function redo() { if (!redoStack.length) return false; undoStack.push(snap()); world = JSON.parse(redoStack.pop()); touch(); return true; }
 export function clearHistory() { undoStack = []; redoStack = []; }
 export function clearAll() { world = fresh(); clearHistory(); }
-export function save() { try { localStorage.setItem(SAVE_KEY, snap()); } catch (e) { /* storage full or blocked */ } }
+export function save() { if (!saveKey) return; try { localStorage.setItem(saveKey, snap()); } catch (e) { /* storage full or blocked */ } }
+/** Switch to another world's save slot (flushes the current one first). */
+export function useKey(k) { clearTimeout(saveTimer); save(); saveKey = k; }
 export function load() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY); if (!raw) return false;
+    const raw = saveKey && localStorage.getItem(saveKey); if (!raw) return false;
     const w = JSON.parse(raw); if (!w || !Array.isArray(w.items)) return false;
     world = Object.assign(fresh(), w); clearHistory(); version++; return true;
   } catch (e) { return false; }

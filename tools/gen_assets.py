@@ -403,6 +403,7 @@ def gen_icons():
     icon('home', '<path d="M4 11.5L12 4.5l8 7"/><path d="M6 10.5V20h12v-9.5"/><path d="M10 20v-5h4v5"/>')
     icon('reset', '<path d="M4 12a8 8 0 112.5 5.8"/><path d="M4 18v-5h5"/>')
     icon('plus', '<path d="M12 5v14M5 12h14"/>')
+    icon('info', '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".9" fill="#fff"/>')
     icon('grid', '<path d="M4 4h16v16H4zM4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/>')
 
 def gen_logo():
