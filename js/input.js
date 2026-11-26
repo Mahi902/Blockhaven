@@ -135,11 +135,15 @@ function onPointerUp(e) {
 }
 
 function playClick(wp) {
-  if (S.player.seat) leaveSeatNow();
+  if (S.player.seat && S.settings.clickMove) leaveSeatNow();
   const cx = Math.floor(wp.x / TILE), cy = Math.floor(wp.y / TILE);
   const e = W.edgeAtPx(wp.x, wp.y, 10);
   const it = W.itemAtCell(cx, cy);
   const hit = e && catalog.get(e.type).hasFunction ? { kind: 'edge', obj: e } : (it && catalog.get(it.type).hasFunction ? { kind: 'item', obj: it } : null);
+  if (!S.settings.clickMove) {          // click-to-move is off: only use what is already within reach
+    if (hit && S.nearby && S.nearby.obj === hit.obj) interactWith(hit.kind, hit.obj);
+    return;
+  }
   if (hit) { walkToAndUse(hit.kind, hit.obj); return; }
   walkTo(wp.x, wp.y);
 }

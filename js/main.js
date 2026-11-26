@@ -1,5 +1,5 @@
 // Blockhaven - boot, game loop and top bar
-import { TILE, PLAYER_KEY } from './config.js';
+import { TILE, PLAYER_KEY, SETTINGS_KEY } from './config.js';
 import { S } from './state.js';
 import * as W from './world.js';
 import { loadCatalog, catalog } from './catalog.js';
@@ -9,7 +9,7 @@ import { initInput, doInteract, setZoom, clampCamera } from './input.js';
 import * as B from './build.js';
 import { buildStarter, SPAWN } from './starter.js';
 import { setSound, soundOn } from './audio.js';
-import { button, toast } from './ui.js';
+import { button, toast, h, openModal } from './ui.js';
 import './api.js';
 
 const $ = id => document.getElementById(id);
@@ -51,14 +51,34 @@ function buildBar() {
   bar.chat.id = 'chatBtn';
   const zi = button('', { kind: 'dark', small: true, icon: 'zoom-in', title: 'Zoom in', onClick: () => setZoom(S.camera.zoom * 1.2) });
   const zo = button('', { kind: 'dark', small: true, icon: 'zoom-out', title: 'Zoom out', onClick: () => setZoom(S.camera.zoom / 1.2) });
-  const rs = button('', { kind: 'red', small: true, icon: 'reset', title: 'Reset the apartment', onClick: () => {
-    if (!confirm('Reset your home to the starter apartment? This removes your changes.')) return;
-    buildStarter(); placeAtSpawn(); B.select(null); toast('Home reset');
-  } });
   $('topLeft').append(bar.mode, bar.ceil);
-  $('topRight').append(bar.chat, bar.night, bar.snd, zo, zi, rs);
+  bar.set = button('', { kind: 'dark', small: true, icon: 'grid', title: 'Settings', onClick: openSettings });
+  zo.classList.add('zoom-btn'); zi.classList.add('zoom-btn');
+  $('topRight').append(bar.chat, bar.night, zo, zi, bar.set);
   document.addEventListener('bh-night', syncBar);
   $('topbar').classList.remove('hidden');
+}
+
+function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...S.settings, sound: soundOn })); } catch (e) { /* ignore */ } }
+
+function openSettings() {
+  const row = (label, sub, get, set) => {
+    const b = button(get() ? 'On' : 'Off', { kind: get() ? 'green' : 'dark', small: true, onClick: () => {
+      set(!get()); saveSettings(); syncBar();
+      const t = b.querySelector('span'); t.textContent = get() ? 'On' : 'Off';
+      b.className = `bh-btn bh-${get() ? 'green' : 'dark'} bh-small`;
+    } });
+    return h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, label), h('div', { class: 'bh-set-s' }, sub)), b);
+  };
+  const body = h('div', { class: 'bh-stack' },
+    row('Click to move', 'Tap or click the ground to walk there. Off = keyboard / d-pad only.', () => S.settings.clickMove, v => { S.settings.clickMove = v; if (!v) { S.path = null; S.pendingInteract = null; } }),
+    row('Sound', 'Sound effects.', () => soundOn, v => setSound(v)),
+    h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Reset home'), h('div', { class: 'bh-set-s' }, 'Go back to the starter apartment. Removes your changes.')),
+      button('Reset', { kind: 'red', small: true, onClick: () => {
+        if (!confirm('Reset your home to the starter apartment? This removes your changes.')) return;
+        buildStarter(); placeAtSpawn(); B.select(null); toast('Home reset'); import('./ui.js').then(u => u.closeModal());
+      } })));
+  openModal({ title: 'Settings', body });
 }
 
 function toggleChat() {
@@ -108,6 +128,11 @@ async function boot() {
     const saved = JSON.parse(localStorage.getItem(PLAYER_KEY) || 'null');
     if (saved) { S.player.name = saved.name || 'Guest'; Object.assign(S.player.look, saved.look || {}); $('nameInput').value = saved.name || ''; }
   } catch (e) { /* ignore */ }
+  try {
+    const st = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+    if (st) { S.settings.clickMove = st.clickMove !== false; if (st.sound === false) setSound(false); }
+  } catch (e) { /* ignore */ }
+  if (Math.min(window.innerWidth, window.innerHeight) < 600) S.camera.zoom = 0.6;
   await loadCatalog();
   await loadPlayerTemplates();
   if (!W.load()) buildStarter();

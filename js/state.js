@@ -3,6 +3,7 @@ import { DEFAULT_LOOK, TILE } from './config.js';
 
 export const S = {
   started: false,
+  settings: { clickMove: true },
   mode: 'play',               // 'play' | 'build'
   tool: 'select',             // select | place | floor | room | erase
   selected: null,             // { kind: 'item'|'edge'|'room', id }
