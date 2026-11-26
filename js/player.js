@@ -34,6 +34,7 @@ function femaleBody(tpl, d) {
     shape = d === 'right' ? `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>` : torso + hips;
     if (d === 'right') shape = `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>`;
   }
+  if (d === 'down') tpl = tpl.replace(/(\{\{hairFront\}\})[\s\S]*<\/svg>/, '$1</svg>');
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
 }
 
@@ -47,9 +48,13 @@ export function rebuildSprites() {
     const L = S.player.look, fem = L.gender === 'female';
     const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 0.97 : 1);
     let face = '';
+    const O = '#1b2336';
+    const eye = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${O}"/><circle cx="${x - 0.9}" cy="${y - 1}" r="${r * 0.38}" fill="#fff"/><circle cx="${x + 0.9}" cy="${y + 0.9}" r="${r * 0.18}" fill="#fff"/>`;
     if (d === 'down') face = fem
-      ? '<path d="M16.2 16.3 L18 17.2 M21.8 16.3 L20 17.2 M26.2 16.3 L28 17.2 M31.8 16.3 L30 17.2" stroke="#1b2336" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M21 23.6 Q24 26.4 27 23.6" fill="none" stroke="#d9455f" stroke-width="1.6" stroke-linecap="round"/>'
+      ? `<circle cx="14.6" cy="23" r="2.9" fill="#ff7a8a" opacity="0.5"/><circle cx="33.4" cy="23" r="2.9" fill="#ff7a8a" opacity="0.5"/>${eye(18.6, 18.6, 3.1)}${eye(29.4, 18.6, 3.1)}<path d="M15.6 16.4 L13.8 15.2 M15.2 18.4 L13.4 18.2 M32.4 16.4 L34.2 15.2 M32.8 18.4 L34.6 18.2" stroke="${O}" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M21.6 23.4 Q22.8 25.2 24 23.8 Q25.2 25.2 26.4 23.4" fill="none" stroke="#d9455f" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`
       : '<path d="M16.5 14.2 H21.5 M26.5 14.2 H31.5" stroke="#1b2336" stroke-width="1.5" stroke-linecap="round" fill="none"/>';
+    else if (fem && d === 'left') face = `${eye(18, 18.4, 2.8)}<path d="M15.6 16.2 L13.8 15.2" stroke="${O}" stroke-width="1.1" stroke-linecap="round"/>`;
+    else if (fem && d === 'right') face = `${eye(30, 18.4, 2.8)}<path d="M32.4 16.2 L34.2 15.2" stroke="${O}" stroke-width="1.1" stroke-linecap="round"/>`;
     const body = svg.replace(/(<svg[^>]*>)/, `$1<g transform="translate(24 0) scale(${sx} 1) translate(-24 0)">`).replace('</svg>', face + '</g></svg>');
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(body);
