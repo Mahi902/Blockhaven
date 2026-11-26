@@ -98,7 +98,7 @@ export function sitOn(item, lying = false) {
     }
     sx = best.x; sy = best.y;
   }
-  P.seat = { id: item.id, lying, back, rot: item.rot };
+  P.seat = { id: item.id, lying, back, rot: item.rot, shift: item.type === 'couch' };   // couch: arrow keys slide you between seats
   P.x = sx; P.y = sy; P.dir = FACE[item.rot]; P.moving = false;
   S.path = null; S.pendingInteract = null;
   sound('sit');
@@ -281,6 +281,31 @@ export function updatePlayer(dt) {
       return;
     }
     if (P.seat.swim) { updateSwim(dt, dx, dy, manual); return; }      // paddling around the tub: keys swim, E / click climbs out
+    if (P.seat.shift) {                       // couch: slide between seats along its length, anything else gets you off
+      const q = P.seat, horiz = q.rot % 2 === 0, along = horiz ? dx : dy, across = horiz ? dy : dx;
+      if (q.slide) {
+        q.slide.t = Math.min(1, q.slide.t + dt / 0.16);
+        const e = q.slide.t * q.slide.t * (3 - 2 * q.slide.t);
+        P.x = q.slide.fx + (q.slide.tx - q.slide.fx) * e; P.y = q.slide.fy + (q.slide.ty - q.slide.fy) * e;
+        if (q.slide.t >= 1) q.slide = null;
+      }
+      q.cd = Math.max(0, (q.cd || 0) - dt);
+      if (across !== 0) { leaveSeat(W.byId('item', q.id)); return; }
+      if (along !== 0) {
+        if (!q.slide && (along !== q.prev || q.cd <= 0)) {          // a fresh press, or held down: move one seat
+          const it = W.byId('item', q.id), f = it && W.footprint(it);
+          const cx = Math.floor(P.x / TILE) + (horiz ? along : 0), cy = Math.floor(P.y / TILE) + (horiz ? 0 : along);
+          if (f && cx >= f.x && cx < f.x + f.w && cy >= f.y && cy < f.y + f.h) {
+            q.slide = { fx: P.x, fy: P.y, tx: (cx + .5) * TILE, ty: (cy + .5) * TILE, t: 0 };
+            sound('step');
+          }
+          q.cd = 0.3;
+        }
+        q.prev = along; P.moving = false;
+        return;
+      }
+      q.prev = 0;
+    }
     if (manual) { leaveSeat(W.byId('item', P.seat.id)); return; }
     if (P.seat.run) {                         // running in place: keep the stride going
       const rate = P.seat.rate || 1;
