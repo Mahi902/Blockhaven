@@ -19,15 +19,33 @@ export async function loadPlayerTemplates() {
   rebuildSprites();
 }
 
+// Female silhouette: fuller chest, narrower waist, wider hips / rear (simple cartoon shapes drawn over the torso).
+const OL = '#1b2336';
+function femaleBody(tpl, d) {
+  let shape;
+  if (d === 'down' || d === 'up') {
+    const torso = `<path d="M13 29 Q11 33 10.5 35.5 Q12.5 38 14.8 40 Q12.5 44 11 48 Q24 51 37 48 Q35.5 44 33.2 40 Q35.5 38 37.5 35.5 Q37 33 35 29 Q24 26 13 29Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    const hips = `<path d="M12.4 44.6 Q24 47.2 35.6 44.6 Q38.4 48 37.8 50.2 Q24 53.4 10.2 50.2 Q9.6 48 12.4 44.6Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    const bust = d === 'down' ? `<path d="M15.5 37 Q19.5 39.6 23.2 37 M24.8 37 Q28.5 39.6 32.5 37" fill="none" stroke="${OL}" stroke-width="0.9" opacity="0.45" stroke-linecap="round"/>` : '';
+    shape = torso + bust + hips;
+  } else {
+    const torso = `<path d="M19 28 Q15.5 29 13.8 34 Q13.8 37 16 38.6 Q17.2 41 17 43 Q15.4 46 16 49 Q24 51 33.4 48.6 Q36.4 45 34.6 42 Q33 40 33.2 38 Q35.2 33 32.2 29 Q26 26.6 19 28Z" fill="{{shirt}}" stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    const hips = `<path d="M17 46 Q25 47.6 34.4 46 Q37 49 34 51.2 Q25 52.6 16 51.2 Q14.4 48.6 17 46Z" fill="{{pants}}" stroke="${OL}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    shape = d === 'right' ? `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>` : torso + hips;
+    if (d === 'right') shape = `<g transform="translate(48 0) scale(-1 1)">${torso}${hips}</g>`;
+  }
+  return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
+}
+
 export function rebuildSprites() {
   for (const d of DIRS) {
     if (!templates[d]) continue;
     const hair = hairParts(S.player.look.style, d);
-    const svg = templates[d]
+    const svg = (S.player.look.gender === 'female' ? femaleBody(templates[d], d) : templates[d])
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
     const L = S.player.look, fem = L.gender === 'female';
-    const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 0.94 : 1);
+    const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 0.97 : 1);
     let face = '';
     if (d === 'down') face = fem
       ? '<path d="M16.2 16.3 L18 17.2 M21.8 16.3 L20 17.2 M26.2 16.3 L28 17.2 M31.8 16.3 L30 17.2" stroke="#1b2336" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M21 23.6 Q24 26.4 27 23.6" fill="none" stroke="#d9455f" stroke-width="1.6" stroke-linecap="round"/>'
