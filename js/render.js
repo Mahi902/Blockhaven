@@ -6,6 +6,7 @@ import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
 import { sprites } from './player.js';
 import { FLOOR_BASE } from './ui.js';
+import { drawBot, drawBotTags, botDepth, botRect } from './npc.js';
 
 let canvas, ctx, night;
 const floorImgs = new Map();
@@ -250,6 +251,7 @@ export function render() {
     if (!catalog.get(it.type)) continue;
     const f = W.footprint(it);
     list.push({ y: (f.y + f.h) * TILE, fn: () => drawItem(c, it), it });
+    if (catalog.get(it.type).npc) list.push({ y: botDepth(it), fn: () => drawBot(c, it) });
     if (it.type === 'shower' && it.state && it.state._shower) list.push({ y: (f.y + f.h) * TILE + 0.9, fn: () => drawShowerWater(c, it, W.itemCenter(it)) });   // water falls over whoever is inside
   }
   const P = S.player;
@@ -275,7 +277,7 @@ export function render() {
   if (build) drawBuildOverlay(c, z);
   else if (S.nearby) {
     const o = S.nearby.obj;
-    const r = S.nearby.kind === 'item' ? W.itemRect(o) : W.edgeRect(o);
+    const r = S.nearby.bot ? botRect(o) : S.nearby.kind === 'item' ? W.itemRect(o) : W.edgeRect(o);
     c.strokeStyle = 'rgba(253,224,71,.9)'; c.lineWidth = 2.5 / z; c.setLineDash([6 / z, 5 / z]); c.lineDashOffset = -S.tick * 0.4 / z;
     rr(c, r.x - 3, r.y - 3, r.w + 6, r.h + 6, 6); c.stroke(); c.setLineDash([]);
   }
@@ -287,6 +289,7 @@ export function render() {
   // screen-space overlays: name tag + speech bubble
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawTags(c);
+  drawBotTags(c);
 }
 
 function glows() {

@@ -4,7 +4,7 @@
 import { TILE, REPO, COLOR_NAMES } from './config.js';
 
 export const catalog = new Map();
-export const order = { furniture: [], structure: [] };
+export const order = { furniture: [], structure: [], npc: [] };
 const BASE = new URL('../furniture/', import.meta.url).href;
 const images = new Map(), fnCache = new Map();
 
@@ -34,7 +34,7 @@ async function loadOne(id, files) {
   const edge = block === 0;
   const def = {
     id, name: info.name || id, description: info.description || '', block, tip: info.function || '',
-    edge, colors, spriteW, spriteH,
+    edge, npc: !edge && info.npc === '1', colors, spriteW, spriteH,
     w: Math.max(1, Math.round(spriteW / TILE)), h: Math.max(1, Math.round(spriteH / TILE)),
     hasFunction: files.includes('function.js') && !!info.function,
   };
@@ -45,7 +45,8 @@ export async function loadCatalog() {
   const folders = await listFolders();
   await Promise.all(Object.entries(folders).map(([id, files]) => loadOne(id, files).catch(e => console.warn('[catalog] skipped', id, e))));
   const sorted = [...catalog.values()].sort((a, b) => a.name.localeCompare(b.name));
-  order.furniture = sorted.filter(d => !d.edge).map(d => d.id);
+  order.furniture = sorted.filter(d => !d.edge && !d.npc).map(d => d.id);
+  order.npc = sorted.filter(d => d.npc).map(d => d.id);
   order.structure = sorted.filter(d => d.edge).map(d => d.id);
   return catalog;
 }

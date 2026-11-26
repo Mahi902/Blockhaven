@@ -14,6 +14,7 @@ import { buildStarter, SPAWN } from './starter.js';
 import { setSound, soundOn, sound } from './audio.js';
 import { button, toast, h, openModal, closeModal, swatches, choice } from './ui.js';
 import './api.js';
+import { updateNpcs } from './npc.js';
 
 const $ = id => document.getElementById(id);
 let bar = {};
@@ -156,6 +157,7 @@ function frame(t) {
       c.x += (S.player.x - c.x) * k; c.y += (S.player.y - c.y) * k;
       clampCamera();
     } else S.nearby = null;
+    updateNpcs(dt);
     S.bubbles.forEach(b => { b.ttl -= dt; });
     S.bubbles = S.bubbles.filter(b => b.ttl > 0);
     updatePrompt();

@@ -5,6 +5,7 @@ import { S } from './state.js';
 import { catalog } from './catalog.js';
 import * as W from './world.js';
 import { sound } from './audio.js';
+import { botDist } from './npc.js';
 
 export const hooks = { interact: null };      // set by api.js (avoids a circular import)
 export const RADIUS = 12;
@@ -397,6 +398,13 @@ export function nearestInteractive(reach = 46, filter = null) {
     if (!d || !d.hasFunction) continue;
     const dd = distToRect(P.x, P.y, W.itemRect(it));
     const e = { kind: 'item', obj: it, def: d };
+    if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }
+  }
+  for (const it of W.world.items) {   // an NPC away from its dock can be reached where it stands
+    const d = catalog.get(it.type);
+    if (!d || !d.npc || !d.hasFunction) continue;
+    const dd = botDist(it, P.x, P.y);
+    const e = { kind: 'item', obj: it, def: d, bot: true };
     if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }
   }
   for (const ed of W.world.edges) {

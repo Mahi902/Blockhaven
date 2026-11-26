@@ -257,7 +257,7 @@ function renderStrip() {
   if (S.tool === 'place') {
     el.classList.remove('hidden');
     const tabs = h('div', { class: 'bh-tabs' });
-    for (const [id, label] of [['furniture', 'Furniture'], ['structure', 'Walls & doors']]) {
+    for (const [id, label] of [['furniture', 'Furniture'], ['structure', 'Walls & doors'], ['npc', 'NPC']]) {
       const b = h('button', { class: `bh-tab${tab === id ? ' on' : ''}`, type: 'button' }, label);
       b.addEventListener('click', () => { sound('click'); tab = id; if (!(S.place.type && order[tab].includes(S.place.type))) pickType(order[tab][0] || null); else renderStrip(); });
       tabs.appendChild(b);
