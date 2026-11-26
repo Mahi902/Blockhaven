@@ -1,0 +1,4 @@
+name=Armchair
+description=A deep, squishy chair with arms. Hard to leave.
+block=1
+function=Sit down

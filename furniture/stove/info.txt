@@ -1,0 +1,4 @@
+name=Stove
+description=Four burners and a lot of confidence.
+block=1
+function=Cook something

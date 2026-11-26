@@ -1,0 +1,4 @@
+name=Computer Desk
+description=A desk with a computer, keyboard and a mug of something.
+block=2
+function=Use the computer

@@ -1,0 +1,4 @@
+name=Stereo
+description=A boombox with opinions about music.
+block=1
+function=Play music

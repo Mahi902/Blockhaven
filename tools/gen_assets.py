@@ -170,6 +170,62 @@ def nightstand(c):
     b += rect(20, 27, 8, 3, shade(c, -.55), 1.5)
     return svg(48, 48, b)
 
+def armchair(c):
+    b = shadow(4, 4, 40, 40, 10)
+    b += rect(4, 4, 40, 40, shade(c, -.28), 10, shade(c, -.5))
+    b += rect(9, 6, 30, 11, shade(c, -.12), 6)
+    b += rect(13, 16, 22, 24, c, 6, shade(c, -.38))
+    b += rect(16, 19, 16, 4, shade(c, .3), 2, op=.55)
+    b += rect(4, 10, 9, 32, shade(c, -.15), 5, shade(c, -.5))
+    b += rect(35, 10, 9, 32, shade(c, -.15), 5, shade(c, -.5))
+    return svg(48, 48, b)
+
+def desk(c):
+    b = shadow(3, 5, 90, 38, 4)
+    b += rect(3, 5, 90, 38, c, 4, shade(c, -.5), 1.8)
+    b += rect(7, 8, 82, 4, shade(c, .3), 2, op=.5)
+    b += rect(30, 11, 36, 14, '#15171d', 2, '#000')
+    b += rect(33, 13, 30, 9, '#6f8cff', 1, op=.85)
+    b += rect(44, 25, 8, 3, shade(c, -.45), 1)
+    b += rect(32, 30, 32, 8, shade(c, .3), 2, shade(c, -.4), 1)
+    for i in range(6):
+        b += rect(34 + i * 5, 32, 4, 2, shade(c, -.25), .6, op=.7)
+        b += rect(34 + i * 5, 35, 4, 2, shade(c, -.25), .6, op=.7)
+    b += circ(72, 34, 3, shade(c, -.3), shade(c, -.55), 1)
+    b += circ(14, 18, 5, '#f4f4f2', '#999', 1) + circ(14, 18, 3.2, '#6b4a31')
+    return svg(96, 48, b)
+
+def stove(c):
+    b = shadow(4, 5, 40, 40, 5)
+    b += rect(4, 4, 40, 40, c, 5, shade(c, -.5), 1.8)
+    b += rect(7, 7, 34, 26, shade(c, -.1), 3, shade(c, -.35), 1)
+    for x, y in ((15, 15), (33, 15), (15, 26), (33, 26)):
+        b += circ(x, y, 6, '#2a2c33', shade(c, -.55), 1.2)
+        b += circ(x, y, 3.4, 'none', '#6a6e78', 1)
+    for i in range(4):
+        b += circ(11 + i * 8.7, 38, 2.4, shade(c, -.55), shade(c, -.7), .8)
+    return svg(48, 48, b)
+
+def stereo(c):
+    b = shadow(5, 8, 38, 30, 5)
+    b += rect(5, 8, 38, 30, c, 5, shade(c, -.5), 1.8)
+    b += rect(9, 11, 30, 5, '#15171d', 2) + rect(12, 12.5, 12, 2, '#ffd27a', 1, op=.9)
+    b += circ(15, 28, 7, shade(c, -.3), shade(c, -.55), 1.2) + circ(15, 28, 3, shade(c, -.6))
+    b += circ(33, 28, 7, shade(c, -.3), shade(c, -.55), 1.2) + circ(33, 28, 3, shade(c, -.6))
+    b += circ(31, 13.5, 1.6, shade(c, .4), shade(c, -.5), .6)
+    b += f'<line x1="38" y1="8" x2="44" y2="2" stroke="{shade(c, -.55)}" stroke-width="1.4"/>'
+    return svg(48, 48, b)
+
+def bathtub(c):
+    b = shadow(3, 4, 138, 42, 12)
+    b += rect(3, 4, 138, 42, c, 12, shade(c, -.5), 2)
+    b += rect(10, 10, 124, 30, '#bfe8ff', 10, shade(c, -.3), 1.5)
+    b += rect(16, 14, 60, 5, '#ffffff', 3, op=.55)
+    for x, y, r in ((50, 28, 4), (62, 31, 3), (95, 24, 4.5), (108, 30, 3), (82, 33, 2.5)):
+        b += circ(x, y, r, '#ffffff', '#9fd3ee', .8, op=.85)
+    b += rect(12, 18, 9, 14, '#d5d9de', 3, '#777', 1) + circ(16, 25, 2.5, '#9aa0a8', '#555', .8)
+    return svg(144, 48, b)
+
 # id, name, description, block (area in tiles), function tooltip ('' = decoration), drawer
 FURNITURE = [
     ("couch", "Couch", "A soft three-seater. Perfect for doing absolutely nothing.", 3, "Sit down", couch),
@@ -183,6 +239,11 @@ FURNITURE = [
     ("fridge", "Fridge", "Cold drinks and questionable leftovers.", 1, "Grab a snack", fridge),
     ("wardrobe", "Wardrobe", "Change your shirt colour.", 2, "Open wardrobe", wardrobe),
     ("nightstand", "Nightstand", "A small bedside table. Decoration only.", 1, "", nightstand),
+    ("armchair", "Armchair", "A deep, squishy chair with arms. Hard to leave.", 1, "Sit down", armchair),
+    ("desk", "Computer Desk", "A desk with a computer, keyboard and a mug of something.", 2, "Use the computer", desk),
+    ("stove", "Stove", "Four burners and a lot of confidence.", 1, "Cook something", stove),
+    ("stereo", "Stereo", "A boombox with opinions about music.", 1, "Play music", stereo),
+    ("bathtub", "Bathtub", "Warm water and plenty of bubbles.", 3, "Take a bath", bathtub),
 ]
 
 # ---------------------------------------------------- structures (block=0 -> sits on a tile edge)
