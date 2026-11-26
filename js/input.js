@@ -76,7 +76,7 @@ function onKeyDown(e) {
     return;
   }
   if (S.modalOpen) return;
-  if (key === 'enter') { e.preventDefault(); document.getElementById('chatInput').focus(); return; }
+  if (key === 'enter') { e.preventDefault(); const cb = document.getElementById('chatBtn'); if (cb && S.mode === 'play') cb.click(); return; }
   if (key === 'b') { handlers.toggleBuild && handlers.toggleBuild(); return; }
   if (S.mode === 'play') {
     if (key === 'e' || key === ' ') { e.preventDefault(); doInteract(); }

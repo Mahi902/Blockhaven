@@ -47,6 +47,8 @@ function buildBar() {
   bar.ceil = button('', { kind: 'dark', small: true, icon: 'ceiling', title: 'Show ceilings', onClick: () => { S.showCeilings = !S.showCeilings; bar.ceil.classList.toggle('on', S.showCeilings); } });
   bar.night = button('', { kind: 'dark', small: true, icon: 'moon', title: 'Day / night', onClick: () => { S.night = !S.night; syncBar(); } });
   bar.snd = button('', { kind: 'dark', small: true, icon: 'sound-on', title: 'Sound', onClick: () => { setSound(!soundOn); syncBar(); } });
+  bar.chat = button('', { kind: 'dark', small: true, icon: 'chat', title: 'Chat (Enter)', onClick: toggleChat });
+  bar.chat.id = 'chatBtn';
   const zi = button('', { kind: 'dark', small: true, icon: 'zoom-in', title: 'Zoom in', onClick: () => setZoom(S.camera.zoom * 1.2) });
   const zo = button('', { kind: 'dark', small: true, icon: 'zoom-out', title: 'Zoom out', onClick: () => setZoom(S.camera.zoom / 1.2) });
   const rs = button('', { kind: 'red', small: true, icon: 'reset', title: 'Reset the apartment', onClick: () => {
@@ -54,10 +56,18 @@ function buildBar() {
     buildStarter(); placeAtSpawn(); B.select(null); toast('Home reset');
   } });
   $('topLeft').append(bar.mode, bar.ceil);
-  $('topRight').append(bar.night, bar.snd, zo, zi, rs);
+  $('topRight').append(bar.chat, bar.night, bar.snd, zo, zi, rs);
   document.addEventListener('bh-night', syncBar);
   $('topbar').classList.remove('hidden');
 }
+
+function toggleChat() {
+  const cb = $('chatbar'), open = cb.classList.contains('hidden');
+  cb.classList.toggle('hidden', !open);
+  bar.chat.classList.toggle('on', open);
+  if (open) $('chatInput').focus(); else $('chatInput').blur();
+}
+function closeChat() { $('chatbar').classList.add('hidden'); bar.chat.classList.remove('on'); }
 
 function updatePrompt() {
   const el = $('prompt');
@@ -106,6 +116,12 @@ async function boot() {
   B.initBuild(); buildBar();
   initInput(canvas, { toggleBuild });
   $('prompt').addEventListener('click', doInteract);
+  $('chatSend').addEventListener('click', closeChat);
+  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === 'Escape') closeChat(); });
+  const noSelect = e => { if (!e.target.closest('input')) e.preventDefault(); };
+  document.addEventListener('contextmenu', noSelect);
+  document.addEventListener('selectstart', noSelect);
+  document.addEventListener('dragstart', noSelect);
   placeAtSpawn();
   S.camera.x = S.player.x; S.camera.y = S.player.y;
   syncBar();
