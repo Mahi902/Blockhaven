@@ -1,0 +1,4 @@
+name=Toaster
+description=Two slots, a lever and a very smug pop. Pick something to toast and wait for the ding.
+block=1
+function=Toast something

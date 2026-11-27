@@ -716,6 +716,26 @@
   "white.svg",
   "yellow.svg"
  ],
+ "toaster": [
+  "black.svg",
+  "blue.svg",
+  "brown.svg",
+  "cyan.svg",
+  "function.js",
+  "gray.svg",
+  "green.svg",
+  "info.txt",
+  "light blue.svg",
+  "light gray.svg",
+  "lime.svg",
+  "magenta.svg",
+  "orange.svg",
+  "pink.svg",
+  "purple.svg",
+  "red.svg",
+  "white.svg",
+  "yellow.svg"
+ ],
  "toilet": [
   "black.svg",
   "blue.svg",

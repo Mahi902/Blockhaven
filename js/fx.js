@@ -73,6 +73,7 @@ export function drawItemFx(c, it) {
   const st = it.state; if (!st) return;
   const now = Date.now();
   if (it.type === 'fan') { drawFan(c, it, st, now); return; }
+  if (it.type === 'toaster') { drawToaster(c, st, now); return; }
   if (it.type === 'lavalamp') { drawLava(c, st, now); return; }
   if (it.type === 'exbike') { drawBike(c, st, now); return; }
   if (it.type === 'gclock') { drawClockHands(c, now); return; }
@@ -294,4 +295,24 @@ function drawLava(c, st, now) {
     c.beginPath(); c.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, 7); c.fill();
   }
   c.restore(); c.globalAlpha = 1;
+}
+
+// ---- toaster: glowing coils while toasting, then the food pops up out of the slots (local origin = tile centre) ----
+function drawToaster(c, st, now) {
+  const H = st.heat; if (!H) return;
+  const p = (now - H.start) / H.dur, done = p >= 1;
+  for (const y of [-6, 3]) {
+    if (!done) {
+      const pulse = 0.55 + Math.sin(now / 160) * 0.2 + p * 0.25;
+      c.fillStyle = `rgba(255,${Math.round(150 - 70 * p)},40,${pulse})`;
+      c.beginPath(); c.roundRect(-14, y, 28, 6, 2.5); c.fill();
+      c.strokeStyle = `rgba(255,220,120,${pulse})`; c.lineWidth = 0.8;
+      for (let i = -12; i <= 12; i += 4) { c.beginPath(); c.moveTo(i, y + 1); c.lineTo(i + 2, y + 5); c.stroke(); }
+    } else {
+      const pop = Math.min(1, (now - H.start - H.dur) / 250), lift = 4 * (1 - Math.pow(1 - pop, 2));
+      c.fillStyle = H.col; c.strokeStyle = 'rgba(70,40,10,.8)'; c.lineWidth = 0.8;
+      c.beginPath(); c.roundRect(-13, y - lift, 26, 6, 2.5); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(-11, y - lift + 1, 14, 1.4);
+    }
+  }
 }
