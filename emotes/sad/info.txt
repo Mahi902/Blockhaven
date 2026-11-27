@@ -1,0 +1,5 @@
+name=Sad
+icon=😢
+duration=3.2
+loop=0
+order=140

@@ -6,6 +6,7 @@ import { catalog } from './catalog.js';
 import * as W from './world.js';
 import { sound } from './audio.js';
 import { botDist } from './npc.js';
+import { tickEmote } from './emotes.js';
 
 export const hooks = { interact: null };      // set by api.js (avoids a circular import)
 export const RADIUS = 12;
@@ -57,12 +58,16 @@ function maleBody(tpl, d) {
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
 }
 
-export function buildSprites(L0) {
+// Sprites without the baked-in arms, used while an emote poses the arms itself (see js/emotes.js drawArms).
+const stripArms = tpl => tpl.replace(/<rect x="(?:6|35|21)" y="29"[^>]*\/>/g, '').replace(/<circle cx="(?:9\.5|38\.5|24)" cy="46"[^>]*\/>/g, '');
+
+export function buildSprites(L0, opts = {}) {
   const out = {};
   for (const d of DIRS) {
     if (!templates[d]) continue;
     const hair = hairParts(L0.style, d);
-    const svg = (L0.gender === 'female' ? femaleBody(templates[d], d) : maleBody(templates[d], d))
+    const tpl = opts.noArms ? stripArms(templates[d]) : templates[d];
+    const svg = (L0.gender === 'female' ? femaleBody(tpl, d) : maleBody(tpl, d))
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => L0[k] || '#888');
     const L = L0, fem = L.gender === 'female';
@@ -82,7 +87,14 @@ export function buildSprites(L0) {
   }
   return out;
 }
-export function rebuildSprites() { Object.assign(sprites, buildSprites(S.player.look)); }
+const armless = new Map();
+export function armlessSet(look) {
+  const key = JSON.stringify(look || {});
+  let s = armless.get(key);
+  if (!s) { if (armless.size > 24) armless.clear(); s = buildSprites(look || S.player.look, { noArms: true }); armless.set(key, s); }
+  return s;
+}
+export function rebuildSprites() { Object.assign(sprites, buildSprites(S.player.look)); armlessSet(S.player.look); }
 
 export function setLook(part) {
   Object.assign(S.player.look, part);
@@ -266,6 +278,7 @@ let stepClock = 0, stuck = 0;
 
 export function updatePlayer(dt) {
   const P = S.player;
+  if (P.emote) tickEmote(P);
   if (S.modalOpen || document.activeElement === document.getElementById('chatInput')) { P.moving = false; return; }
   const k = S.keys, t = S.touchDir;
   let dx = 0, dy = 0;
@@ -274,6 +287,7 @@ export function updatePlayer(dt) {
   if (k['w'] || k['arrowup'] || t.up) dy -= 1;
   if (k['s'] || k['arrowdown'] || t.down) dy += 1;
   const manual = dx !== 0 || dy !== 0;
+  if (P.emote && (manual || P.seat || P.lock || (S.path && S.path.length))) P.emote = null;   // moving, sitting or using something ends an emote
 
   if (P.lock) {
     if (Date.now() >= P.lock.until) { P.lock = null; S.path = null; }

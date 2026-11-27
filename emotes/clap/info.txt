@@ -1,0 +1,5 @@
+name=Clap
+icon=👏
+duration=3
+loop=1
+order=90

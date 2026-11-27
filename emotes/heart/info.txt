@@ -1,0 +1,5 @@
+name=Heart
+icon=❤️
+duration=2.8
+loop=0
+order=80

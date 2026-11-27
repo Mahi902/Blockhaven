@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="img/pwa/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/game.css?v=1.95">
+<link rel="stylesheet" href="css/game.css?v=1.96">
 </head>
 <body>
 <div id="splash"><i class="sp-orb o1"></i><i class="sp-orb o2"></i><i class="sp-orb o3"></i><i class="sp-orb o4"></i>
@@ -34,8 +34,11 @@
   </div>
 
   <div id="chatbar" class="hidden">
-    <input id="chatInput" class="bh-input" type="text" maxlength="140" placeholder="Press Enter to talk..." autocomplete="off">
-    <button id="chatSend" class="bh-btn bh-blue bh-small" type="button" aria-label="Send"><img class="bh-ico" src="img/icons/chat.svg" alt=""></button>
+    <div class="chat-row">
+      <input id="chatInput" class="bh-input" type="text" maxlength="140" placeholder="Press Enter to talk..." autocomplete="off">
+      <button id="chatSend" class="bh-btn bh-blue bh-small" type="button" aria-label="Send"><img class="bh-ico" src="img/icons/chat.svg" alt=""></button>
+    </div>
+    <div id="emoteTray" class="bh-panel" aria-label="Emotes"></div>
   </div>
 
   <div id="toast"></div>
@@ -72,8 +75,8 @@
 </div>
 <script src="js/vendor/qrcode.js"></script>
 <script src="js/vendor/jsQR.js"></script>
-<script type="importmap">{"imports": {"./js/api.js": "./js/api.js?v=1.95", "./js/audio.js": "./js/audio.js?v=1.95", "./js/build.js": "./js/build.js?v=1.95", "./js/catalog.js": "./js/catalog.js?v=1.95", "./js/config.js": "./js/config.js?v=1.95", "./js/fx.js": "./js/fx.js?v=1.95", "./js/hair.js": "./js/hair.js?v=1.95", "./js/input.js": "./js/input.js?v=1.95", "./js/npc.js": "./js/npc.js?v=1.95", "./js/multiplayer.js": "./js/multiplayer.js?v=1.95", "./js/music.js": "./js/music.js?v=1.95", "./js/player.js": "./js/player.js?v=1.95", "./js/render.js": "./js/render.js?v=1.95", "./js/starter.js": "./js/starter.js?v=1.95", "./js/state.js": "./js/state.js?v=1.95", "./js/ui.js": "./js/ui.js?v=1.95", "./js/world.js": "./js/world.js?v=1.95", "./js/worlds.js": "./js/worlds.js?v=1.95"}}</script>
-<script type="module" src="js/main.js?v=1.95"></script>
-<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v=1.95").catch(function(){})});</script>
+<script type="importmap">{"imports": {"./js/api.js": "./js/api.js?v=1.96", "./js/audio.js": "./js/audio.js?v=1.96", "./js/build.js": "./js/build.js?v=1.96", "./js/catalog.js": "./js/catalog.js?v=1.96", "./js/config.js": "./js/config.js?v=1.96", "./js/emotes.js": "./js/emotes.js?v=1.96", "./js/fx.js": "./js/fx.js?v=1.96", "./js/hair.js": "./js/hair.js?v=1.96", "./js/input.js": "./js/input.js?v=1.96", "./js/npc.js": "./js/npc.js?v=1.96", "./js/multiplayer.js": "./js/multiplayer.js?v=1.96", "./js/music.js": "./js/music.js?v=1.96", "./js/player.js": "./js/player.js?v=1.96", "./js/render.js": "./js/render.js?v=1.96", "./js/starter.js": "./js/starter.js?v=1.96", "./js/state.js": "./js/state.js?v=1.96", "./js/ui.js": "./js/ui.js?v=1.96", "./js/world.js": "./js/world.js?v=1.96", "./js/worlds.js": "./js/worlds.js?v=1.96"}}</script>
+<script type="module" src="js/main.js?v=1.96"></script>
+<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v=1.96").catch(function(){})});</script>
 </body>
 </html>

@@ -212,12 +212,13 @@ function hostGot(p, m) {
     send(p.dc, { t: 'welcome', night: S.night, v: VERSION, id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
     if (MP.started) send(p.dc, { t: 'start', night: S.night, world: W.getSnapshot() });
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
-  } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; p.seat = m.seat; p.lock = m.lock; }
+  } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; p.seat = m.seat; p.lock = m.lock; p.emote = validEmote(m.emote); }
   else if (m.t === 'chat') { const text = String(m.text || '').slice(0, 140); chatIn(p.id, p.name, text); toAll({ t: 'chat', from: p.id, name: p.name, text }, p.id); }
   else if (m.t === 'nightReq') { if (p.role === 'editor') queueNight({ v: m.v }); }
   else if (m.t === 'states') { applyStates(m.s); toAll({ t: 'states', s: m.s }, p.id); }
   else if (m.t === 'world' && p.role === 'editor') { applyRemote(m.snap); toAll({ t: 'world', snap: m.snap }, p.id); }
 }
+const validEmote = e => (e && typeof e.id === 'string' && Number.isFinite(e.n) ? { id: e.id.slice(0, 40), n: e.n } : null);
 function dropPeer(p, why) {
   if (!MP.peers.has(p.id)) return;
   MP.peers.delete(p.id); try { p.pc.close(); } catch (e) { /* ignore */ }
@@ -290,17 +291,17 @@ function lobbyGuest() {
 // ---- shared loops ---------------------------------------------------------------------------
 function rebuildRemote() {
   if (!isHost()) return;
-  S.remote = [...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock, walk: (S.remote.find(o => o.id === p.id) || {}).walk || 0, bubble: (S.remote.find(o => o.id === p.id) || {}).bubble }));
+  S.remote = [...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock, emote: p.emote, walk: (S.remote.find(o => o.id === p.id) || {}).walk || 0, bubble: (S.remote.find(o => o.id === p.id) || {}).bubble }));
 }
 function seatOf(P) { if (!P.seat) return null; try { return JSON.parse(JSON.stringify(P.seat)); } catch (e) { return null; } }
 let npcTick = 0;
 function startLoops() {
   clearInterval(posTimer);
   posTimer = setInterval(() => {
-    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving, seat: seatOf(P), lock: P.lock ? { anim: P.lock.anim } : null };
+    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving, seat: seatOf(P), lock: P.lock ? { anim: P.lock.anim } : null, emote: P.emote ? { id: P.emote.id, n: P.emote.n } : null };
     if (isHost()) {
       rebuildRemote();
-      toAll({ t: 'players', list: [{ id: 'host', name: P.name, look: P.look, ...mine }, ...[...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock }))] });
+      toAll({ t: 'players', list: [{ id: 'host', name: P.name, look: P.look, ...mine }, ...[...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock, emote: p.emote }))] });
       if (++npcTick % 2 === 0) { const d = npcSnapshot(); if (Object.keys(d).length) toAll({ t: 'npc', d }); }
     } else if (isGuest()) send(MP.dc, { t: 'pos', ...mine, look: P.look });
   }, 100);

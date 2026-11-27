@@ -1,0 +1,5 @@
+name=Sleep
+icon=😴
+duration=4
+loop=1
+order=110

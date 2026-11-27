@@ -6,6 +6,7 @@ import { S } from './state.js';
 import * as W from './world.js';
 import { loadCatalog, catalog, getImage, getFunction, previewUrl } from './catalog.js';
 import { stopMusic } from './music.js';
+import { loadEmotes, mountTray } from './emotes.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, doInteract, setZoom, clampCamera } from './input.js';
@@ -191,6 +192,7 @@ async function boot() {
   if (Math.min(window.innerWidth, window.innerHeight) < 600) S.camera.zoom = 0.6;
   await loadCatalog();
   await loadPlayerTemplates();
+  loadEmotes().then(() => mountTray($('emoteTray'))).catch(e => console.warn('[emotes]', e));
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();
@@ -300,7 +302,7 @@ function start() {
   Wm.setLast(curId);
   W.useKey(Wm.keyOf(curId));
   if (!W.load()) buildStarter();
-  S.player.seat = null; S.path = null; S.pendingInteract = null; S.selected = null;
+  S.player.seat = null; S.player.emote = null; S.path = null; S.pendingInteract = null; S.selected = null;
   B.setMode('play'); placeAtSpawn();
   S.camera.x = S.player.x; S.camera.y = S.player.y;
   syncBar();
@@ -311,7 +313,7 @@ function start() {
 function startGuest(snap) {
   stopMusic(); closeModal();
   W.useKey(null); W.applySnapshot(snap);
-  S.player.seat = null; S.path = null; S.pendingInteract = null; S.selected = null;
+  S.player.seat = null; S.player.emote = null; S.path = null; S.pendingInteract = null; S.selected = null;
   B.setMode('play'); placeAtSpawn();
   S.camera.x = S.player.x; S.camera.y = S.player.y;
   S.started = true; syncBar();
@@ -321,7 +323,7 @@ function startGuest(snap) {
 function exitToMenu() {
   if (MPm.isHost()) MPm.stop(true);
   stopMusic(); closeModal(); W.save(); Wm.setLast(curId);
-  S.started = false; S.player.seat = null; B.setMode('play'); syncBar();
+  S.started = false; S.player.seat = null; S.player.emote = null; B.setMode('play'); syncBar();
   renderWorlds();
   $('intro').classList.remove('hidden');
 }

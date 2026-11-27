@@ -1,0 +1,5 @@
+name=Bow
+icon=🙇
+duration=2.2
+loop=0
+order=50

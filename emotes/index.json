@@ -1,0 +1,58 @@
+{
+ "angry": [
+  "emote.js",
+  "info.txt"
+ ],
+ "bow": [
+  "emote.js",
+  "info.txt"
+ ],
+ "cheer": [
+  "emote.js",
+  "info.txt"
+ ],
+ "clap": [
+  "emote.js",
+  "info.txt"
+ ],
+ "dance": [
+  "emote.js",
+  "info.txt"
+ ],
+ "dizzy": [
+  "emote.js",
+  "info.txt"
+ ],
+ "heart": [
+  "emote.js",
+  "info.txt"
+ ],
+ "jump": [
+  "emote.js",
+  "info.txt"
+ ],
+ "laugh": [
+  "emote.js",
+  "info.txt"
+ ],
+ "sad": [
+  "emote.js",
+  "info.txt"
+ ],
+ "shrug": [
+  "emote.js",
+  "info.txt"
+ ],
+ "sleep": [
+  "emote.js",
+  "info.txt"
+ ],
+ "spin": [
+  "emote.js",
+  "info.txt"
+ ],
+ "wave": [
+  "emote.js",
+  "info.txt"
+ ]
+}

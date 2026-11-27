@@ -4,7 +4,8 @@ import { S, worldToScreen } from './state.js';
 import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater, drawTopDownPerson } from './fx.js';
 import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
-import { sprites, buildSprites } from './player.js';
+import { sprites, buildSprites, armlessSet } from './player.js';
+import { poseFor, drawArms, fx as emoteFx } from './emotes.js';
 import { FLOOR_BASE } from './ui.js';
 import { drawBot, drawBotTags, botDepth, botRect } from './npc.js';
 
@@ -179,6 +180,7 @@ function drawRemote(c, r) {
   const key = JSON.stringify(r.look || {});
   let set = remoteSprites.get(key); if (!set) { set = buildSprites(r.look || S.player.look); remoteSprites.set(key, set); }
   r.moving = !!r.mv; if (!r.look) r.look = S.player.look;
+  if (r.emote) armlessSet(r.look);           // warm the arm-less sprites so a remote emote does not flicker on its first frames
   drawPlayer(c, r, set);
 }
 function drawRemoteTags(c) {
@@ -200,7 +202,14 @@ function drawRemoteTags(c) {
 function drawPlayer(c, P = S.player, spr = sprites) {
   if (P.seat && P.seat.swim) { drawSwimmer(c, P, spr); return; }
   if (P.seat && P.seat.stand && (!P.seat.glide || P.seat.glide.t > 0.55)) { drawTopDownPerson(c, P.look, P.x, P.y, !!P.seat.scrub); return; }   // in the shower: seen from above, fully inside the stall
-  const img = spr[P.dir] || spr.down;
+  const emo = !P.seat && !P.lock ? poseFor(P) : null, ex = emo && emo.pose;
+  let useArms = false;
+  if (ex && ex.arms) {                       // posed arms need the armless sprites; until they have loaded, fall back to the stock ones
+    const a = armlessSet(P.look), dk = ex.dir || P.dir;
+    if (a.down && a.down.complete && a[dk] && a[dk].complete) { spr = a; useArms = true; }
+  }
+  const dirKey = (ex && ex.dir) || P.dir;
+  const img = spr[dirKey] || spr.down;
   if (!img || !img.complete) return;
   const sc = 0.82 * (P.look.gender === 'female' ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
   c.save();
@@ -236,11 +245,14 @@ function drawPlayer(c, P = S.player, spr = sprites) {
   const tilt = P.moving ? Math.sin(P.walk) * 0.07 : 0;
   c.translate(P.x, P.y + 9 + (P.seat && !stand ? 5 : 0));
   c.translate(ox, 0);
+  if (ex) { bob = 0; c.translate(ex.x || 0, ex.y || 0); c.rotate(ex.rot || 0); c.scale(ex.sx == null ? 1 : ex.sx, ex.sy == null ? 1 : ex.sy); }   // emote pose, around the feet
   c.rotate(tilt + extraRot);
   if (P.seat && !stand) { c.beginPath(); c.rect(-30, -70, 60, 70 - 5 + 0); c.clip(); }
-  if (P.look.gender === 'female' && !(P.seat && P.seat.lying)) drawSliced(c, img, dw, dh, bob);
+  if (P.look.gender === 'female' && !(P.seat && P.seat.lying) && !ex) drawSliced(c, img, dw, dh, bob);
   else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
+  if (useArms) drawArms(c, P.look, dirKey, ex.arms, sc);
   c.restore();
+  if (emo && emo.def.mod.draw) { try { emo.def.mod.draw(c, P, emo.t, emoteFx); } catch (e) { /* a broken emote should never break the game */ } }
   if (scrub) drawScrub(c, P);
   if (P.seat && P.seat.spin && Math.abs(P.seat.spin.v) > 5) {   // motion swirl
     c.save(); c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 2;
