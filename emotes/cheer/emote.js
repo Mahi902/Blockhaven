@@ -3,7 +3,7 @@ const COLORS = ['#f87171', '#fbbf24', '#4ade80', '#38bdf8', '#c084fc', '#f472b6'
 export default {
   pose(t) {
     const hop = Math.abs(Math.sin(t * 7));
-    return { y: -hop * 10, sy: 1 + hop * 0.04, arms: { l: { a: 2.8, f: Math.sin(t * 14) * 0.3 }, r: { a: 2.8, f: -Math.sin(t * 14) * 0.3 } } };
+    return { face: { eyes: 'happy', mouth: 'open', mo: 0.9, brows: 'up', blush: true }, y: -hop * 10, sy: 1 + hop * 0.04, arms: { l: { a: 2.8, f: Math.sin(t * 14) * 0.3 }, r: { a: 2.8, f: -Math.sin(t * 14) * 0.3 } } };
   },
   draw(c, P, t, fx) {
     const fade = Math.min(1, (2.6 - t) / 0.5);

@@ -2,7 +2,7 @@
 export default {
   pose(t, P, fx) {
     const k = Math.min(1, t / 0.3, (2.8 - t) / 0.3);
-    return { y: Math.sin(t * 5) * -1.5 * k, arms: { l: { a: 0.12 + 2.3 * k, f: 1.4 * k }, r: { a: 0.12 + 2.3 * k, f: 1.4 * k } } };
+    return { face: { eyes: 'heart', mouth: 'smile', blush: true }, y: Math.sin(t * 5) * -1.5 * k, arms: { l: { a: 0.12 + 2.3 * k, f: 1.4 * k }, r: { a: 0.12 + 2.3 * k, f: 1.4 * k } } };
   },
   draw(c, P, t, fx) {
     const fade = Math.min(1, (2.8 - t) / 0.4);

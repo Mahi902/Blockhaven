@@ -118,7 +118,7 @@ export function poseFor(P) {
 }
 
 // ---- arms ---------------------------------------------------------------------------------------------
-// The stock sprite has its arms baked in, so while an emote poses them we draw a sprite without arms (player.js armlessSet)
+// The stock sprite has its arms baked in, so while an emote poses them we draw a sprite without arms (player.js emoteSprites)
 // and draw posed arms on top. Angles: 0 hangs down, PI/2 points out sideways, PI points straight up; `f` bends the forearm.
 const OL = '#1b2336', SHOULDER_Y = 31, U = 8, V = 8, DEFAULT_ARM = { a: 0.12, f: 0 };
 export function drawArms(c, look, dir, arms, sc) {
@@ -143,6 +143,85 @@ export function drawArms(c, look, dir, arms, sc) {
     c.fillStyle = look.skin || '#f1c27d'; c.strokeStyle = OL; c.lineWidth = 1.2 * sc;
     c.beginPath(); c.arc(hx, hy, 3.4 * sc, 0, Math.PI * 2); c.fill(); c.stroke();
   }
+}
+
+// ---- faces --------------------------------------------------------------------------------------------------------
+// While an emote plays the stock face is removed and this one is drawn instead. An emote's pose() may return
+//   face: { eyes, brows, mouth, mo, blush }
+//   eyes   'open' (blinks by itself) | 'happy' | 'closed' | 'squint' | 'spiral' | 'heart'
+//   brows  'flat' | 'angry' | 'sad' | 'up' | 'none'          (default: flat for the male look, none for the female look)
+//   mouth  'smile' | 'grin' | 'open' | 'o' | 'frown' | 'flat' | 'smirk' | 'wavy' | 'grit'
+//   mo     0..1 how wide 'open' / 'o' mouths are (animate it for talking, laughing, snoring...)
+//   blush  true / false (default: on for the female look)
+const DEFAULT_FACE = { eyes: 'open', mouth: 'smile' };
+const FACE_FILL = '#4a1d24';
+export function drawFace(c, look, dir, face, sc, t = 0) {
+  if (dir === 'up') return;
+  const f = { ...DEFAULT_FACE, ...face }, fem = look.gender === 'female';
+  const bs = ((BUILDS.find(b => b.id === look.build) || { sx: 1 }).sx) * (fem ? 1.02 : 1);
+  const side = dir === 'left' || dir === 'right';
+  const eyes = side ? [{ x: 18, inner: -1 }] : [{ x: 18.8, inner: 1 }, { x: 29.2, inner: -1 }];
+  const ey = fem ? 18.6 : 18.2, mx = side ? 17.2 : 24, mk = side ? 0.62 : 1, my = 24.4, mo = fx.clamp(f.mo == null ? 0.5 : f.mo);
+  const line = w => { c.strokeStyle = OL; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; };
+  c.save();
+  c.scale(sc * bs, sc); c.translate(-24, -56.96);        // draw in sprite units
+  if (dir === 'right') { c.translate(48, 0); c.scale(-1, 1); }
+
+  if ((f.blush == null ? fem : f.blush) && !side) {
+    c.fillStyle = '#ff7a8a'; c.globalAlpha = fem ? 0.5 : 0.4;
+    for (const x of [14.8, 33.2]) { c.beginPath(); c.arc(x, 23, fem ? 2.9 : 2.3, 0, Math.PI * 2); c.fill(); }
+    c.globalAlpha = 1;
+  }
+  const blink = f.eyes === 'open' && (t % 3.4) < 0.11;
+  for (const e of eyes) {
+    const x = e.x, type = blink ? 'closed' : f.eyes;
+    if (type === 'happy') { line(1.8); c.beginPath(); c.moveTo(x - 2.9, ey + 1.3); c.quadraticCurveTo(x, ey - 3.2, x + 2.9, ey + 1.3); c.stroke(); }
+    else if (type === 'closed') { line(1.7); c.beginPath(); c.moveTo(x - 2.9, ey); c.quadraticCurveTo(x, ey + 2.6, x + 2.9, ey); c.stroke(); }
+    else if (type === 'squint') { line(1.8); c.beginPath(); c.moveTo(x - e.inner * 2.4, ey - 2.5); c.lineTo(x + e.inner * 1.9, ey); c.lineTo(x - e.inner * 2.4, ey + 2.5); c.stroke(); }
+    else if (type === 'spiral') {
+      line(1.3); c.beginPath();
+      for (let a = 0; a < 12.5; a += 0.35) { const r = 0.4 + a * 0.2, px = x + Math.cos(a + t * 9 * e.inner) * r, py = ey + Math.sin(a + t * 9 * e.inner) * r; if (a === 0) c.moveTo(px, py); else c.lineTo(px, py); }
+      c.stroke();
+    }
+    else if (type === 'heart') fx.shape(c, 'heart', x, ey, 7.4 + Math.sin(t * 9) * 0.8, '#ef4444', 1);
+    else {
+      const r = fem ? 2.9 : 2.1;
+      c.fillStyle = OL; c.beginPath(); c.arc(x, ey, r, 0, Math.PI * 2); c.fill();
+      if (fem) { c.fillStyle = '#fff'; c.beginPath(); c.arc(x - 0.9, ey - 1, r * 0.38, 0, Math.PI * 2); c.fill(); c.beginPath(); c.arc(x + 0.9, ey + 0.9, r * 0.18, 0, Math.PI * 2); c.fill(); }
+    }
+    const br = f.brows || (fem ? 'none' : 'flat'), iy = ey - 4.2;
+    if (br !== 'none' && type !== 'heart') {
+      line(1.5); c.beginPath();
+      const ox = x - e.inner * 3, nx = x + e.inner * 2.6;
+      if (br === 'angry') { c.moveTo(ox, iy - 2); c.lineTo(nx, iy + 1.2); }
+      else if (br === 'sad') { c.moveTo(ox, iy + 0.8); c.lineTo(nx, iy - 2.2); }
+      else if (br === 'up') { c.moveTo(ox, iy - 1.2); c.quadraticCurveTo(x, iy - 4, nx, iy - 1.2); }
+      else { c.moveTo(x - 2.6, iy); c.lineTo(x + 2.6, iy); }
+      c.stroke();
+    }
+  }
+
+  c.translate(mx, my); c.scale(mk, 1);                     // mouth, centred on (0, 0)
+  const m = f.mouth;
+  if (m === 'smile') { line(1.5); c.beginPath(); c.moveTo(-3.6, -0.9); c.quadraticCurveTo(0, 3.4, 3.6, -0.9); c.stroke(); }
+  else if (m === 'frown') { line(1.5); c.beginPath(); c.moveTo(-3.4, 1.8); c.quadraticCurveTo(0, -2.3, 3.4, 1.8); c.stroke(); }
+  else if (m === 'flat') { line(1.5); c.beginPath(); c.moveTo(-3, 0.5); c.lineTo(3, 0.5); c.stroke(); }
+  else if (m === 'smirk') { line(1.5); c.beginPath(); c.moveTo(-3, 1); c.quadraticCurveTo(1.5, 1.8, 3.8, -1.5); c.stroke(); }
+  else if (m === 'wavy') { line(1.5); c.beginPath(); for (let i = 0; i <= 8; i++) { const px = -4 + i, py = Math.sin(i * 1.6 + t * 10) * 1.1; if (i === 0) c.moveTo(px, py); else c.lineTo(px, py); } c.stroke(); }
+  else if (m === 'grit') {
+    c.fillStyle = '#fff'; line(1.3); c.beginPath(); c.roundRect(-4.2, -1.9, 8.4, 4.3, 1.2); c.fill(); c.stroke();
+    c.lineWidth = 0.9; c.beginPath(); for (const x of [-2.1, 0, 2.1]) { c.moveTo(x, -1.9); c.lineTo(x, 2.4); } c.moveTo(-4.2, 0.25); c.lineTo(4.2, 0.25); c.stroke();
+  }
+  else if (m === 'grin') {
+    c.fillStyle = FACE_FILL; line(1.3); c.beginPath(); c.moveTo(-4.2, -1.2); c.quadraticCurveTo(0, 0.2, 4.2, -1.2); c.quadraticCurveTo(3.4, 5.2, 0, 5.2); c.quadraticCurveTo(-3.4, 5.2, -4.2, -1.2); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#f87171'; c.beginPath(); c.ellipse(0, 4, 1.9, 1, 0, 0, Math.PI * 2); c.fill();
+  }
+  else if (m === 'open' || m === 'o') {
+    const rx = m === 'o' ? 1.5 + mo * 1.1 : 2.8 + mo * 1.2, ry = m === 'o' ? 1.7 + mo * 1.3 : 0.9 + mo * 3.6;
+    c.fillStyle = FACE_FILL; line(1.3); c.beginPath(); c.ellipse(0, ry * 0.5, rx, ry, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    if (m === 'open' && mo > 0.5) { c.fillStyle = '#f87171'; c.beginPath(); c.ellipse(0, ry * 1.1, rx * 0.6, ry * 0.35, 0, 0, Math.PI * 2); c.fill(); }
+  }
+  c.restore();
 }
 
 // ---- tray icons: a silhouette of the pose, generated from the emote's own pose() --------------------------------

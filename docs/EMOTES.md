@@ -20,6 +20,7 @@ Create `emotes/<id>/` with two files and that's it - the game finds new folders 
     // Called every frame. t = seconds since the emote started. Return any of these (all optional):
     //   x, y      shift in px (negative y = up)          rot   tilt in radians, around the feet
     //   sx, sy    squash / stretch (1 = normal)          dir   'down' | 'left' | 'up' | 'right' to turn the body
+    //   face      { eyes, brows, mouth, mo, blush } - the expression (see below); omit it for a plain smile
     //   arms      { l: {a, f}, r: {a, f} }  a = upper arm angle (0 down, 1.57 sideways, 3.14 straight up),
     //             f = extra forearm bend. l / r are the left / right arm as you see them from the front.
     pose(t, P, fx) { return { arms: { r: { a: 2.4, f: Math.sin(t * 10) * 0.5 } } }; },
@@ -28,6 +29,10 @@ Create `emotes/<id>/` with two files and that's it - the game finds new folders 
     draw(c, P, t, fx) { fx.shape(c, 'spark', P.x, P.y - 86, 20, '#fde047'); },
   };
   ```
+Faces: `eyes` is open (blinks by itself), happy, closed, squint, spiral or heart; `brows` is flat, angry, sad, up or none;
+`mouth` is smile, grin, open, o, frown, flat, smirk, wavy or grit; `mo` (0 to 1) sets how wide open / o mouths are, so you can
+animate talking or laughing; `blush` is true or false. The stock face is swapped out while an emote plays and restored after.
+
   `fx` has `shape(c, name, x, y, size, color, alpha, rot)` (built-in SVG shapes: heart, star, spark, note, drop, anger), `text(c, s, x, y, size, color, alpha)`, `hump(u)` (0 to 1 to 0), `rand(n)`
   (a pseudo random number that is the same on every device) and `clamp`.
 

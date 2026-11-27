@@ -2,6 +2,6 @@
 export default {
   pose(t) {
     const c = Math.sin(t * 14);
-    return { y: -Math.abs(Math.sin(t * 7)) * 1.2, arms: { l: { a: 0.1, f: -1.32 + c * 0.1 }, r: { a: 0.1, f: -1.32 + c * 0.1 } } };
+    return { face: { eyes: 'happy', mouth: 'grin', blush: true }, y: -Math.abs(Math.sin(t * 7)) * 1.2, arms: { l: { a: 0.1, f: -1.32 + c * 0.1 }, r: { a: 0.1, f: -1.32 + c * 0.1 } } };
   },
 };

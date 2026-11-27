@@ -58,15 +58,19 @@ function maleBody(tpl, d) {
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
 }
 
-// Sprites without the baked-in arms, used while an emote poses the arms itself (see js/emotes.js drawArms).
-const stripArms = tpl => tpl.replace(/<rect x="(?:6|35|21)" y="29"[^>]*\/>/g, '').replace(/<circle cx="(?:9\.5|38\.5|24)" cy="46"[^>]*\/>/g, '');
+// Sprites without the baked-in arms and face, used while an emote poses the arms and draws the expression itself
+// (see js/emotes.js drawArms / drawFace).
+const stripForEmote = tpl => tpl
+  .replace(/<rect x="(?:6|35|21)" y="29"[^>]*\/>/g, '').replace(/<circle cx="(?:9\.5|38\.5|24)" cy="46"[^>]*\/>/g, '')   // arms and hands
+  .replace(/<circle cx="(?:19|29|18|30)" cy="18" r="2" fill="#1b2336"\/>/g, '').replace(/<path d="M2[08] 23 Q[^"]*"[^>]*\/>/g, '')   // eyes and mouth
+  .replace(/<circle cx="(?:16|32)" cy="22"[^>]*\/>/g, '');                                                                          // cheeks
 
 export function buildSprites(L0, opts = {}) {
   const out = {};
   for (const d of DIRS) {
     if (!templates[d]) continue;
     const hair = hairParts(L0.style, d);
-    const tpl = opts.noArms ? stripArms(templates[d]) : templates[d];
+    const tpl = opts.emote ? stripForEmote(templates[d]) : templates[d];
     const svg = (L0.gender === 'female' ? femaleBody(tpl, d) : maleBody(tpl, d))
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => L0[k] || '#888');
@@ -80,6 +84,7 @@ export function buildSprites(L0, opts = {}) {
       : '<path d="M16.5 14.2 H21.5 M26.5 14.2 H31.5" stroke="#1b2336" stroke-width="1.5" stroke-linecap="round" fill="none"/>';
     else if (fem && d === 'left') face = `${eye(18, 18.4, 2.8)}<path d="M15.6 16.2 L13.8 15.2" stroke="${O}" stroke-width="1.1" stroke-linecap="round"/>`;
     else if (fem && d === 'right') face = `${eye(30, 18.4, 2.8)}<path d="M32.4 16.2 L34.2 15.2" stroke="${O}" stroke-width="1.1" stroke-linecap="round"/>`;
+    if (opts.emote) face = '';
     const body = svg.replace(/(<svg[^>]*>)/, `$1<g transform="translate(24 0) scale(${sx} 1) translate(-24 0)">`).replace('</svg>', face + '</g></svg>');
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(body);
@@ -87,14 +92,14 @@ export function buildSprites(L0, opts = {}) {
   }
   return out;
 }
-const armless = new Map();
-export function armlessSet(look) {
+const emoteCache = new Map();
+export function emoteSprites(look) {
   const key = JSON.stringify(look || {});
-  let s = armless.get(key);
-  if (!s) { if (armless.size > 24) armless.clear(); s = buildSprites(look || S.player.look, { noArms: true }); armless.set(key, s); }
+  let s = emoteCache.get(key);
+  if (!s) { if (emoteCache.size > 24) emoteCache.clear(); s = buildSprites(look || S.player.look, { emote: true }); emoteCache.set(key, s); }
   return s;
 }
-export function rebuildSprites() { Object.assign(sprites, buildSprites(S.player.look)); armlessSet(S.player.look); }
+export function rebuildSprites() { Object.assign(sprites, buildSprites(S.player.look)); emoteSprites(S.player.look); }
 
 export function setLook(part) {
   Object.assign(S.player.look, part);

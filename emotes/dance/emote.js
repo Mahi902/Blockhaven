@@ -3,6 +3,7 @@ export default {
   pose(t) {
     const s = Math.sin(t * 6);
     return {
+      face: { eyes: 'happy', mouth: 'grin', blush: true },
       x: Math.sin(t * 3) * 3, y: -Math.abs(s) * 5, rot: s * 0.1, sy: 1 + Math.abs(Math.cos(t * 6)) * 0.03,
       arms: { l: { a: 2.2 + s * 0.7, f: s * 0.4 }, r: { a: 2.2 - s * 0.7, f: -s * 0.4 } },
     };

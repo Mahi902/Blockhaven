@@ -2,7 +2,7 @@
 export default {
   pose(t, P, fx) {
     const k = Math.min(1, t / 0.5, (3.2 - t) / 0.5);
-    return { sy: 1 - 0.06 * k, y: 1 * k, arms: { l: { a: 0.08 }, r: { a: 0.08 } } };
+    return { face: { eyes: 'open', brows: 'sad', mouth: 'frown', blush: false }, sy: 1 - 0.06 * k, y: 1 * k, arms: { l: { a: 0.08 }, r: { a: 0.08 } } };
   },
   draw(c, P, t, fx) {
     if (P.dir !== 'down') return;

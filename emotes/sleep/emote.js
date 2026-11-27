@@ -1,7 +1,7 @@
 // Dozing on your feet, swaying slowly, with floating Zs.
 export default {
   pose(t) {
-    return { rot: Math.sin(t * 1.4) * 0.07, sy: 0.96 + Math.sin(t * 2.2) * 0.012, y: 1.5 };
+    return { face: { eyes: 'closed', mouth: 'o', mo: 0.5 + 0.5 * Math.sin(t * 2.2), brows: 'none' }, rot: Math.sin(t * 1.4) * 0.07, sy: 0.96 + Math.sin(t * 2.2) * 0.012, y: 1.5 };
   },
   draw(c, P, t, fx) {
     for (let i = 0; i < 3; i++) {

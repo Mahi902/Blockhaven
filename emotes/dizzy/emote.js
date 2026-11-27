@@ -2,7 +2,7 @@
 export default {
   pose(t, P, fx) {
     const k = Math.min(1, t / 0.2, (3 - t) / 0.4);
-    return { x: Math.sin(t * 5) * 5 * k, rot: Math.sin(t * 5) * 0.16 * k };
+    return { face: { eyes: 'spiral', mouth: 'wavy' }, x: Math.sin(t * 5) * 5 * k, rot: Math.sin(t * 5) * 0.16 * k };
   },
   draw(c, P, t, fx) {
     const k = Math.min(1, t / 0.2, (3 - t) / 0.4);
