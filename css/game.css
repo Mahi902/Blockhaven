@@ -156,3 +156,10 @@ canvas{display:block;width:100%;height:100%}
 /* full screen: the footer goes away and the app uses every pixel, so the d-pad and action button stay on screen */
 body.fs #app{height:var(--ah,100dvh)}
 body.fs #footer{display:none}
+
+.bh-dgreen{background:linear-gradient(#15803d,#14532d);box-shadow:0 5px 0 #052e16,0 7px 8px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.35)}.bh-dgreen:active{box-shadow:0 1px 0 #052e16}
+.mp-btn{width:100%;justify-content:center;font-size:17px;padding:8px;margin-top:10px}
+.mp-qr{display:block;margin:0 auto;width:min(280px,70vw);height:min(280px,70vw);image-rendering:pixelated;background:#fff;border:6px solid #fff;border-radius:8px}
+.mp-video{width:100%;max-height:260px;border-radius:10px;background:#000;object-fit:cover}
+.mp-code{width:100%;box-sizing:border-box;height:64px;font:11px monospace;user-select:text;resize:none}
+.mp-row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:6px 0;flex-wrap:wrap}.mp-row b{flex:1;min-width:80px}

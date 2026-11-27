@@ -15,6 +15,7 @@ import { setSound, soundOn, sound } from './audio.js';
 import { button, toast, h, openModal, closeModal, swatches, choice } from './ui.js';
 import './api.js';
 import { updateNpcs } from './npc.js';
+import * as MPm from './multiplayer.js';
 
 const $ = id => document.getElementById(id);
 let bar = {};
@@ -30,6 +31,7 @@ function placeAtSpawn() {
 }
 
 function toggleBuild() {
+  if (!MPm.canEdit()) return;
   B.setMode(S.mode === 'build' ? 'play' : 'build');
   if (S.mode === 'build' && S.player.seat) S.player.seat = null;
   syncBar();
@@ -40,6 +42,7 @@ function syncBar() {
   bar.mode.querySelector('img').src = `img/icons/${build ? 'play' : 'build'}.svg`;
   bar.mode.querySelector('span').textContent = build ? 'Play' : 'Build';
   bar.ceil.classList.toggle('hidden', !build);
+  bar.mode.classList.toggle('hidden', !MPm.canEdit());
   bar.night.querySelector('img').src = `img/icons/${S.night ? 'sun' : 'moon'}.svg`;
   bar.snd.querySelector('img').src = `img/icons/sound-${soundOn ? 'on' : 'off'}.svg`;
   applyChat();
@@ -110,13 +113,15 @@ function openSettings() {
       button('Save', { kind: 'blue', small: true, onClick: applyName })),
     row('Click to move', 'Tap or click the ground to walk there. Off = keyboard / d-pad only.', () => S.settings.clickMove, v => { S.settings.clickMove = v; if (!v) { S.path = null; S.pendingInteract = null; } }),
     row('Sound', 'Sound effects.', () => soundOn, v => setSound(v)),
-    h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Worlds'), h('div', { class: 'bh-set-s' }, 'Save and go back to the home screen.')),
-      button('Exit', { kind: 'blue', small: true, onClick: exitToMenu })),
-    h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Reset home'), h('div', { class: 'bh-set-s' }, 'Go back to the starter apartment. Removes your changes.')),
+    ...(MPm.isHost() ? [h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Multiplayer'), h('div', { class: 'bh-set-s' }, 'Permissions, invites and stopping the session.')),
+      button('Permissions', { kind: 'blue', small: true, onClick: MPm.openPermissions }))] : []),
+    h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, MPm.isGuest() ? 'Session' : 'Worlds'), h('div', { class: 'bh-set-s' }, MPm.isGuest() ? 'Leave this multiplayer game.' : 'Save and go back to the home screen.')),
+      button(MPm.isGuest() ? 'Leave' : 'Exit', { kind: 'blue', small: true, onClick: () => MPm.isGuest() ? MPm.leave() : exitToMenu() })),
+    ...(MPm.active() && !MPm.isHost() ? [] : [h('div', { class: 'bh-setrow' }, h('div', {}, h('div', { class: 'bh-set-t' }, 'Reset home'), h('div', { class: 'bh-set-s' }, 'Go back to the starter apartment. Removes your changes.')),
       button('Reset', { kind: 'red', small: true, onClick: () => {
         if (!confirm('Reset your home to the starter apartment? This removes your changes.')) return;
         buildStarter(); placeAtSpawn(); B.select(null); toast('Home reset'); import('./ui.js').then(u => u.closeModal());
-      } })));
+      } }))]));
   openModal({ title: 'Settings', body, onClose: applyName });
 }
 
@@ -157,6 +162,8 @@ function frame(t) {
       c.x += (S.player.x - c.x) * k; c.y += (S.player.y - c.y) * k;
       clampCamera();
     } else S.nearby = null;
+    if (!MPm.canEdit() && S.mode === 'build') { B.setMode('play'); syncBar(); }
+    MPm.tickRemote(dt);
     updateNpcs(dt);
     S.bubbles.forEach(b => { b.ttl -= dt; });
     S.bubbles = S.bubbles.filter(b => b.ttl > 0);
@@ -196,6 +203,9 @@ async function boot() {
   syncBar();
   Wm.init(); curId = Wm.last(); buildLook(); buildHome();
   $('startBtn').addEventListener('click', start);
+  MPm.init({ syncBar, exitToMenu, startHost: id => { curId = id; start(); MPm.onHostStart(); }, startGuest });
+  const mpBtn = button('Multiplayer', { kind: 'dgreen', onClick: () => { S.player.name = $('nameInput').value.trim() || 'Guest'; savePlayer(); MPm.openMultiplayer(Wm.list()); } });
+  mpBtn.classList.add('mp-btn'); $('startBtn').after(mpBtn);
   const tabs = { Play: ['tabPlay', 'panePlayTitle'], Look: ['tabLook', 'paneLook'] };
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
@@ -256,7 +266,18 @@ function start() {
   $('intro').classList.add('hidden');
 }
 
+function startGuest(snap) {
+  stopMusic(); closeModal();
+  W.useKey(null); W.applySnapshot(snap);
+  S.player.seat = null; S.path = null; S.pendingInteract = null; S.selected = null;
+  B.setMode('play'); placeAtSpawn();
+  S.camera.x = S.player.x; S.camera.y = S.player.y;
+  S.started = true; syncBar();
+  $('intro').classList.add('hidden');
+}
+
 function exitToMenu() {
+  if (MPm.isHost()) MPm.stop(true);
   stopMusic(); closeModal(); W.save(); Wm.setLast(curId);
   S.started = false; S.player.seat = null; B.setMode('play'); syncBar();
   renderWorlds();

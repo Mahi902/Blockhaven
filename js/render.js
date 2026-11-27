@@ -4,7 +4,7 @@ import { S, worldToScreen } from './state.js';
 import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater, drawTopDownPerson } from './fx.js';
 import { catalog, getImage } from './catalog.js';
 import * as W from './world.js';
-import { sprites } from './player.js';
+import { sprites, buildSprites } from './player.js';
 import { FLOOR_BASE } from './ui.js';
 import { drawBot, drawBotTags, botDepth, botRect } from './npc.js';
 
@@ -154,6 +154,34 @@ function drawSliced(c, img, dw, dh, bob) {
   band(0, 27.2, 0, 0);                                   // head and shoulders
 }
 
+const remoteSprites = new Map();
+function drawRemote(c, r) {
+  const key = JSON.stringify(r.look || {});
+  let set = remoteSprites.get(key); if (!set) { set = buildSprites(r.look || S.player.look); remoteSprites.set(key, set); }
+  const img = set[r.dir] || set.down; if (!img || !img.complete) return;
+  const fem = (r.look || {}).gender === 'female', sc = 0.82 * (fem ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
+  const bob = r.mv ? -Math.abs(Math.sin(performance.now() / 90)) * 3 : 0;
+  c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(r.x, r.y + 9, 12, 5, 0, 0, Math.PI * 2); c.fill();
+  c.save(); c.translate(r.x, r.y + 9);
+  if (fem) drawSliced(c, img, dw, dh, bob); else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
+  c.restore();
+}
+function drawRemoteTags(c) {
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (const r of S.remote) {
+    const s = worldToScreen(r.x, r.y - 50), ty = s.y - 8 * S.camera.zoom;
+    c.font = '700 12px "Plus Jakarta Sans", sans-serif';
+    const label = r.name || 'Guest', tw = c.measureText(label).width + 14;
+    c.fillStyle = 'rgba(2,6,23,.72)'; rr(c, s.x - tw / 2, ty - 10, tw, 20, 8); c.fill();
+    c.fillStyle = '#fff'; c.fillText(label, s.x, ty + 0.5);
+    const b = r.bubble; if (!b || b.ttl <= 0) continue;
+    c.globalAlpha = Math.min(1, b.ttl / 0.6); c.font = '700 14px Fredoka, "Plus Jakarta Sans", sans-serif';
+    const bw = Math.min(220, c.measureText(b.text).width + 24), bh = 30, bx = s.x - bw / 2, by = ty - 18 - bh;
+    c.fillStyle = '#fff'; c.strokeStyle = '#0f172a'; c.lineWidth = 3; rr(c, bx, by, bw, bh, 12); c.fill(); c.stroke();
+    c.fillStyle = '#0f172a'; c.fillText(b.text.slice(0, 30), s.x, by + bh / 2); c.globalAlpha = 1;
+  }
+}
+
 function drawPlayer(c) {
   const P = S.player;
   if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
@@ -259,6 +287,7 @@ export function render() {
   let py = P.y + 10;
   if (P.seat) { const it = W.byId('item', P.seat.id); if (it) py = (W.footprint(it).y + W.footprint(it).h) * TILE + 0.5; }
   list.push({ y: py, fn: () => drawPlayer(c) });
+  for (const r of S.remote) list.push({ y: r.y + 10, fn: () => drawRemote(c, r) });
   list.push({ y: 1e9, fn: () => drawFlies(c) });
   list.sort((a, b) => a.y - b.y);
   for (const o of list) o.fn();
@@ -420,6 +449,7 @@ function drawBuildOverlay(c, z) {
 }
 
 function drawTags(c) {
+  drawRemoteTags(c);
   const P = S.player;
   const s = worldToScreen(P.x, P.y - (P.seat && P.seat.lying ? 30 : 50));
   const z = S.camera.zoom;

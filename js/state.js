@@ -35,6 +35,8 @@ export const S = {
   linePreview: null,          // [{o,x,y,ok}] edges about to be placed
   rectPreview: null,          // {x,y,w,h,kind}
   dragItem: null,
+  remote: [],                 // other players in a multiplayer session
+  onSay: null,
 };
 
 export const worldToScreen = (wx, wy) => ({

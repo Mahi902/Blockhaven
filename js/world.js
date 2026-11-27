@@ -142,3 +142,10 @@ export function setRoomWalls(room, color) {
     if (onH || onV) e.color = color;
   }
 }
+
+/** Multiplayer: the whole world as text, and swapping in a world received from someone else. */
+export const getSnapshot = () => snap();
+export function applySnapshot(str) {
+  const w = JSON.parse(str); if (!w || !Array.isArray(w.items)) return false;
+  world = Object.assign(fresh(), w); clearHistory(); version++; return true;
+}

@@ -38,14 +38,15 @@ function femaleBody(tpl, d) {
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
 }
 
-export function rebuildSprites() {
+export function buildSprites(L0) {
+  const out = {};
   for (const d of DIRS) {
     if (!templates[d]) continue;
-    const hair = hairParts(S.player.look.style, d);
-    const svg = (S.player.look.gender === 'female' ? femaleBody(templates[d], d) : templates[d])
+    const hair = hairParts(L0.style, d);
+    const svg = (L0.gender === 'female' ? femaleBody(templates[d], d) : templates[d])
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
-      .replace(/\{\{(\w+)\}\}/g, (m, k) => S.player.look[k] || '#888');
-    const L = S.player.look, fem = L.gender === 'female';
+      .replace(/\{\{(\w+)\}\}/g, (m, k) => L0[k] || '#888');
+    const L = L0, fem = L.gender === 'female';
     const sx = ((BUILDS.find(b => b.id === L.build) || { sx: 1 }).sx) * (fem ? 1.02 : 1);
     let face = '';
     const O = '#1b2336';
@@ -58,9 +59,11 @@ export function rebuildSprites() {
     const body = svg.replace(/(<svg[^>]*>)/, `$1<g transform="translate(24 0) scale(${sx} 1) translate(-24 0)">`).replace('</svg>', face + '</g></svg>');
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(body);
-    sprites[d] = img;
+    out[d] = img;
   }
+  return out;
 }
+export function rebuildSprites() { Object.assign(sprites, buildSprites(S.player.look)); }
 
 export function setLook(part) {
   Object.assign(S.player.look, part);
@@ -71,6 +74,7 @@ export function setLook(part) {
 export function say(text) {
   text = String(text || '').trim().slice(0, 140);
   if (!text) return;
+  if (S.onSay) S.onSay(text);
   S.bubbles = [{ text, ttl: 4 + Math.min(5, text.length * 0.06), max: 4 + Math.min(5, text.length * 0.06) }];
 }
 
