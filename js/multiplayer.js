@@ -58,13 +58,14 @@ function startBeat() {
     const now = Date.now();
     if (isHost()) {
       toAll({ t: 'ping' });
-      for (const p of [...MP.peers.values()]) if (now - (p.seen || now) > 7000) dropPeer(p, 'lost connection');
+      for (const p of [...MP.peers.values()]) if (now - (p.seen || now) > 15000) dropPeer(p, 'lost connection');
     } else if (isGuest()) {
       send(MP.dc, { t: 'ping' });
-      if (now - (MP.seen || now) > 7000) { toast('Lost connection to the host', 3500); leave(true); }
+      if (now - (MP.seen || now) > 15000) { toast('Lost connection to the host', 3500); leave(true); }
     }
   }, 1000);
 }
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; const n = Date.now(); MP.seen = n; for (const p of MP.peers.values()) p.seen = n; });
 window.addEventListener('offline', () => { if (isGuest()) { toast('You went offline', 3000); leave(true); } });
 window.addEventListener('pagehide', () => { if (isGuest() && MP.dc) send(MP.dc, { t: 'bye' }); else if (isHost()) toAll({ t: 'end' }); });
 const me = () => ({ name: S.player.name, look: S.player.look });
