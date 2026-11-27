@@ -38,12 +38,31 @@ function femaleBody(tpl, d) {
   return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
 }
 
+// Male silhouette (kept light): broader shoulders tapering to a narrower waist, a hint of chest / shoulder blades and a belt line.
+function maleBody(tpl, d) {
+  let shape;
+  const fill = '{{shirt}}', sk = `stroke="${OL}" stroke-width="1.6" stroke-linejoin="round"`;
+  if (d === 'down' || d === 'up') {
+    const torso = `<path d="M14 28 Q24 25.6 34 28 Q38.6 29.6 38.4 34 Q36.6 40 35.6 44 Q36 47 35.2 49 Q24 51 12.8 49 Q12 47 12.4 44 Q11.4 40 9.6 34 Q9.4 29.6 14 28Z" fill="${fill}" ${sk}/>`;
+    const lines = d === 'down'
+      ? `<path d="M15.2 34.4 Q19.6 37.6 23.4 34.4 M24.6 34.4 Q28.4 37.6 32.8 34.4" fill="none" stroke="${OL}" stroke-width="0.9" opacity="0.28" stroke-linecap="round"/>`
+      : `<path d="M17 33 Q21 37 23.4 33 M24.6 33 Q27 37 31 33" fill="none" stroke="${OL}" stroke-width="0.9" opacity="0.22" stroke-linecap="round"/>`;
+    const belt = `<path d="M12.9 47.2 Q24 49.2 35.1 47.2" fill="none" stroke="${OL}" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/>`;
+    shape = torso + lines + belt;
+  } else {
+    const torso = `<path d="M19.5 28 Q15 28.6 14.8 33 Q15.6 38 16.6 42 Q16.2 46 17 49 Q25 51 32 49 Q33 45 32.2 41.6 Q33.6 36 33 32 Q31.6 28 25.5 27.4 Q22 27.2 19.5 28Z" fill="${fill}" ${sk}/>`;
+    const belt = `<path d="M16.7 47.2 Q24.5 49 32.2 47.2" fill="none" stroke="${OL}" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/>`;
+    shape = d === 'right' ? `<g transform="translate(48 0) scale(-1 1)">${torso}${belt}</g>` : torso + belt;
+  }
+  return tpl.replace(/<rect x="1[15]" y="27"[^>]*\/>/, shape);
+}
+
 export function buildSprites(L0) {
   const out = {};
   for (const d of DIRS) {
     if (!templates[d]) continue;
     const hair = hairParts(L0.style, d);
-    const svg = (L0.gender === 'female' ? femaleBody(templates[d], d) : templates[d])
+    const svg = (L0.gender === 'female' ? femaleBody(templates[d], d) : maleBody(templates[d], d))
       .replace('{{hairBack}}', hair.back).replace('{{hairFront}}', hair.front)
       .replace(/\{\{(\w+)\}\}/g, (m, k) => L0[k] || '#888');
     const L = L0, fem = L.gender === 'female';
