@@ -36,7 +36,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gra
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
 var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=1.80').catch(function () {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=1.81').catch(function () {});
 window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); dp = e; btn.disabled = false; $('other').classList.add('hide'); });
 btn.addEventListener('click', function () {
   if (!dp) return; dp.prompt();
