@@ -1,4 +1,4 @@
 name=Hammock
-description=A hammock slung between two posts. Lie back, sway with the arrow keys, or settle in for a nap.
+description=A hammock slung between two posts. Get in and sway with the arrow keys.
 block=2
-function=Climb in
+function=Get in
