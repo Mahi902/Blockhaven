@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generates the Hammock sprites only (16 colours): python3 tools/gen_hammock.py
-Vertical like the bed (48x96, head at the top): the game draws the sleeper's head at y=40 and re-draws the
+Posts stay fixed in-game, the cloth swings. Vertical like the bed (48x96, head at the top): the game draws the sleeper's head at y=40 and re-draws the
 sprite from y=52 down over them, so that lower part is the blanket that tucks the sleeper in."""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -9,7 +9,7 @@ from gen_assets import COLORS, shade, rect, circ, svg, write, ROOT
 def hammock(c):
     d = shade(c, -.45); l = shade(c, .4); rope = '#b89968'
     b = '<rect x="6" y="7" width="40" height="86" rx="12" fill="#000" opacity=".2"/>'
-    b += f'<path d="M24 9 L10 20 M24 9 L38 20 M24 91 L10 80 M24 91 L38 80" stroke="{rope}" stroke-width="1.5" stroke-linecap="round"/>'
+    # ropes are drawn by the game (render.js drawHammock) so they can stretch while the cloth swings
     b += rect(6, 12, 36, 76, shade(c, .15), 14, d, 1.6)                  # hammock cloth
     b += rect(12, 22, 24, 22, '#ffffff', 8, '#c9c9c4', 1.1)               # pillow under the head
     b += rect(8, 52, 32, 34, c, 10, d, 1.4)                               # blanket (drawn over the sleeper)

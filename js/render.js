@@ -53,6 +53,7 @@ function drawItem(c, it) {
   const d = catalog.get(it.type); if (!d) return;
   const img = getImage(d, it.color); if (!img) return;
   const f = W.footprint(it);
+  if (it.type === 'hammock') { drawHammock(c, it, d, img, f); return; }
   const wb = wobbleOf(it) || { dx: 0, dy: 0, rot: 0 };
   c.save();
   c.translate((f.x + f.w / 2) * TILE + wb.dx, (f.y + f.h / 2) * TILE + wb.dy);
@@ -66,6 +67,25 @@ function drawItem(c, it) {
     c.fillText(badge, (f.x + f.w / 2) * TILE, f.y * TILE - 6 + Math.sin(performance.now() / 350) * 2);
     c.restore();
   }
+}
+
+/** Sideways swing of a hammock in px (local x axis): 0 unless someone is swaying in it. */
+const hammockLat = it => { const q = S.player.seat; return q && q.id === it.id && q.sway ? q.sway.rot * 32 : 0; };
+
+/** Hammock: the two posts stay put, the ropes stretch from them, and only the cloth swings sideways. */
+function drawHammock(c, it, d, img, f) {
+  const W0 = d.w * TILE, H0 = d.h * TILE, lat = hammockLat(it), cap = 11;
+  c.save();
+  c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE);
+  c.rotate(it.rot * Math.PI / 2);
+  c.save(); c.beginPath(); c.rect(-W0 / 2, -H0 / 2, W0, cap); c.rect(-W0 / 2, H0 / 2 - cap, W0, cap); c.clip();   // fixed posts
+  c.drawImage(img, -W0 / 2, -H0 / 2, W0, H0); c.restore();
+  c.strokeStyle = '#b89968'; c.lineWidth = 1.5; c.lineCap = 'round'; c.beginPath();                              // ropes: post -> cloth corners
+  for (const sy of [-1, 1]) for (const sx of [-1, 1]) { c.moveTo(0, sy * (H0 / 2 - 7)); c.lineTo(sx * 15 + lat, sy * (H0 / 2 - 17)); }
+  c.stroke();
+  c.save(); c.translate(lat, 0); c.beginPath(); c.rect(-W0 / 2 - 20, -H0 / 2 + cap, W0 + 40, H0 - cap * 2); c.clip();   // swinging cloth
+  c.drawImage(img, -W0 / 2, -H0 / 2, W0, H0); c.restore();
+  c.restore();
 }
 
 /** Floating emoji above a piece: state.badge (saved) or state._badge (temporary), {t, until?, then?, seat?} */
@@ -187,14 +207,14 @@ function drawPlayer(c, P = S.player, spr = sprites) {
   if (P.seat && P.seat.lying) {
     const it = W.byId('item', P.seat.id);
     c.save();
-    if (P.seat.sway && it) { const f0 = W.footprint(it), cx0 = (f0.x + f0.w / 2) * TILE, cy0 = (f0.y + f0.h / 2) * TILE; c.translate(cx0, cy0); c.rotate(P.seat.sway.rot); c.translate(-cx0, -cy0); }   // sways with the hammock
+    if (P.seat.sway && it) { const th = it.rot * Math.PI / 2, l = P.seat.sway.rot * 32; c.translate(l * Math.cos(th), l * Math.sin(th)); }   // swings sideways with the cloth
     c.translate(P.x, P.y); c.rotate(P.seat.rot * Math.PI / 2);
     c.drawImage(spr.down || img, -dw / 2, -dh * 0.34, dw, dh);
     c.restore();
     if (it) {                      // blanket on top of the sleeper
       const d = catalog.get(it.type), bimg = d && getImage(d, it.color), f = W.footprint(it);
       if (bimg) {
-        c.save(); c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE); c.rotate(it.rot * Math.PI / 2 + (P.seat.sway ? P.seat.sway.rot : 0));
+        c.save(); c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE); c.rotate(it.rot * Math.PI / 2); if (P.seat.sway) c.translate(P.seat.sway.rot * 32, 0);
         c.beginPath(); c.rect(-d.w * TILE / 2, -d.h * TILE / 2 + 52, d.w * TILE, d.h * TILE); c.clip();
         c.drawImage(bimg, -d.w * TILE / 2, -d.h * TILE / 2, d.w * TILE, d.h * TILE);
         c.restore();

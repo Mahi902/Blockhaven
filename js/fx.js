@@ -51,7 +51,6 @@ export function wobbleOf(it) {
     }
     if (seated) return { dx: 0, dy: Math.sin(now / 900) * 0.5, rot: 0 };   // slow breathing while you sit in it
   }
-  if (it.type === 'hammock' && S.player.seat && S.player.seat.id === it.id && S.player.seat.sway) return { dx: 0, dy: 0, rot: S.player.seat.sway.rot };
   if (it.type === 'rocker' && S.player.seat && S.player.seat.id === it.id) {
     const sp = S.player.seat.spin;
     return { dx: 0, dy: 0, rot: Math.sin(now / 420) * 0.07 + (sp ? Math.max(-0.12, Math.min(0.12, sp.v * 0.012)) : 0) };
