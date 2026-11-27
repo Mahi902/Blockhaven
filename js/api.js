@@ -5,6 +5,7 @@ import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
 import { hooks, sitOn, runOn, swimIn, standUp, say, setLook, spinOn, lockPlayer, unlockPlayer, stepInto } from './player.js';
 import { flyCloth } from './fx.js';
+import * as MPm from './multiplayer.js';
 import { botApi, catsList, callCat } from './npc.js';
 import { sound, soundOn, audioReady } from './audio.js';
 import { playMusic, stopMusic, musicNow, setMusicVolume, playNote, TRACK_LIST } from './music.js';
@@ -51,7 +52,7 @@ function makeApi(kind, obj) {
     get clothes() { return { shirt: S.player.look.shirt, pants: S.player.look.pants, skin: S.player.look.skin }; },
     say, toast,
     setLook,
-    setNight: v => { S.night = !!v; document.dispatchEvent(new CustomEvent('bh-night')); },
+    setNight: v => { if (MPm.active()) { if (MPm.canEdit() && !!v !== S.night) MPm.requestNight(!!v); return; } S.night = !!v; document.dispatchEvent(new CustomEvent('bh-night')); },
     // --- the furniture
     // glow(color, radius, opt): opt = ms (fades by itself) or { ms, temp } (temp = not saved with the room)
     glow: (color, radius = 3, opt) => {
