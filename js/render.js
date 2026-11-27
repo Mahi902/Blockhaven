@@ -100,10 +100,10 @@ function drawEdge(c, e) {
 }
 
 /** Swimming in a tub: head and shoulders above a wavy waterline, arms paddling, ripples, bubbles and splashes. */
-function drawSwimmer(c) {
-  const P = S.player, sw = P.seat.swim, img = sprites[P.dir] || sprites.down;
+function drawSwimmer(c, P = S.player, spr = sprites) {
+  const sw = P.seat.swim, img = spr[P.dir] || spr.down;
   if (!img || !img.complete) return;
-  const sc = 0.82, dw = 48 * sc, dh = 64 * sc, look = S.player.look;
+  const sc = 0.82, dw = 48 * sc, dh = 64 * sc, look = P.look;
   for (const r of sw.rip) { c.strokeStyle = `rgba(255,255,255,${Math.max(0, r.a)})`; c.lineWidth = 1.6; c.beginPath(); c.ellipse(r.x, r.y, r.r, r.r * 0.4, 0, 0, Math.PI * 2); c.stroke(); }
   const bob = Math.sin(sw.t * 2.6) * 1.5 + (P.moving ? Math.sin(sw.stroke * 2) * 1.3 : 0);
   c.save();
@@ -158,13 +158,8 @@ const remoteSprites = new Map();
 function drawRemote(c, r) {
   const key = JSON.stringify(r.look || {});
   let set = remoteSprites.get(key); if (!set) { set = buildSprites(r.look || S.player.look); remoteSprites.set(key, set); }
-  const img = set[r.dir] || set.down; if (!img || !img.complete) return;
-  const fem = (r.look || {}).gender === 'female', sc = 0.82 * (fem ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
-  const bob = r.mv ? -Math.abs(Math.sin(performance.now() / 90)) * 3 : 0;
-  c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(r.x, r.y + 9, 12, 5, 0, 0, Math.PI * 2); c.fill();
-  c.save(); c.translate(r.x, r.y + 9);
-  if (fem) drawSliced(c, img, dw, dh, bob); else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
-  c.restore();
+  r.moving = !!r.mv; if (!r.look) r.look = S.player.look;
+  drawPlayer(c, r, set);
 }
 function drawRemoteTags(c) {
   c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -182,11 +177,10 @@ function drawRemoteTags(c) {
   }
 }
 
-function drawPlayer(c) {
-  const P = S.player;
-  if (P.seat && P.seat.swim) { drawSwimmer(c); return; }
+function drawPlayer(c, P = S.player, spr = sprites) {
+  if (P.seat && P.seat.swim) { drawSwimmer(c, P, spr); return; }
   if (P.seat && P.seat.stand && (!P.seat.glide || P.seat.glide.t > 0.55)) { drawTopDownPerson(c, P.look, P.x, P.y, !!P.seat.scrub); return; }   // in the shower: seen from above, fully inside the stall
-  const img = sprites[P.dir] || sprites.down;
+  const img = spr[P.dir] || spr.down;
   if (!img || !img.complete) return;
   const sc = 0.82 * (P.look.gender === 'female' ? 1.07 : 1), dw = 48 * sc, dh = 64 * sc;
   c.save();
@@ -194,7 +188,7 @@ function drawPlayer(c) {
     const it = W.byId('item', P.seat.id);
     c.save();
     c.translate(P.x, P.y); c.rotate(P.seat.rot * Math.PI / 2);
-    c.drawImage(sprites.down || img, -dw / 2, -dh * 0.34, dw, dh);
+    c.drawImage(spr.down || img, -dw / 2, -dh * 0.34, dw, dh);
     c.restore();
     if (it) {                      // blanket on top of the sleeper
       const d = catalog.get(it.type), bimg = d && getImage(d, it.color), f = W.footprint(it);
@@ -287,7 +281,11 @@ export function render() {
   let py = P.y + 10;
   if (P.seat) { const it = W.byId('item', P.seat.id); if (it) py = (W.footprint(it).y + W.footprint(it).h) * TILE + 0.5; }
   list.push({ y: py, fn: () => drawPlayer(c) });
-  for (const r of S.remote) list.push({ y: r.y + 10, fn: () => drawRemote(c, r) });
+  for (const r of S.remote) {
+    let ry = r.y + 10;
+    if (r.seat) { const it = W.byId('item', r.seat.id); if (it) ry = (W.footprint(it).y + W.footprint(it).h) * TILE + 0.5; }
+    list.push({ y: ry, fn: () => drawRemote(c, r) });
+  }
   list.push({ y: 1e9, fn: () => drawFlies(c) });
   list.sort((a, b) => a.y - b.y);
   for (const o of list) o.fn();

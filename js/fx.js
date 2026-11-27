@@ -40,7 +40,7 @@ export function wobbleOf(it) {
     }
   }
   if (it.type === 'beanbag' && st) {
-    const seated = S.player.seat && S.player.seat.id === it.id;
+    const seated = (S.player.seat && S.player.seat.id === it.id) || S.remote.some(r => r.seat && r.seat.id === it.id);
     if (st._fluff && now - st._fluff < 800) {                          // fluffing: shaken left and right, settling
       const p = (now - st._fluff) / 800, k = (1 - p) * 2.6;
       return { dx: Math.sin(now / 45) * k, dy: Math.cos(now / 60) * k * 0.6, rot: Math.sin(now / 55) * 0.05 * (1 - p) };

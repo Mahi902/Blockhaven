@@ -5,6 +5,7 @@ import * as W from './world.js';
 import { h, button, choice, openModal, closeModal, toast } from './ui.js';
 import { sound } from './audio.js';
 import { VERSION } from './config.js';
+import { npcSnapshot, npcApply } from './npc.js';
 
 export const MP = { role: null, started: false, myRole: 'editor', myId: null, peers: new Map(), defaultRole: 'viewer', lobby: null };
 let hooks = null, seq = 1, applying = false, lastSent = '', worldTimer = 0, posTimer = 0;
@@ -197,8 +198,9 @@ function hostGot(p, m) {
     send(p.dc, { t: 'welcome', v: VERSION, id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
     if (MP.started) send(p.dc, { t: 'start', world: W.getSnapshot() });
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
-  } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; }
+  } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; p.seat = m.seat; p.lock = m.lock; }
   else if (m.t === 'chat') { const text = String(m.text || '').slice(0, 140); chatIn(p.id, p.name, text); toAll({ t: 'chat', from: p.id, name: p.name, text }, p.id); }
+  else if (m.t === 'states') { applyStates(m.s); toAll({ t: 'states', s: m.s }, p.id); }
   else if (m.t === 'world' && p.role === 'editor') { applyRemote(m.snap); toAll({ t: 'world', snap: m.snap }, p.id); }
 }
 function dropPeer(p, why) {
@@ -247,7 +249,9 @@ function guestGot(m) {
     if (m.started) enterGuest(m.world); else lobbyGuest();
   }
   else if (m.t === 'start') { enterGuest(m.world || MP.snap); send(MP.dc, { t: 'ready' }); }
-  else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, bubble: old && old.bubble }; }); }
+  else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, walk: old ? old.walk : 0, bubble: old && old.bubble }; }); }
+  else if (m.t === 'npc') npcApply(m.d);
+  else if (m.t === 'states') applyStates(m.s);
   else if (m.t === 'chat') chatIn(m.from, m.name, m.text);
   else if (m.t === 'world') { if (S.started) applyRemote(m.snap); else MP.snap = m.snap; }
   else if (m.t === 'role') { MP.myRole = m.role; toast('Your role is now ' + m.role, 3000); hooks.syncBar(); }
@@ -256,7 +260,7 @@ function guestGot(m) {
 }
 function enterGuest(snap) {
   if (S.started) return;
-  try { MP.starting = true; closeModal(); hooks.startGuest(snap || MP.snap); startLoops(); W.listeners.push(onWorldChange); send(MP.dc, { t: 'ready' }); }
+  try { MP.starting = true; closeModal(); hooks.startGuest(snap || MP.snap); S.npcGuest = true; startLoops(); W.listeners.push(onWorldChange); send(MP.dc, { t: 'ready' }); }
   catch (e) { console.error(e); MP.starting = false; toast('Could not enter the world: ' + e.message, 6000); }
 }
 function lobbyGuest() {
@@ -269,15 +273,18 @@ function lobbyGuest() {
 // ---- shared loops ---------------------------------------------------------------------------
 function rebuildRemote() {
   if (!isHost()) return;
-  S.remote = [...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, bubble: (S.remote.find(o => o.id === p.id) || {}).bubble }));
+  S.remote = [...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock, walk: (S.remote.find(o => o.id === p.id) || {}).walk || 0, bubble: (S.remote.find(o => o.id === p.id) || {}).bubble }));
 }
+function seatOf(P) { if (!P.seat) return null; try { return JSON.parse(JSON.stringify(P.seat)); } catch (e) { return null; } }
+let npcTick = 0;
 function startLoops() {
   clearInterval(posTimer);
   posTimer = setInterval(() => {
-    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving };
+    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving, seat: seatOf(P), lock: P.lock ? { anim: P.lock.anim } : null };
     if (isHost()) {
       rebuildRemote();
-      toAll({ t: 'players', list: [{ id: 'host', name: P.name, look: P.look, ...mine }, ...[...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv }))] });
+      toAll({ t: 'players', list: [{ id: 'host', name: P.name, look: P.look, ...mine }, ...[...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock }))] });
+      if (++npcTick % 2 === 0) { const d = npcSnapshot(); if (Object.keys(d).length) toAll({ t: 'npc', d }); }
     } else if (isGuest()) send(MP.dc, { t: 'pos', ...mine, look: P.look });
   }, 100);
   S.onSay = text => {
@@ -290,15 +297,27 @@ function chatIn(id, name, text) {
   if (r) r.bubble = { text, ttl: 6 };
   toast(name + ': ' + text, 3500); sound('chat');
 }
-export function tickRemote(dt) { for (const r of S.remote) if (r.bubble) r.bubble.ttl -= dt; }
+export function tickRemote(dt) { for (const r of S.remote) { if (r.bubble) r.bubble.ttl -= dt; if (r.mv) r.walk = (r.walk || 0) + dt * 11; } }
 function onWorldChange() {
   if (applying || !S.started) return;
-  if (isGuest() && MP.myRole !== 'editor') return;
   clearTimeout(worldTimer);
+  if (isGuest() && MP.myRole !== 'editor') { worldTimer = setTimeout(() => { const st = statesOf(); if (JSON.stringify(st) !== lastStates) { lastStates = JSON.stringify(st); send(MP.dc, { t: 'states', s: st }); } }, 250); return; }
   worldTimer = setTimeout(() => {
     const snap = W.getSnapshot(); if (snap === lastSent) return; lastSent = snap;
     if (isHost()) toAll({ t: 'world', snap }); else send(MP.dc, { t: 'world', snap });
   }, 350);
+}
+let lastStates = '';
+function statesOf() {
+  const o = {}; for (const it of W.world.items) if (it.state) o['i' + it.id] = it.state;
+  for (const e of W.world.edges) if (e.state) o[`e${e.o},${e.x},${e.y}`] = e.state;
+  return o;
+}
+function applyStates(st) {
+  applying = true;
+  for (const it of W.world.items) { const v = st['i' + it.id]; if (v) it.state = v; }
+  for (const e of W.world.edges) { const v = st[`e${e.o},${e.x},${e.y}`]; if (v) e.state = v; }
+  W.touch(); applying = false;
 }
 function applyRemote(snap) {
   applying = true; lastSent = snap;
@@ -322,7 +341,7 @@ function cleanup() {
   clearInterval(beatTimer); clearInterval(posTimer); clearTimeout(worldTimer);
   const i = W.listeners.indexOf(onWorldChange); if (i >= 0) W.listeners.splice(i, 1);
   MP.role = null; MP.started = false; MP.peers = new Map(); MP.dc = null; MP.pc = null; MP.myRole = 'editor';
-  S.remote = []; S.onSay = null; lastSent = '';
+  S.remote = []; S.onSay = null; S.npcGuest = false; lastSent = '';
   if (hooks) hooks.syncBar();
 }
 

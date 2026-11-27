@@ -224,6 +224,7 @@ export function updateNpcs(dt) {
   for (const it of W.world.items) {
     const d = catalog.get(it.type); if (!d || !d.npc) continue;
     seen.add(it.id);
+    if (S.npcGuest) { const b = isCat(it) ? catOf(it) : botOf(it); b.t = (b.t || 0) + dt; if (b.bubble && (b.bubble.ttl -= dt) <= 0) b.bubble = null; continue; }
     if (isCat(it)) catStep(it, catOf(it), dt); else step(it, botOf(it), dt);
   }
   for (const id of [...bots.keys()]) if (!seen.has(id)) bots.delete(id);
@@ -428,4 +429,24 @@ export function callCat(id, bed) {
   b.call = { x: c.x, y: c.y, bed: bed.id }; b.path = null; b.replan = 0;
   if (b.mode === 'sleep') b.mode = 'stand';
   npcSay(b, 'Coming!');
+}
+
+/** Multiplayer: the host sends where every NPC is and what it is doing; guests just show it. */
+export function npcSnapshot() {
+  const out = {};
+  for (const it of W.world.items) {
+    const d = catalog.get(it.type); if (!d || !d.npc) continue;
+    const b = isCat(it) ? catOf(it) : botOf(it), o = {};
+    for (const [k, v] of Object.entries(b)) if (['number', 'string', 'boolean'].includes(typeof v)) o[k] = v;
+    if (b.bubble) o.bubble = { text: b.bubble.text, ttl: b.bubble.ttl, max: b.bubble.max };
+    out[it.id] = o;
+  }
+  return out;
+}
+export function npcApply(data) {
+  for (const it of W.world.items) {
+    const o = data[it.id]; if (!o) continue;
+    const b = isCat(it) ? catOf(it) : botOf(it), t = b.t;
+    Object.assign(b, o); if (t !== undefined && isCat(it)) b.t = t; if (!o.bubble) b.bubble = null;
+  }
 }
