@@ -73,6 +73,7 @@ export function drawItemFx(c, it) {
   const st = it.state; if (!st) return;
   const now = Date.now();
   if (it.type === 'fan') { drawFan(c, it, st, now); return; }
+  if (it.type === 'heater') { drawHeater(c, st, now); return; }
   if (it.type === 'toaster') { drawToaster(c, st, now); return; }
   if (it.type === 'lavalamp') { drawLava(c, st, now); return; }
   if (it.type === 'exbike') { drawBike(c, st, now); return; }
@@ -314,5 +315,22 @@ function drawToaster(c, st, now) {
       c.beginPath(); c.roundRect(-13, y - lift, 26, 6, 2.5); c.fill(); c.stroke();
       c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(-11, y - lift + 1, 14, 1.4);
     }
+  }
+}
+
+// ---- space heater: glowing bars and rising heat shimmer (local origin = tile centre; grill is y -11..4) ----
+function drawHeater(c, st, now) {
+  const lvl = st.lvl | 0; if (!lvl) return;
+  const pulse = 0.7 + Math.sin(now / 240) * 0.15;
+  for (let i = 0; i < 4; i++) {
+    const y = -9 + i * 3.6;
+    c.fillStyle = lvl === 2 ? `rgba(255,${90 + i * 18},30,${pulse})` : `rgba(255,${150 + i * 14},70,${pulse * 0.7})`;
+    c.beginPath(); c.roundRect(-11, y, 22, 1.8, 0.9); c.fill();
+  }
+  c.lineCap = 'round'; c.lineWidth = 1.2;
+  for (let i = 0; i < 4 * lvl; i++) {
+    const ph = (now / 1000 * (0.5 + lvl * 0.25) + i * 0.37) % 1, x = -10 + ((i * 13) % 20) + Math.sin(now / 300 + i) * 1.5;
+    c.strokeStyle = `rgba(255,190,120,${Math.sin(ph * Math.PI) * 0.5})`;
+    c.beginPath(); c.moveTo(x, 6 + ph * 14); c.quadraticCurveTo(x + 2, 9 + ph * 14, x, 12 + ph * 14); c.stroke();
   }
 }

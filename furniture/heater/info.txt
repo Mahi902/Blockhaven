@@ -1,0 +1,4 @@
+name=Space Heater
+description=Glowing bars and a warm hum. Off, low or high, and it lights up the floor in front of it.
+block=1
+function=Set heat
