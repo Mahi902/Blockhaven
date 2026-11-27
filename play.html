@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blockhaven</title>
+<script>(function(){var s=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;if(!s&&!/[?&]web\b/.test(location.search))location.replace('index.html');})();</script>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="img/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css?v=1.79">
+</head>
+<body>
+<div id="splash"><div class="sp-wave w1"></div><div class="sp-wave w2"></div><div class="sp-wave w3"></div>
+  <i class="sp-splat s1"></i><i class="sp-splat s2"></i><i class="sp-splat s3"></i><i class="sp-splat s4"></i><i class="sp-splat s5"></i><i class="sp-splat s6"></i>
+  <div class="sp-text"><div class="sp-name">mahi902</div></div></div>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <div id="topbar" class="hidden">
+    <div id="topLeft"></div>
+    <div id="topRight"></div>
+  </div>
+
+  <div id="buildUI" class="hidden"></div>
+
+  <button id="prompt" class="bh-btn bh-gold hidden" type="button"><kbd>E</kbd><span id="promptText">Use</span></button>
+
+  <div class="bh-dpad" id="dpad">
+    <button data-dir="up" aria-label="Up"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(0deg)"><path d="M6 15l6-6 6 6"/></svg></button><button data-dir="left" aria-label="Left"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-90deg)"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button data-dir="right" aria-label="Right"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(90deg)"><path d="M6 15l6-6 6 6"/></svg></button><button data-dir="down" aria-label="Down"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(180deg)"><path d="M6 15l6-6 6 6"/></svg></button>
+  </div>
+
+  <div id="chatbar" class="hidden">
+    <input id="chatInput" class="bh-input" type="text" maxlength="140" placeholder="Press Enter to talk..." autocomplete="off">
+    <button id="chatSend" class="bh-btn bh-blue bh-small" type="button" aria-label="Send"><img class="bh-ico" src="img/icons/chat.svg" alt=""></button>
+  </div>
+
+  <div id="toast"></div>
+  <div id="modalRoot"></div>
+
+  <div id="intro">
+    <div class="sky">
+      <img class="cloud c1" src="img/cloud.svg" alt=""><img class="cloud c2" src="img/cloud.svg" alt=""><img class="cloud c3" src="img/cloud.svg" alt="">
+      <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i><i class="blk b4"></i><i class="blk b5"></i>
+    </div>
+    <img class="town" src="img/title-bg.svg" alt="">
+    <div class="title-wrap">
+      <div class="title-logo"><img src="img/logo.svg" alt=""><h1>BLOCK<span>HAVEN</span></h1><p>Build it. Decorate it. Live in it.</p></div>
+      <div class="menu bh-panel">
+        <div class="menu-tabs"><button id="tabPlay" class="bh-tab on" type="button">Worlds</button><button id="tabLook" class="bh-tab" type="button">Look</button></div>
+        <div id="panePlayTitle">
+          <div class="who"><div class="preview"><div class="spot"></div><img id="preview" alt=""></div>
+            <div class="who-r"><label class="bh-label" for="nameInput">Your name</label>
+              <input id="nameInput" class="bh-input" type="text" maxlength="16" placeholder="Guest" autocomplete="off"></div></div>
+          <div class="bh-label">Worlds</div>
+          <div id="worldList" class="worlds"></div>
+          <div class="menu-row" id="menuRow"></div>
+          <button id="startBtn" class="bh-btn bh-green play-big" type="button"><img class="bh-ico" src="img/icons/play.svg" alt=""><span>PLAY</span></button>
+        </div>
+        <div id="paneLook" class="hidden"><div class="look-wrap"><div class="preview small"><div class="spot"></div><img id="preview2" alt=""></div><div id="lookSwatches"></div></div></div>
+      </div>
+    </div>
+    <div id="verTag"></div>
+    <div id="introCorner"></div>
+  </div>
+
+  <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+  <div id="footer"><a href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">Blockhaven</a> &middot; made by <a href="https://github.com/mahi902" target="_blank" rel="noopener">mahi902</a></div>
+</div>
+<script src="js/vendor/qrcode.js"></script>
+<script src="js/vendor/jsQR.js"></script>
+<script type="importmap">{"imports": {"./js/api.js": "./js/api.js?v=1.79", "./js/audio.js": "./js/audio.js?v=1.79", "./js/build.js": "./js/build.js?v=1.79", "./js/catalog.js": "./js/catalog.js?v=1.79", "./js/config.js": "./js/config.js?v=1.79", "./js/fx.js": "./js/fx.js?v=1.79", "./js/hair.js": "./js/hair.js?v=1.79", "./js/input.js": "./js/input.js?v=1.79", "./js/npc.js": "./js/npc.js?v=1.79", "./js/multiplayer.js": "./js/multiplayer.js?v=1.79", "./js/music.js": "./js/music.js?v=1.79", "./js/player.js": "./js/player.js?v=1.79", "./js/render.js": "./js/render.js?v=1.79", "./js/starter.js": "./js/starter.js?v=1.79", "./js/state.js": "./js/state.js?v=1.79", "./js/ui.js": "./js/ui.js?v=1.79", "./js/world.js": "./js/world.js?v=1.79", "./js/worlds.js": "./js/worlds.js?v=1.79"}}</script>
+<script type="module" src="js/main.js?v=1.79"></script>
+<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v=1.79").catch(function(){})});</script>
+</body>
+</html>

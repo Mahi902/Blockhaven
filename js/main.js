@@ -92,6 +92,7 @@ function syncFs() {
   bar.fs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`;
   bar.fs.title = on ? 'Exit full screen' : 'Full screen';
   bar.fs.classList.toggle('on', on);
+  if (homeFs) { homeFs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`; homeFs.title = bar.fs.title; homeFs.classList.toggle('on', on); }
 }
 
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...S.settings, sound: soundOn })); } catch (e) { /* ignore */ } }
@@ -383,9 +384,11 @@ function openCredits() {
   });
 }
 
+let homeFs = null;
 function buildHome() {
   $('menuRow').append(button('New world', { kind: 'blue', icon: 'plus', onClick: openNewWorld }));
-  $('introCorner').append(button('Credits', { kind: 'dark', small: true, onClick: openCredits }));
+  homeFs = button('', { kind: 'dark', small: true, icon: 'fullscreen', title: 'Full screen', onClick: toggleFullscreen });
+  $('introCorner').append(homeFs, button('Credits', { kind: 'dark', small: true, onClick: openCredits }));
   $('importFile').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
     try { curId = Wm.importText(await f.text()); renderWorlds(); toast('Imported "' + Wm.get(curId).name + '"'); }
