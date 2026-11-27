@@ -8,12 +8,12 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gen_assets import COLORS, shade, rect, circ, svg, write, ROOT
 
-SHAPE = 'M20 12 L28 12 C40 22 45 34 42 48 C45 62 40 74 28 84 L20 84 C8 74 3 62 6 48 C3 34 8 22 20 12Z'
+SHAPE = 'M20 12 L28 12 C40 22 45 34 45 48 C45 62 40 74 28 84 L20 84 C8 74 3 62 3 48 C3 34 8 22 20 12Z'
 
 def hammock(c):
     d = shade(c, -.45); cloth = shade(c, .55); l = shade(c, .3)
     b = '<defs><clipPath id="h"><path d="%s"/></clipPath></defs>' % SHAPE
-    b += f'<path d="{SHAPE}" fill="#000" opacity=".18" transform="translate(2 3)"/>'
+    b += f'<path d="{SHAPE}" fill="#000" opacity=".18" transform="translate(2.5 0)"/>'
     b += f'<path d="{SHAPE}" fill="{cloth}"/>'
     b += '<g clip-path="url(#h)">'
     for y in range(14, 52, 8):                                            # woven bands on the head half
