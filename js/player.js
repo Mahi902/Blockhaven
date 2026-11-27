@@ -187,6 +187,12 @@ export function stepInto(item, opts = {}) {
   sound('door');
 }
 
+/** Hammock: lie down and sway. Left / right arrows (or A / D) rock you; up / down gets you off. */
+export function swayOn(item) {
+  sitOn(item, true);
+  S.player.seat.sway = { a: 0, v: 0, rot: 0, t: 0, snd: 0 };
+}
+
 /** Rocking chair that spins: arrow keys / A D spin you left or right. */
 export function spinOn(item) {
   sitOn(item, false);
@@ -256,6 +262,18 @@ export function updatePlayer(dt) {
   }
 
   if (P.seat) {
+    if (P.seat.sway) {                        // hammock: a damped swing pushed by the arrow keys
+      const sw = P.seat.sway;
+      if (dy !== 0) { leaveSeat(W.byId('item', P.seat.id)); return; }
+      sw.v += (dx * 16 - sw.a * 14 - sw.v * 1.1) * dt;
+      sw.v = Math.max(-2.2, Math.min(2.2, sw.v));
+      sw.a = Math.max(-0.32, Math.min(0.32, sw.a + sw.v * dt));
+      sw.t += dt; sw.snd -= dt;
+      sw.rot = sw.a + Math.sin(sw.t * 1.6) * 0.02;
+      P.moving = false;
+      if (Math.abs(sw.v) > 0.9 && sw.snd <= 0) { sound('step'); sw.snd = 0.7; }
+      return;
+    }
     if (P.seat.spin) {
       const sp = P.seat.spin;
       if (dy !== 0) { leaveSeat(W.byId('item', P.seat.id)); return; }     // up / down gets you off

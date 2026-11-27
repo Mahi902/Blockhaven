@@ -187,13 +187,14 @@ function drawPlayer(c, P = S.player, spr = sprites) {
   if (P.seat && P.seat.lying) {
     const it = W.byId('item', P.seat.id);
     c.save();
+    if (P.seat.sway && it) { const f0 = W.footprint(it), cx0 = (f0.x + f0.w / 2) * TILE, cy0 = (f0.y + f0.h / 2) * TILE; c.translate(cx0, cy0); c.rotate(P.seat.sway.rot); c.translate(-cx0, -cy0); }   // sways with the hammock
     c.translate(P.x, P.y); c.rotate(P.seat.rot * Math.PI / 2);
     c.drawImage(spr.down || img, -dw / 2, -dh * 0.34, dw, dh);
     c.restore();
     if (it) {                      // blanket on top of the sleeper
       const d = catalog.get(it.type), bimg = d && getImage(d, it.color), f = W.footprint(it);
       if (bimg) {
-        c.save(); c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE); c.rotate(it.rot * Math.PI / 2);
+        c.save(); c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE); c.rotate(it.rot * Math.PI / 2 + (P.seat.sway ? P.seat.sway.rot : 0));
         c.beginPath(); c.rect(-d.w * TILE / 2, -d.h * TILE / 2 + 52, d.w * TILE, d.h * TILE); c.clip();
         c.drawImage(bimg, -d.w * TILE / 2, -d.h * TILE / 2, d.w * TILE, d.h * TILE);
         c.restore();

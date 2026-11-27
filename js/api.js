@@ -3,7 +3,7 @@ import { COLOR_NAMES, COLOR_HEX, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, PANTS_CO
 import { S } from './state.js';
 import * as W from './world.js';
 import { catalog, getFunction } from './catalog.js';
-import { hooks, sitOn, runOn, swimIn, standUp, say, setLook, spinOn, lockPlayer, unlockPlayer, stepInto } from './player.js';
+import { hooks, sitOn, runOn, swimIn, standUp, say, setLook, spinOn, swayOn, lockPlayer, unlockPlayer, stepInto } from './player.js';
 import { flyCloth } from './fx.js';
 import * as MPm from './multiplayer.js';
 import { botApi, catsList, callCat } from './npc.js';
@@ -42,6 +42,7 @@ function makeApi(kind, obj) {
     stand: () => standUp(),
     stepIn: o => stepInto(obj, o),                         // walk INTO the piece and stand in it (shower); o = { offset, scrub }
     scrub: v => { if (S.player.seat && S.player.seat.stand) S.player.seat.scrub = !!v; },   // lather animation while standing inside
+    sway: () => swayOn(obj),                               // lie in a hammock: arrows sway you and the hammock
     spin: () => spinOn(obj),                               // sit on a spinning chair: arrows spin you
     lock: o => lockPlayer(Object.assign({ face: W.itemCenter(obj) }, o)),   // freeze the player for o.ms with an animation
     unlock: () => unlockPlayer(),
