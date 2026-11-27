@@ -4,7 +4,7 @@ import { TILE, PLAYER_KEY, SETTINGS_KEY, SKIN_TONES, HAIR_COLORS, SHIRT_COLORS, 
 import * as Wm from './worlds.js';
 import { S } from './state.js';
 import * as W from './world.js';
-import { loadCatalog, catalog } from './catalog.js';
+import { loadCatalog, catalog, getImage, getFunction, previewUrl } from './catalog.js';
 import { stopMusic } from './music.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
@@ -174,6 +174,7 @@ function frame(t) {
   requestAnimationFrame(frame);
 }
 
+const bootT0 = performance.now();
 async function boot() {
   const canvas = $('game');
   initRender(canvas);
@@ -212,6 +213,21 @@ async function boot() {
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
   $('verTag').textContent = 'v' + VERSION;
   requestAnimationFrame(frame);
+  await warmUp();
+  const left = Math.max(0, 2600 - (performance.now() - bootT0));
+  setTimeout(() => $('splash').classList.add('out'), left);
+}
+
+// Everything the game needs for normal play, loaded while the splash screen is up.
+async function warmUp() {
+  const waits = [];
+  try { if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready); } catch (e) { /* ignore */ }
+  for (const d of catalog.values()) {
+    waits.push(new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = previewUrl(d, d.colors && d.colors[0]); }));
+    if (d.hasFunction) waits.push(getFunction(d).catch(() => null));
+    getImage(d, d.colors && d.colors[0]);
+  }
+  await Promise.race([Promise.allSettled(waits), new Promise(r => setTimeout(r, 6000))]);
 }
 
 function refreshPreview() {
