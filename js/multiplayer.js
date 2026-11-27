@@ -88,6 +88,29 @@ function pasteBox(label, onSubmit) {
   return h('div', { class: 'bh-stack' }, ta, button(label, { kind: 'blue', small: true, onClick: () => ta.value.trim() && onSubmit(ta.value) }));
 }
 
+
+// One step of the connection: either "show a code" or "scan a code". A "Can't scan?" link at the bottom swaps
+// the QR / camera for the plain text code / paste box.
+const instr = (a, b) => h('div', { style: 'text-align:center;margin-bottom:6px' }, h('div', { style: 'font:800 20px Fredoka,sans-serif;color:#fde047;text-shadow:0 2px 0 rgba(0,0,0,.5)' }, a), b ? h('div', { class: 'bh-text' }, b) : null);
+function showStep(code) {
+  const area = h('div', {}); let alt = false;
+  const link = h('button', { class: 'bh-text', type: 'button', style: 'background:none;border:0;text-decoration:underline;cursor:pointer;color:inherit;margin:8px auto 0;display:block' });
+  const draw = () => { area.replaceChildren(alt ? codeBox(code) : qrImg(code)); link.textContent = alt ? 'Show the QR code' : "Can't scan?"; };
+  link.addEventListener('click', () => { alt = !alt; draw(); }); draw();
+  return { el: h('div', { class: 'bh-stack' }, instr('Ask the other person to scan', alt ? '' : 'Hold this code in front of their camera'), area, link), stop() {} };
+}
+function scanStep(onCode, what) {
+  const area = h('div', {}); let alt = false, sc = null;
+  const link = h('button', { class: 'bh-text', type: 'button', style: 'background:none;border:0;text-decoration:underline;cursor:pointer;color:inherit;margin:8px auto 0;display:block' });
+  const draw = () => {
+    if (sc) { sc.stop(); sc = null; }
+    if (alt) area.replaceChildren(pasteBox('Connect', onCode)); else { sc = scanner(onCode); area.replaceChildren(sc.el); }
+    link.textContent = alt ? 'Use the camera' : "Can't scan?";
+  };
+  link.addEventListener('click', () => { alt = !alt; draw(); }); draw();
+  return { el: h('div', { class: 'bh-stack' }, instr("It's your turn to scan", what), area, link), stop() { if (sc) sc.stop(); } };
+}
+
 // ---- home screen: host or join --------------------------------------------------
 export function openMultiplayer(worlds) {
   if (!window.RTCPeerConnection) { toast('This browser does not support multiplayer'); return; }
@@ -122,18 +145,17 @@ export async function openInvite() {
   pc.onconnectionstatechange = () => { if (['failed', 'closed'].includes(pc.connectionState)) dropPeer(peer, 'left'); };
   await pc.setLocalDescription(await pc.createOffer()); await gathered(pc);
   const code = await pack(pc.localDescription);
-  let sc = null;
-  const status = h('p', { class: 'bh-text' }, 'Step 1: the other device scans this code (Multiplayer > Join).');
+  const box = h('div', {}); let step = null, card = null;
+  const set = (st, buttons) => { if (step) step.stop(); step = st; box.replaceChildren(st.el); };
   const finish = async txt => {
-    try { if (sc) sc.stop(); await pc.setRemoteDescription(await unpack(txt)); status.textContent = 'Connecting...'; } catch (e) { toast('That code did not work'); }
+    try { await pc.setRemoteDescription(await unpack(txt)); if (step) step.stop(); box.replaceChildren(instr('Connecting...', 'Hang on a moment')); }
+    catch (e) { toast('That code did not work'); }
   };
-  const scanBtn = button('Scan their reply', { kind: 'blue', onClick: () => { sc = scanner(finish); scanHolder.replaceChildren(sc.el); } });
-  const scanHolder = h('div', {});
-  openModal({
-    title: 'Invite a player', subtitle: 'Works over the same Wi-Fi or hotspot',
-    body: h('div', { class: 'bh-stack' }, status, qrImg(code), codeBox(code), h('p', { class: 'bh-text' }, 'Step 2: scan the reply code that appears on their screen, or paste it.'), scanBtn, scanHolder, pasteBox('Connect', finish)),
-    onClose: () => { if (sc) sc.stop(); if (!peer.joined) { try { pc.close(); } catch (e) { /* ignore */ } } },
-  });
+  const toScan = () => { set(scanStep(finish, 'Scan the reply code on their screen')); next.classList.add('hidden'); };
+  const next = button('They scanned it', { kind: 'green', onClick: toScan });
+  set(showStep(code));
+  openModal({ title: 'Invite a player', subtitle: 'Works over the same Wi-Fi or hotspot', body: h('div', { class: 'bh-stack' }, box, next),
+    onClose: () => { if (step) step.stop(); if (!peer.joined) { try { pc.close(); } catch (e) { /* ignore */ } } } });
 }
 function openLobby() {
   const names = () => [...MP.peers.values()].map(p => p.name).join(', ') || 'nobody yet';
@@ -165,25 +187,22 @@ export function kick(id) { const p = MP.peers.get(id); if (!p) return; send(p.dc
 // ---- guest: join --------------------------------------------------------------------
 export function openJoin() {
   if (!window.RTCPeerConnection) { toast('This browser does not support multiplayer'); return; }
-  let sc = null, busy = false;
-  const holder = h('div', {}), status = h('p', { class: 'bh-text' }, 'Scan the host\'s code, or paste it.');
+  let step = null, busy = false;
+  const box = h('div', {});
   const go = async txt => {
     if (busy) return; busy = true;
     try {
-      if (sc) sc.stop();
-      const offer = await unpack(txt); await wantCamera();
+      const offer = await unpack(txt); if (step) step.stop(); await wantCamera();
       const pc = newPc(); await pc.setRemoteDescription(offer);
-      pc.ondatachannel = e => { guestChannel(e.channel); };
+      pc.ondatachannel = e => guestChannel(e.channel);
       await pc.setLocalDescription(await pc.createAnswer()); await gathered(pc);
       MP.pc = pc; const code = await pack(pc.localDescription);
-      openModal({ title: 'Almost there', subtitle: 'Show this reply to the host',
-        body: h('div', { class: 'bh-stack' }, h('p', { class: 'bh-text' }, 'The host scans this code (Scan their reply), or you can send it to them.'), qrImg(code), codeBox(code), h('p', { class: 'bh-text' }, 'Waiting for the host...')),
-        onClose: () => { if (!MP.role) { try { pc.close(); } catch (e) { /* ignore */ } } } });
+      step = showStep(code); box.replaceChildren(step.el, h('p', { class: 'bh-text', style: 'text-align:center' }, 'Waiting for the host to scan...'));
     } catch (e) { busy = false; toast('That code did not work'); }
   };
-  const scanBtn = button('Scan code', { kind: 'blue', onClick: () => { sc = scanner(go); holder.replaceChildren(sc.el); } });
-  openModal({ title: 'Join a game', subtitle: 'Both devices on the same Wi-Fi or hotspot',
-    body: h('div', { class: 'bh-stack' }, status, scanBtn, holder, pasteBox('Join', go)), onClose: () => { if (sc) sc.stop(); } });
+  step = scanStep(go, "Scan the host's code"); box.replaceChildren(step.el);
+  openModal({ title: 'Join a game', subtitle: 'Both devices on the same Wi-Fi or hotspot', body: box,
+    onClose: () => { if (step) step.stop(); if (!MP.role && MP.pc) { try { MP.pc.close(); } catch (e) { /* ignore */ } MP.pc = null; } } });
 }
 function guestChannel(dc) {
   MP.role = 'guest'; MP.dc = dc; MP.started = false; MP.peers = new Map();
