@@ -213,6 +213,7 @@ async function boot() {
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
   $('verTag').textContent = 'v' + VERSION;
+  try { localStorage.setItem('bh_app_version', VERSION); } catch (e) {}   // lets the website tell whether this installed app is outdated
   const vt = $('verTag'); vt.style.cursor = 'pointer'; vt.style.pointerEvents = 'auto'; vt.title = 'Click to check for updates';
   let checking = false;
   vt.addEventListener('click', async () => {      // check for a newer version; if there is one, refresh every cached file and reload

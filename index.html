@@ -28,6 +28,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gra
   <h1>BLOCK<span>HAVEN</span></h1>
   <p class="tag">Build it. Decorate it. Live in it.</p>
   <button id="install" class="btn" type="button" disabled>Install Blockhaven</button>
+  <div id="upd" class="note hide" style="background:rgba(250,204,21,.16);border:2px solid #facc15">
+    <b>Update available</b>
+    <div id="updText">Your Blockhaven app is outdated.</div>
+    <button id="updBtn" class="btn" type="button" style="margin-top:10px;font-size:18px;background:linear-gradient(#facc15,#ca8a04);box-shadow:0 5px 0 #713f12">Update now</button>
+    <div style="margin-top:10px"><b>Or update by hand:</b><ol><li>Open Blockhaven from your apps or home screen.</li><li>On the home screen, tap the version number (bottom left).</li><li>Wait for it to say Updating, then the game reloads.</li></ol>Still old? Close the app fully and open it again.</div>
+  </div>
   <div id="msg" class="note">Install the game to play it. It works offline once installed.</div>
   <div id="ios" class="note hide"><b>On iPhone / iPad:</b><ol><li>Tap the Share button in Safari.</li><li>Choose "Add to Home Screen".</li><li>Open Blockhaven from your home screen.</li></ol></div>
   <div id="other" class="note hide"><b>No install button?</b><ol><li>Open your browser menu.</li><li>Choose "Install app" or "Add to Home Screen".</li><li>Open Blockhaven from your apps.</li></ol></div>
@@ -36,7 +42,33 @@ body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gra
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
 var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=1.89').catch(function () {});
+var LATEST = '1.90', newer = function (a, b) { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0)); };
+function regSW() { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + LATEST).catch(function () {}); }
+// Is the installed app older than this page? Its version is saved by the game; failing that, the newest cache name it left behind.
+(function () {
+  var inst = null; try { inst = localStorage.getItem('bh_app_version'); } catch (e) {}
+  var caches_ = window.caches ? caches.keys() : Promise.resolve([]);
+  caches_.then(function (ks) {
+    ks.forEach(function (k) { var v = k.indexOf('blockhaven-') === 0 && k.slice(11); if (v && /^\d+\.\d+$/.test(v) && (!inst || newer(v, inst))) inst = v; });
+    if (inst && newer(LATEST, inst)) {
+      $('updText').textContent = 'Your Blockhaven app is outdated (v' + inst + '). The latest is v' + LATEST + '.';
+      $('upd').classList.remove('hide');
+      $('updBtn').addEventListener('click', function () {
+        var b = $('updBtn'); b.disabled = true; b.textContent = 'Updating...';
+        var wipe = window.caches ? caches.keys().then(function (k) { return Promise.all(k.map(function (n) { return caches.delete(n); })); }) : Promise.resolve();
+        var unreg = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (g) { return g.unregister(); })); }) : Promise.resolve();
+        Promise.all([wipe, unreg]).then(function () {
+          return Promise.all(['play.html', 'css/game.css', 'furniture/index.json'].map(function (u) { return fetch(u + '?_=' + Date.now(), { cache: 'reload' }).catch(function () {}); }));
+        }).then(function () {
+          try { localStorage.setItem('bh_app_version', LATEST); } catch (e) {}
+          regSW(); b.classList.add('hide');
+          $('updText').innerHTML = '<span class="ok">Updated to v' + LATEST + '.</span> Close Blockhaven fully and open it again to play the new version.';
+        });
+      });
+    }
+    regSW();
+  });
+})();
 window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); dp = e; btn.disabled = false; $('other').classList.add('hide'); });
 btn.addEventListener('click', function () {
   if (!dp) return; dp.prompt();
