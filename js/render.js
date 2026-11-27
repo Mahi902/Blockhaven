@@ -1,5 +1,5 @@
 // Blockhaven - canvas renderer
-import { TILE, COLOR_HEX } from './config.js';
+import { TILE, COLOR_HEX, VERSION } from './config.js';
 import { S, worldToScreen } from './state.js';
 import { drawItemFx, drawFlies, drawScrub, wobbleOf, drawShowerWater, drawTopDownPerson } from './fx.js';
 import { catalog, getImage } from './catalog.js';
@@ -18,7 +18,7 @@ export function initRender(c) {
   canvas = c; ctx = c.getContext('2d');
   night = document.createElement('canvas');
   groundImg = new Image();
-  groundImg.src = new URL('../img/ground.svg', import.meta.url).href;
+  groundImg.src = new URL('../img/ground.svg', import.meta.url).href + '?v=' + VERSION;
   resize();
 }
 
@@ -35,7 +35,7 @@ function floorImg(name) {
   if (!rec) {
     const img = new Image(); rec = { img, ok: false };
     img.onload = () => { rec.ok = true; };
-    img.src = `${FLOOR_BASE}${encodeURIComponent(name)}.svg`;
+    img.src = `${FLOOR_BASE}${encodeURIComponent(name)}.svg?v=${VERSION}`;
     floorImgs.set(name, rec);
   }
   return rec.ok ? rec.img : null;

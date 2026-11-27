@@ -42,7 +42,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gra
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
 var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-var LATEST = '1.93', newer = function (a, b) { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0)); };
+var LATEST = '1.94', newer = function (a, b) { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0)); };
 function regSW() { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + LATEST).catch(function () {}); }
 // Is the installed app older than this page? Its version is saved by the game; failing that, the newest cache name it left behind.
 (function () {

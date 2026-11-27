@@ -39,12 +39,12 @@ function toggleBuild() {
 
 function syncBar() {
   const build = S.mode === 'build';
-  bar.mode.querySelector('img').src = `img/icons/${build ? 'play' : 'build'}.svg`;
+  bar.mode.querySelector('img').src = `img/icons/${build ? 'play' : 'build'}.svg?v=${VERSION}`;
   bar.mode.querySelector('span').textContent = build ? 'Play' : 'Build';
   bar.ceil.classList.toggle('hidden', !build);
   bar.mode.classList.toggle('hidden', !MPm.canEdit());
   bar.night.classList.toggle('hidden', !MPm.canEdit());
-  bar.night.querySelector('img').src = `img/icons/${S.night ? 'sun' : 'moon'}.svg`;
+  bar.night.querySelector('img').src = `img/icons/${S.night ? 'sun' : 'moon'}.svg?v=${VERSION}`;
   bar.snd.querySelector('img').src = `img/icons/sound-${soundOn ? 'on' : 'off'}.svg`;
   applyChat();
   $('dpad').classList.toggle('off', build);
@@ -89,10 +89,10 @@ function syncFs() {
   const on = !!fsElement();
   document.body.classList.toggle('fs', on);
   [0, 120, 400, 900].forEach(ms => setTimeout(fitViewport, ms));
-  bar.fs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`;
+  bar.fs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg?v=${VERSION}`;
   bar.fs.title = on ? 'Exit full screen' : 'Full screen';
   bar.fs.classList.toggle('on', on);
-  if (homeFs) { homeFs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg`; homeFs.title = bar.fs.title; homeFs.classList.toggle('on', on); }
+  if (homeFs) { homeFs.querySelector('img').src = `img/icons/${on ? 'fullscreen-exit' : 'fullscreen'}.svg?v=${VERSION}`; homeFs.title = bar.fs.title; homeFs.classList.toggle('on', on); }
 }
 
 function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...S.settings, sound: soundOn })); } catch (e) { /* ignore */ } }
@@ -213,6 +213,7 @@ async function boot() {
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
   $('verTag').textContent = 'v' + VERSION;
+  document.querySelectorAll('img[src^="img/"]').forEach(im => { const s = im.getAttribute('src'); if (!s.includes('?')) im.setAttribute('src', s + '?v=' + VERSION); });   // static images too
   try { localStorage.setItem('bh_app_version', VERSION); } catch (e) {}   // lets the website tell whether this installed app is outdated
   const vt = $('verTag'); vt.style.cursor = 'pointer'; vt.style.pointerEvents = 'auto'; vt.title = 'Click to check for updates';
   let checking = false;
@@ -399,7 +400,7 @@ function openCreateWorld() {
 function openCredits() {
   openModal({
     title: 'Credits', body: h('div', { class: 'credits' },
-      h('img', { src: 'img/logo.svg', alt: '' }), h('h3', {}, 'Blockhaven'),
+      h('img', { src: 'img/logo.svg?v=' + VERSION, alt: '' }), h('h3', {}, 'Blockhaven'),
       h('p', {}, 'Version ' + VERSION),
       h('p', {}, 'Created, designed and developed by'),
       h('p', {}, h('a', { href: 'https://github.com/mahi902', target: '_blank', rel: 'noopener' }, 'mahi902')),

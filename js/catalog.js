@@ -1,7 +1,8 @@
 // Blockhaven - furniture catalog. Every folder in /furniture/ is a piece; its colour SVGs are its variations.
 // Folder listing comes from furniture/index.json (rebuilt by tools/build_index.py / the GitHub Action),
 // with the GitHub contents API as a fallback so a newly pushed folder is still found.
-import { TILE, REPO, COLOR_NAMES } from './config.js';
+import { TILE, REPO, COLOR_NAMES, VERSION } from './config.js';
+const Q = `?v=${VERSION}`;   // every asset URL carries the game version, so an update never serves stale textures
 
 export const catalog = new Map();
 export const order = { furniture: [], structure: [], npc: [] };
@@ -12,7 +13,7 @@ const parseInfo = txt => Object.fromEntries(txt.split(/\r?\n/).map(l => l.match(
 
 async function listFolders() {
   try {
-    const r = await fetch(`${BASE}index.json`, { cache: 'no-cache' });
+    const r = await fetch(`${BASE}index.json${Q}`, { cache: 'no-cache' });
     if (r.ok) return await r.json();
   } catch (e) { /* fall through to the API */ }
   const api = p => fetch(`https://api.github.com/repos/${REPO}/contents/${p}`).then(r => r.json());
@@ -23,12 +24,12 @@ async function listFolders() {
 }
 
 async function loadOne(id, files) {
-  const info = parseInfo(await (await fetch(`${BASE}${encodeURIComponent(id)}/info.txt`)).text());
+  const info = parseInfo(await (await fetch(`${BASE}${encodeURIComponent(id)}/info.txt${Q}`)).text());
   const colors = files.filter(f => f.toLowerCase().endsWith('.svg')).map(f => f.slice(0, -4).toLowerCase())
     .sort((a, b) => (COLOR_NAMES.indexOf(a) + 99) % 99 - (COLOR_NAMES.indexOf(b) + 99) % 99);
   if (!colors.length) return;
   const block = Number(info.block) || 0;
-  const svg = await (await fetch(`${BASE}${encodeURIComponent(id)}/${encodeURIComponent(colors[0])}.svg`)).text();
+  const svg = await (await fetch(`${BASE}${encodeURIComponent(id)}/${encodeURIComponent(colors[0])}.svg${Q}`)).text();
   const vb = (svg.match(/viewBox="[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)"/) || []).slice(1).map(Number);
   const spriteW = vb[0] || TILE * Math.max(1, block), spriteH = vb[1] || TILE;
   const edge = block === 0;
@@ -52,7 +53,7 @@ export async function loadCatalog() {
 }
 
 const colorOf = (d, c) => (d.colors.includes(c) ? c : d.colors[0]);
-export const previewUrl = (d, color) => `${BASE}${encodeURIComponent(d.id)}/${encodeURIComponent(colorOf(d, color))}.svg`;
+export const previewUrl = (d, color) => `${BASE}${encodeURIComponent(d.id)}/${encodeURIComponent(colorOf(d, color))}.svg${Q}`;
 
 /** The loaded sprite, or null while it is still loading (the render loop just tries again next frame). */
 export function getImage(d, color) {
@@ -63,6 +64,6 @@ export function getImage(d, color) {
 }
 
 export function getFunction(def) {
-  if (!fnCache.has(def.id)) fnCache.set(def.id, import(`${BASE}${encodeURIComponent(def.id)}/function.js`).catch(e => { console.error('[function.js]', def.id, e); return null; }));
+  if (!fnCache.has(def.id)) fnCache.set(def.id, import(`${BASE}${encodeURIComponent(def.id)}/function.js${Q}`).catch(e => { console.error('[function.js]', def.id, e); return null; }));
   return fnCache.get(def.id);
 }

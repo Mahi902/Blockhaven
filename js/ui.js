@@ -1,10 +1,11 @@
 // Blockhaven - UI helpers built on the game's own CSS (css/game.css).
 // function.js files get these through `api.ui`, so they never need CSS of their own.
-import { COLOR_HEX, COLOR_NAMES } from './config.js';
+import { COLOR_HEX, COLOR_NAMES, VERSION } from './config.js';
 import { S } from './state.js';
 import { sound } from './audio.js';
 
 const ICON_BASE = new URL('../img/icons/', import.meta.url).href;
+const VQ = '?v=' + VERSION;
 export const FLOOR_BASE = new URL('../img/floor/', import.meta.url).href;
 
 /** h('div', {class:'x', onClick: fn}, 'text', childNode) */
@@ -25,7 +26,7 @@ export function h(tag, props = {}, ...children) {
   return el;
 }
 
-export const icon = (name, cls = '') => h('img', { class: `bh-ico ${cls}`, src: `${ICON_BASE}${name}.svg`, alt: '', draggable: 'false' });
+export const icon = (name, cls = '') => h('img', { class: `bh-ico ${cls}`, src: `${ICON_BASE}${name}.svg${VQ}`, alt: '', draggable: 'false' });
 
 /** button(label, {kind:'green'|'red'|'blue'|'gold'|'dark', icon, onClick, small}) */
 export function button(label, opts = {}) {
