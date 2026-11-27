@@ -73,6 +73,7 @@ export function drawItemFx(c, it) {
   const st = it.state; if (!st) return;
   const now = Date.now();
   if (it.type === 'fan') { drawFan(c, it, st, now); return; }
+  if (it.type === 'lavalamp') { drawLava(c, st, now); return; }
   if (it.type === 'exbike') { drawBike(c, st, now); return; }
   if (it.type === 'gclock') { drawClockHands(c, now); return; }
   if (it.type === 'sink' && st._sink) {
@@ -277,4 +278,20 @@ function drawBike(c, st, now) {
   c.fillRect(-12, 3 + Math.sin(a * 0.6) * 3.5, 5, 7);
   c.fillRect(5, 3 - Math.sin(a * 0.6) * 3.5, 5, 7);
   c.fillStyle = col; c.fillRect(-4.5, -13, 7 * (0.35 + 0.65 * Math.abs(Math.sin(t * 1.3))), 1.6);
+}
+
+// ---- lava lamp: wax blobs drift inside the glass (origin = tile centre, glass radius ~11) ----
+function drawLava(c, st, now) {
+  const on = !!st.on, col = st.wax || '#ff8a3d', t = now / 1000 * (on ? 1 : 0.05);
+  c.save(); c.beginPath(); c.arc(0, 0, 11, 0, 7); c.clip();
+  if (on) { c.fillStyle = col; c.globalAlpha = 0.22; c.fillRect(-12, -12, 24, 24); c.globalAlpha = 1; }
+  for (let i = 0; i < 5; i++) {
+    const a = t * (0.6 + i * 0.17) + i * 1.9, r = 2.4 + (i % 3) * 1.3 + Math.sin(t * 1.3 + i) * 0.8;
+    const x = Math.cos(a) * (5 - (i % 2) * 1.5), y = Math.sin(a * 0.8 + i) * 5;
+    c.fillStyle = col; c.globalAlpha = on ? 0.95 : 0.35;
+    c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+    c.fillStyle = '#fff'; c.globalAlpha = on ? 0.35 : 0.1;
+    c.beginPath(); c.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, 7); c.fill();
+  }
+  c.restore(); c.globalAlpha = 1;
 }

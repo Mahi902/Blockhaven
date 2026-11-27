@@ -1,0 +1,4 @@
+name=Lava Lamp
+description=Slow glowing blobs drift inside a glass. Switch it on and pick the colour of the wax.
+block=1
+function=Lava lamp settings
