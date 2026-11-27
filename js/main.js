@@ -213,6 +213,26 @@ async function boot() {
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
   $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
   $('verTag').textContent = 'v' + VERSION;
+  const vt = $('verTag'); vt.style.cursor = 'pointer'; vt.style.pointerEvents = 'auto'; vt.title = 'Click to check for updates';
+  let checking = false;
+  vt.addEventListener('click', async () => {      // check for a newer version; if there is one, refresh every cached file and reload
+    if (checking) return; checking = true;
+    const say = t => { vt.textContent = t; };
+    try {
+      say('Checking...');
+      const r = await fetch('js/config.js?_=' + Date.now(), { cache: 'no-store' });
+      const m = /VERSION\s*=\s*'([^']+)'/.exec(await r.text());
+      if (!m) throw new Error('no version');
+      const latest = m[1], num = v => v.split('.').map(Number), a = num(latest), b = num(VERSION);
+      const newer = a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0));
+      if (!newer) { say('Up to date'); setTimeout(() => say('v' + VERSION), 1800); checking = false; return; }
+      say('Updating to v' + latest + '...');
+      if ('caches' in window) await Promise.all((await caches.keys()).map(k => caches.delete(k)));
+      if ('serviceWorker' in navigator) await Promise.all((await navigator.serviceWorker.getRegistrations()).map(g => g.unregister()));
+      await Promise.all(['play.html', 'css/game.css', 'furniture/index.json'].map(u => fetch(u + '?_=' + Date.now(), { cache: 'reload' }).catch(() => null)));
+      location.replace('play.html?v=' + latest);
+    } catch (e) { say('Check failed'); setTimeout(() => say('v' + VERSION), 2000); checking = false; }
+  });
   requestAnimationFrame(frame);
   await warmUp();
   const left = Math.max(0, 2600 - (performance.now() - bootT0));
