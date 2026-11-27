@@ -1,4 +1,4 @@
 name=Hammock
-description=A striped hammock slung between two posts. Lie back and sway, or settle in for a nap.
+description=A hammock slung between two posts. Lie back with a blanket, or settle in for a nap.
 block=2
 function=Climb in
