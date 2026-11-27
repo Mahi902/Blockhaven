@@ -79,7 +79,7 @@ function toggleFullscreen() {
   } catch (e) { toast('Full screen is not available here'); }
 }
 function fitViewport() {
-  const hh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+  const hh = Math.max((window.visualViewport && window.visualViewport.height) || 0, window.innerHeight || 0);
   document.documentElement.style.setProperty('--ah', Math.round(hh) + 'px');
   resize(); clampCamera();
 }
@@ -223,12 +223,14 @@ async function boot() {
 async function warmUp() {
   const waits = [];
   try { if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready); } catch (e) { /* ignore */ }
+  const bar = $('spBar'); let doneN = 0, total = 0;
+  const track = pr => { total++; return pr.then(() => { doneN++; if (bar) bar.style.width = Math.round(doneN / total * 100) + '%'; }); };
   for (const d of catalog.values()) {
-    waits.push(new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = previewUrl(d, d.colors && d.colors[0]); }));
-    if (d.hasFunction) waits.push(getFunction(d).catch(() => null));
+    waits.push(track(new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = previewUrl(d, d.colors && d.colors[0]); })));
+    if (d.hasFunction) waits.push(track(getFunction(d).catch(() => null)));
     getImage(d, d.colors && d.colors[0]);
   }
-  await Promise.race([Promise.allSettled(waits), new Promise(r => setTimeout(r, 6000))]);
+  await Promise.race([Promise.allSettled(waits).then(() => { if (bar) bar.style.width = '100%'; }), new Promise(r => setTimeout(r, 6000))]);
 }
 
 function refreshPreview() {

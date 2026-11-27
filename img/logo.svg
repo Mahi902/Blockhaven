@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 170" width="200" height="170"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#0d9488"/></linearGradient></defs><path d="M20 70 L100 18 L180 70 V150 a10 10 0 01-10 10 H30 a10 10 0 01-10-10z" fill="#0f172a" stroke="#020617" stroke-width="6" stroke-linejoin="round"/><path d="M28 72 L100 26 L172 72 V150 H28z" fill="url(#g)" stroke="#0f172a" stroke-width="5" stroke-linejoin="round"/><rect x="42" y="92" width="34" height="34" rx="4" fill="#fde047" stroke="#0f172a" stroke-width="5"/><rect x="84" y="100" width="30" height="50" rx="4" fill="#fb7185" stroke="#0f172a" stroke-width="5"/><rect x="122" y="92" width="36" height="34" rx="4" fill="#60a5fa" stroke="#0f172a" stroke-width="5"/><circle cx="106" cy="126" r="3.2" fill="#fde047"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 170" width="200" height="170"><defs>
+<linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#14b8a6"/></linearGradient>
+<linearGradient id="r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+<linearGradient id="rl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fda4af"/><stop offset="1" stop-color="#fb7185"/></linearGradient>
+<linearGradient id="rr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f43f5e"/><stop offset="1" stop-color="#be123c"/></linearGradient></defs>
+<ellipse cx="100" cy="160" rx="68" ry="9" fill="#0f172a" opacity=".25"/>
+<g stroke="#0f172a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+<polygon points="40,70 100,100 100,158 40,128" fill="url(#l)"/>
+<polygon points="100,100 160,70 160,128 100,158" fill="url(#r)"/>
+<polygon points="40,70 100,100 100,10" fill="url(#rl)"/>
+<polygon points="100,100 160,70 100,10" fill="url(#rr)"/></g>
+<g stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round">
+<polygon points="56,138 78,149 78,115 56,104" fill="#fbbf24"/>
+<polygon points="115,106 145,91 145,119 115,134" fill="#bae6fd"/></g>
+<path d="M130 98.500V126.500M115 120L145 105" stroke="#0f172a" stroke-width="3" fill="none"/>
+<circle cx="73" cy="133" r="2.4" fill="#0f172a"/>
+<path d="M48 76l44 22" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>
+</svg>
