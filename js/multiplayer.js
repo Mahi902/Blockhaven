@@ -51,6 +51,22 @@ function receiver(cb) {
   };
 }
 const toAll = (obj, except = null) => { for (const p of MP.peers.values()) if (p.id !== except) send(p.dc, obj); };
+let beatTimer = 0;
+function startBeat() {
+  clearInterval(beatTimer);
+  beatTimer = setInterval(() => {
+    const now = Date.now();
+    if (isHost()) {
+      toAll({ t: 'ping' });
+      for (const p of [...MP.peers.values()]) if (now - (p.seen || now) > 7000) dropPeer(p, 'lost connection');
+    } else if (isGuest()) {
+      send(MP.dc, { t: 'ping' });
+      if (now - (MP.seen || now) > 7000) { toast('Lost connection to the host', 3500); leave(true); }
+    }
+  }, 1000);
+}
+window.addEventListener('offline', () => { if (isGuest()) { toast('You went offline', 3000); leave(true); } });
+window.addEventListener('pagehide', () => { if (isGuest() && MP.dc) send(MP.dc, { t: 'bye' }); else if (isHost()) toAll({ t: 'end' }); });
 const me = () => ({ name: S.player.name, look: S.player.look });
 
 // ---- QR ---------------------------------------------------------------------
@@ -130,7 +146,7 @@ function pickWorld(worlds) {
 }
 function beginHost(worldId) {
   stop(true);
-  MP.role = 'host'; MP.worldId = worldId; MP.started = false; MP.peers = new Map(); MP.defaultRole = 'viewer'; MP.myId = 'host';
+  startBeat(); MP.role = 'host'; MP.worldId = worldId; MP.started = false; MP.peers = new Map(); MP.defaultRole = 'viewer'; MP.myId = 'host';
   openInvite();
 }
 
@@ -140,9 +156,9 @@ export async function openInvite() {
   const pc = newPc(), dc = pc.createDataChannel('bh');
   const peer = { id: 'p' + (seq++), pc, dc, name: 'Player', look: null, role: MP.defaultRole, x: 0, y: 0, dir: 'down', mv: false, joined: false };
   dc.onmessage = receiver(m => hostGot(peer, m));
-  dc.onopen = () => { peer.joined = true; MP.peers.set(peer.id, peer); sound('chat'); };
+  dc.onopen = () => { peer.joined = true; peer.seen = Date.now(); MP.peers.set(peer.id, peer); sound('chat'); };
   dc.onclose = () => dropPeer(peer, 'left');
-  pc.onconnectionstatechange = () => { if (['failed', 'closed'].includes(pc.connectionState)) dropPeer(peer, 'left'); };
+  pc.onconnectionstatechange = () => { if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) setTimeout(() => { if (pc.connectionState !== 'connected') dropPeer(peer, 'left'); }, 4000); };
   await pc.setLocalDescription(await pc.createOffer()); await gathered(pc);
   const code = await pack(pc.localDescription);
   const box = h('div', {}); let step = null, card = null;
@@ -167,6 +183,9 @@ function openLobby() {
 export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start' }); }
 
 function hostGot(p, m) {
+  p.seen = Date.now();
+  if (m.t === 'ping') return;
+  if (m.t === 'bye') { dropPeer(p, 'left'); return; }
   if (m.t === 'hello') {
     p.name = String(m.name || 'Player').slice(0, 16); p.look = m.look; p.hello = true;
     send(p.dc, { t: 'welcome', id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
@@ -195,6 +214,7 @@ export function openJoin() {
       const offer = await unpack(txt); if (step) step.stop(); await wantCamera();
       const pc = newPc(); await pc.setRemoteDescription(offer);
       pc.ondatachannel = e => guestChannel(e.channel);
+      pc.onconnectionstatechange = () => { if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) setTimeout(() => { if (isGuest() && pc.connectionState !== 'connected') { toast('Lost connection to the host', 3500); leave(true); } }, 4000); };
       await pc.setLocalDescription(await pc.createAnswer()); await gathered(pc);
       MP.pc = pc; const code = await pack(pc.localDescription);
       step = showStep(code); box.replaceChildren(step.el, h('p', { class: 'bh-text', style: 'text-align:center' }, 'Waiting for the host to scan...'));
@@ -205,15 +225,17 @@ export function openJoin() {
     onClose: () => { if (step) step.stop(); if (!MP.role && MP.pc) { try { MP.pc.close(); } catch (e) { /* ignore */ } MP.pc = null; } } });
 }
 function guestChannel(dc) {
-  MP.role = 'guest'; MP.dc = dc; MP.started = false; MP.peers = new Map();
+  MP.role = 'guest'; MP.dc = dc; MP.started = false; MP.peers = new Map(); MP.seen = Date.now(); MP.starting = false; startBeat();
   dc.onmessage = receiver(guestGot);
   const hi = () => send(dc, { t: 'hello', ...me() });
   dc.onopen = hi; if (dc.readyState === 'open') hi();
   dc.onclose = () => { if (MP.role === 'guest') { toast('Disconnected from the host', 3000); leave(true); } };
 }
 function guestGot(m) {
+  MP.seen = Date.now();
+  if (m.t === 'ping') return;
   if (m.t === 'welcome') { MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null); toast('Connected to the host'); lobbyGuest(); }
-  else if (m.t === 'start') { closeModal(); hooks.startGuest(MP.snap); startLoops(); W.listeners.push(onWorldChange); }
+  else if (m.t === 'start') { MP.starting = true; closeModal(); hooks.startGuest(MP.snap); startLoops(); W.listeners.push(onWorldChange); }
   else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, bubble: old && old.bubble }; }); }
   else if (m.t === 'chat') chatIn(m.from, m.name, m.text);
   else if (m.t === 'world') { if (S.started) applyRemote(m.snap); else MP.snap = m.snap; }
@@ -223,7 +245,8 @@ function guestGot(m) {
 }
 function lobbyGuest() {
   openModal({ title: 'Connected', subtitle: 'Waiting for the host to start...', body: h('p', { class: 'bh-text' }, 'You joined as ' + (MP.myRole === 'editor' ? 'an editor' : 'a viewer') + '.'),
-    buttons: [{ label: 'Leave', kind: 'red', onClick: () => { closeModal(); leave(); } }] });
+    buttons: [{ label: 'Leave', kind: 'red', onClick: () => { MP.starting = true; closeModal(); leave(); } }],
+    onClose: () => { if (isGuest() && !MP.starting && !S.started) leave(); } });
 }
 
 // ---- shared loops ---------------------------------------------------------------------------
@@ -273,12 +296,13 @@ export function stop(silent) {   // host stops the session
   cleanup(); if (!silent) toast('Multiplayer session stopped');
 }
 export function leave(fromHost) {
-  if (isGuest() && !fromHost && MP.dc) { try { MP.dc.close(); } catch (e) { /* ignore */ } }
+  if (!MP.role) return;
+  if (isGuest() && MP.dc) { if (!fromHost) send(MP.dc, { t: 'bye' }); const d = MP.dc; setTimeout(() => { try { d.close(); } catch (e) { /* ignore */ } }, 150); }
   try { MP.pc && MP.pc.close(); } catch (e) { /* ignore */ }
   cleanup(); hooks.exitToMenu();
 }
 function cleanup() {
-  clearInterval(posTimer); clearTimeout(worldTimer);
+  clearInterval(beatTimer); clearInterval(posTimer); clearTimeout(worldTimer);
   const i = W.listeners.indexOf(onWorldChange); if (i >= 0) W.listeners.splice(i, 1);
   MP.role = null; MP.started = false; MP.peers = new Map(); MP.dc = null; MP.pc = null; MP.myRole = 'editor';
   S.remote = []; S.onSay = null; lastSent = '';
