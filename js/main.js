@@ -43,6 +43,7 @@ function syncBar() {
   bar.mode.querySelector('span').textContent = build ? 'Play' : 'Build';
   bar.ceil.classList.toggle('hidden', !build);
   bar.mode.classList.toggle('hidden', !MPm.canEdit());
+  bar.night.classList.toggle('hidden', !MPm.canEdit());
   bar.night.querySelector('img').src = `img/icons/${S.night ? 'sun' : 'moon'}.svg`;
   bar.snd.querySelector('img').src = `img/icons/sound-${soundOn ? 'on' : 'off'}.svg`;
   applyChat();
@@ -52,7 +53,7 @@ function syncBar() {
 function buildBar() {
   bar.mode = button('Build', { kind: 'blue', icon: 'build', onClick: toggleBuild, title: 'Build mode (B)' });
   bar.ceil = button('', { kind: 'dark', small: true, icon: 'ceiling', title: 'Show ceilings', onClick: () => { S.showCeilings = !S.showCeilings; bar.ceil.classList.toggle('on', S.showCeilings); } });
-  bar.night = button('', { kind: 'dark', small: true, icon: 'moon', title: 'Day / night', onClick: () => { S.night = !S.night; syncBar(); } });
+  bar.night = button('', { kind: 'dark', small: true, icon: 'moon', title: 'Day / night', onClick: () => { if (!MPm.canEdit()) return; if (MPm.active()) MPm.requestNight(!S.night); else { S.night = !S.night; syncBar(); } } });
   bar.snd = button('', { kind: 'dark', small: true, icon: 'sound-on', title: 'Sound', onClick: () => { setSound(!soundOn); syncBar(); } });
   bar.chat = button('', { kind: 'dark', small: true, icon: 'chat', title: 'Chat (Enter)', onClick: toggleChat });
   bar.chat.id = 'chatBtn';

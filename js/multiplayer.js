@@ -13,6 +13,20 @@ export const active = () => !!MP.role;
 export const isGuest = () => MP.role === 'guest';
 export const isHost = () => MP.role === 'host';
 export const canEdit = () => MP.role !== 'guest' || MP.myRole === 'editor';
+// Day / night: only editors (and the host) may change it. Requests within 300 ms of each other are settled by picking one at random.
+let nightReqs = [], nightTimer = 0;
+export function requestNight(v) {
+  if (isGuest()) { send(MP.dc, { t: 'nightReq', v }); return; }
+  queueNight({ v });
+}
+function queueNight(r) {
+  nightReqs.push(r);
+  if (nightTimer) return;
+  nightTimer = setTimeout(() => {
+    const pick = nightReqs[Math.floor(Math.random() * nightReqs.length)]; nightReqs = []; nightTimer = 0;
+    S.night = !!pick.v; toAll({ t: 'night', v: S.night }); hooks.syncBar();
+  }, 300);
+}
 export function init(h_) { hooks = h_; }
 
 // ---- codes ------------------------------------------------------------------
@@ -60,7 +74,7 @@ function startBeat() {
     const now = Date.now();
     if (isHost()) {
       toAll({ t: 'ping' });
-      for (const p of MP.peers.values()) if (MP.started && p.hello && !p.ready) send(p.dc, { t: 'start', world: W.getSnapshot() });
+      for (const p of MP.peers.values()) if (MP.started && p.hello && !p.ready) send(p.dc, { t: 'start', night: S.night, world: W.getSnapshot() });
       for (const p of [...MP.peers.values()]) if (now - (p.seen || now) > 15000) dropPeer(p, 'lost connection');
     } else if (isGuest()) {
       send(MP.dc, { t: 'ping' });
@@ -185,7 +199,7 @@ function openLobby() {
   const buttons = MP.started ? [{ label: 'Done', kind: 'green', onClick: closeModal }] : [{ label: 'Start game', kind: 'green', onClick: () => { closeModal(); hooks.startHost(MP.worldId); } }, { label: 'Cancel', kind: 'red', onClick: () => { closeModal(); stop(true); } }];
   openModal({ title: 'Player connected', subtitle: MP.started ? 'They are in your world' : 'Invite more, or start the game', body, buttons, locked: !MP.started });
 }
-export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start', world: W.getSnapshot() }); }
+export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start', night: S.night, world: W.getSnapshot() }); }
 
 function hostGot(p, m) {
   p.seen = Date.now();
@@ -195,11 +209,12 @@ function hostGot(p, m) {
   if (m.t === 'hello') {
     p.name = String(m.name || 'Player').slice(0, 16); p.look = m.look; p.hello = true;
     if (m.v !== VERSION) toast('Version mismatch: host ' + VERSION + ', player ' + m.v + '. Refresh both devices.', 5000);
-    send(p.dc, { t: 'welcome', v: VERSION, id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
-    if (MP.started) send(p.dc, { t: 'start', world: W.getSnapshot() });
+    send(p.dc, { t: 'welcome', night: S.night, v: VERSION, id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
+    if (MP.started) send(p.dc, { t: 'start', night: S.night, world: W.getSnapshot() });
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
   } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; p.seat = m.seat; p.lock = m.lock; }
   else if (m.t === 'chat') { const text = String(m.text || '').slice(0, 140); chatIn(p.id, p.name, text); toAll({ t: 'chat', from: p.id, name: p.name, text }, p.id); }
+  else if (m.t === 'nightReq') { if (p.role === 'editor') queueNight({ v: m.v }); }
   else if (m.t === 'states') { applyStates(m.s); toAll({ t: 'states', s: m.s }, p.id); }
   else if (m.t === 'world' && p.role === 'editor') { applyRemote(m.snap); toAll({ t: 'world', snap: m.snap }, p.id); }
 }
@@ -244,13 +259,15 @@ function guestGot(m) {
   if (m.t === 'ping') return;
   if (m.t === 'welcome') {
     if (S.started) return;
+    if (m.night !== undefined) S.night = !!m.night;
     MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null);
     if (m.v !== VERSION) toast('Version mismatch: host ' + m.v + ', you ' + VERSION + '. Refresh both devices.', 5000);
     if (m.started) enterGuest(m.world); else lobbyGuest();
   }
-  else if (m.t === 'start') { enterGuest(m.world || MP.snap); send(MP.dc, { t: 'ready' }); }
+  else if (m.t === 'start') { if (m.night !== undefined) S.night = !!m.night; enterGuest(m.world || MP.snap); send(MP.dc, { t: 'ready' }); }
   else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, walk: old ? old.walk : 0, bubble: old && old.bubble }; }); }
   else if (m.t === 'npc') npcApply(m.d);
+  else if (m.t === 'night') { S.night = !!m.v; hooks.syncBar(); }
   else if (m.t === 'states') applyStates(m.s);
   else if (m.t === 'chat') chatIn(m.from, m.name, m.text);
   else if (m.t === 'world') { if (S.started) applyRemote(m.snap); else MP.snap = m.snap; }
