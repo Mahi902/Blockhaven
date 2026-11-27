@@ -183,6 +183,25 @@ function drawRemote(c, r) {
   if (r.emote) emoteSprites(r.look);         // warm the emote sprites so a remote emote does not flicker on its first frames
   drawPlayer(c, r, set);
 }
+/** A "do an emote together" request, shown as the asker's speech bubble. Its screen rectangle is kept in b.rect so a click can hit it. */
+function drawRequestBubble(c, b, sx, ty) {
+  const alpha = Math.min(1, b.ttl / 0.6);
+  c.save(); c.globalAlpha = alpha; c.font = '700 14px Fredoka, "Plus Jakarta Sans", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  const words = b.text.split(/\s+/), lines = []; let cur = '';
+  for (const w of words) { if ((cur + ' ' + w).trim().length > 26) { lines.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }
+  if (cur) lines.push(cur);
+  const lh = 18, bw = Math.max(...lines.map(l => c.measureText(l).width)) + 28, bh = lines.length * lh + 18;
+  const bx = Math.max(8, Math.min(S.view.w - bw - 8, sx - bw / 2)), by = Math.max(8, ty - 20 - bh);
+  b.rect = { x: bx, y: by, w: bw, h: bh };
+  const pulse = 0.5 + 0.5 * Math.sin(S.tick * 0.12);
+  c.fillStyle = 'rgba(0,0,0,.3)'; rr(c, bx + 1, by + 4, bw, bh, 12); c.fill();
+  c.fillStyle = '#fff'; c.strokeStyle = '#f59e0b'; c.lineWidth = 3 + pulse * 1.5; rr(c, bx, by, bw, bh, 12); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(sx - 7, by + bh - 1); c.lineTo(sx + 7, by + bh - 1); c.lineTo(sx, by + bh + 10); c.closePath(); c.fill();
+  c.fillStyle = '#0f172a';
+  lines.forEach((l, i) => c.fillText(l, bx + bw / 2, by + 9 + lh / 2 + i * lh));
+  c.restore();
+}
+
 function drawRemoteTags(c) {
   c.textAlign = 'center'; c.textBaseline = 'middle';
   for (const r of S.remote) {
@@ -192,6 +211,7 @@ function drawRemoteTags(c) {
     c.fillStyle = 'rgba(2,6,23,.72)'; rr(c, s.x - tw / 2, ty - 10, tw, 20, 8); c.fill();
     c.fillStyle = '#fff'; c.fillText(label, s.x, ty + 0.5);
     const b = r.bubble; if (!b || b.ttl <= 0) continue;
+    if (b.req) { drawRequestBubble(c, b, s.x, ty); continue; }
     c.globalAlpha = Math.min(1, b.ttl / 0.6); c.font = '700 14px Fredoka, "Plus Jakarta Sans", sans-serif';
     const bw = Math.min(220, c.measureText(b.text).width + 24), bh = 30, bx = s.x - bw / 2, by = ty - 18 - bh;
     c.fillStyle = '#fff'; c.strokeStyle = '#0f172a'; c.lineWidth = 3; rr(c, bx, by, bw, bh, 12); c.fill(); c.stroke();

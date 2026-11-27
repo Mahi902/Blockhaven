@@ -1,6 +1,7 @@
 name=High Five
 together=1
 ask=high five you
+accept=high five
 gap=23
 duration=2.4
 preview=1.2

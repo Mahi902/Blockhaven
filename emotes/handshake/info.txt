@@ -1,6 +1,7 @@
 name=Handshake
 together=1
-ask=shake hands
+ask=shake hands with you
+accept=shake
 gap=28
 duration=3
 preview=1.3

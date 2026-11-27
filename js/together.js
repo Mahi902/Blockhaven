@@ -1,6 +1,6 @@
 // Blockhaven - "Perform Emote Together" (multiplayer only).
 // Walk up to another player and a button appears. It opens a menu of two-player emotes (hug, handshake...). The other
-// player gets a banner: one tap accepts, a double tap declines. A pair then has to wait COOL_MS before doing another
+// player sees it as a chat bubble above them: one click accepts, a double click declines. A pair then has to wait COOL_MS before doing another
 // one together (they can still do them with anybody else). Requests travel as 'duo' messages (js/multiplayer.js).
 import { S } from './state.js';
 import { h, openModal, closeModal, toast } from './ui.js';
@@ -17,7 +17,7 @@ const DOUBLE_MS = 300;    // two taps within this are a double tap
 const cool = new Map();   // other player's id -> time (ms) they can emote with you again
 let out = null;           // my request, waiting for an answer: { to, name, id, n, left, timer }
 let incoming = null;      // a request I can answer: { from, name, def, n, left, timer }
-let banner = null, tapTimer = 0, waitOpen = false;
+let tapTimer = 0;
 
 const byId = id => S.remote.find(r => r.id === id) || null;
 export const coolLeft = id => Math.max(0, (cool.get(id) || 0) - Date.now());
@@ -65,53 +65,45 @@ export function openTogether(partner) {
   });
 }
 
+// The request is the sender's own chat bubble: "I want to hug you. Click to hug or double click to decline :(".
+// On the other player's screen that bubble sits above the sender and is the thing to click.
+const askText = d => `I want to ${d.ask}. Click to ${d.accept} or double click to decline :(`;
+const clearOwnBubble = () => { if (S.bubbles[0] && S.bubbles[0].req) S.bubbles = []; };
+const clearBubbleOf = id => { const r = byId(id); if (r && r.bubble && r.bubble.req) r.bubble = null; };
+
 function sendRequest(r, def) {
   if (out) return;
-  const n = Math.floor(Math.random() * 1e9), left = S.player.x <= r.x;
+  closeModal();
+  const n = Math.floor(Math.random() * 1e9), left = S.player.x <= r.x, text = askText(def), ttl = ASK_MS / 1000;
   out = { to: r.id, name: r.name, id: def.id, n, left, timer: setTimeout(() => endOut('timeout'), ASK_MS + 2500) };
+  S.bubbles = [{ text, ttl, max: ttl, req: true }];
   MPm.sendDuo(r.id, { k: 'req', id: def.id, n, left });
-  waitOpen = true;
-  openModal({
-    title: 'Asking ' + r.name + '...', subtitle: def.name, locked: true,
-    body: h('p', { class: 'bh-text' }, 'They can tap to accept or double tap to decline.'),
-    buttons: [{ label: 'Cancel', kind: 'red', onClick: cancelOut }],
-    onClose: () => { waitOpen = false; },
-  });
 }
-function closeWait() { if (waitOpen) closeModal(); }
 function cancelOut() {
   if (!out) return;
   MPm.sendDuo(out.to, { k: 'cancel', n: out.n });
-  clearTimeout(out.timer); out = null; closeWait();
+  clearTimeout(out.timer); out = null; clearOwnBubble();
 }
 function endOut(why) {
   if (!out) return;
-  const o = out; clearTimeout(o.timer); out = null; closeWait();
+  const o = out; clearTimeout(o.timer); out = null; clearOwnBubble();
   if (why === 'timeout') { setCool(o.to, COOL_MS); toast(o.name + ' did not answer', 2500); }
-  else if (why === 'no') { setCool(o.to, COOL_MS); toast(o.name + ' said no thanks', 2500); }
+  else if (why === 'no') { setCool(o.to, COOL_MS); toast(o.name + ' said no thanks :(', 2500); }
 }
 
-// ---- the other player's banner ------------------------------------------------------------------------------------------
-function showBanner(inc) {
-  hideBanner();
-  banner = h('div', { class: 'bh-panel tg-banner', role: 'alert', tabindex: '0' },
-    h('div', { class: 'tg-t' }, inc.name + ' wants to ' + inc.def.ask),
-    h('div', { class: 'tg-s' }, 'Tap to accept  |  Double tap to decline'),
-    h('div', { class: 'tg-bar' }, h('i', { style: `animation-duration:${ASK_MS}ms` })));
-  banner.addEventListener('pointerup', onTap);
-  document.body.appendChild(banner);
-  sound('chat');
-}
-function hideBanner() { if (banner) { banner.remove(); banner = null; } clearTimeout(tapTimer); tapTimer = 0; }
-function onTap(e) {
-  if (!incoming) return;
-  e.preventDefault();
-  if (tapTimer) { clearTimeout(tapTimer); tapTimer = 0; answer(false); return; }      // second tap: decline
-  tapTimer = setTimeout(() => { tapTimer = 0; answer(true); }, DOUBLE_MS);              // single tap: accept, unless a second tap follows
+// ---- answering: click the sender's bubble (once = yes, twice = no) ----------------------------------------------------------------
+/** Called by the canvas on a press at screen (x, y). Returns true if it hit the request bubble. */
+export function bubbleTap(x, y) {
+  if (!incoming) return false;
+  const r = byId(incoming.from), b = r && r.bubble, q = b && b.req && b.rect;
+  if (!q || x < q.x || x > q.x + q.w || y < q.y || y > q.y + q.h) return false;
+  if (tapTimer) { clearTimeout(tapTimer); tapTimer = 0; answer(false); }               // second tap: decline
+  else tapTimer = setTimeout(() => { tapTimer = 0; answer(true); }, DOUBLE_MS);          // single tap: accept, unless a second follows
+  return true;
 }
 function answer(yes, why) {
   const inc = incoming; if (!inc) return;
-  clearTimeout(inc.timer); incoming = null; hideBanner();
+  clearTimeout(inc.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; clearBubbleOf(inc.from);
   MPm.sendDuo(inc.from, { k: yes ? 'yes' : 'no', n: inc.n, id: inc.def.id, why });
   if (yes) { if (startTogether(inc.def.id, inc.n, inc.from, 1, inc.left ? 1 : -1)) setCool(inc.from, inc.def.duration * 1000 + COOL_MS); }
   else setCool(inc.from, COOL_MS);
@@ -120,10 +112,10 @@ function answer(yes, why) {
 // ---- messages ---------------------------------------------------------------------------------------------------------------
 function got(m) {
   if (m.k === 'req') return onRequest(m);
-  if (m.k === 'cancel') { if (incoming && incoming.from === m.from && incoming.n === m.n) { clearTimeout(incoming.timer); incoming = null; hideBanner(); } return; }
+  if (m.k === 'cancel') { if (incoming && incoming.from === m.from && incoming.n === m.n) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; clearBubbleOf(m.from); } return; }
   if (!out || out.to !== m.from || out.n !== m.n) return;
   if (m.k === 'yes') {
-    const o = out; clearTimeout(o.timer); out = null; closeWait();
+    const o = out; clearTimeout(o.timer); out = null; clearOwnBubble();
     const d = emotes.get(o.id);
     if (d && startTogether(o.id, o.n, o.to, 0, o.left ? -1 : 1)) setCool(o.to, d.duration * 1000 + COOL_MS);
   } else if (m.k === 'no') endOut('no');
@@ -133,18 +125,25 @@ function onRequest(m) {
   const no = why => MPm.sendDuo(m.from, { k: 'no', n: m.n, id: m.id, why });
   if (!from || !def || !def.together) return no('invalid');
   if (incoming || out || coolLeft(m.from) || P.seat || P.lock || inDuo(P) || Math.hypot(from.x - P.x, from.y - P.y) > NEAR * 2) return no('busy');
+  const text = askText(def);
   incoming = { from: m.from, name: from.name, def, n: m.n, left: !!m.left, timer: setTimeout(() => answer(false, 'timeout'), ASK_MS) };
-  showBanner(incoming);
+  from.bubble = { text, ttl: ASK_MS / 1000, req: true };       // drawn (and made clickable) by render.js
+  toast(from.name + ': ' + text, 4200); sound('chat');
 }
 
-/** Every frame: forget everything when the session ends, cancel when the other player disappears. */
+/** Every frame: forget everything when the session ends, cancel when someone leaves or walks off. */
 export function tickTogether() {
-  if (!MPm.active()) { if (out || incoming || cool.size) { if (out) { clearTimeout(out.timer); out = null; closeWait(); } if (incoming) { clearTimeout(incoming.timer); incoming = null; hideBanner(); } cool.clear(); } return; }
-  if (out && !byId(out.to)) { clearTimeout(out.timer); out = null; closeWait(); }
-  if (incoming && !byId(incoming.from)) { clearTimeout(incoming.timer); incoming = null; hideBanner(); }
+  if (!MPm.active()) {
+    if (out) { clearTimeout(out.timer); out = null; clearOwnBubble(); }
+    if (incoming) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; }
+    cool.clear(); return;
+  }
+  if (out) { const r = byId(out.to); if (!r || Math.hypot(r.x - S.player.x, r.y - S.player.y) > NEAR * 2 || S.player.seat) cancelOut(); }
+  if (incoming && !byId(incoming.from)) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; }
 }
 
 export function initTogether() {
   MPm.onDuo(got);
   S.onTogether = openTogether;
+  S.onBubbleTap = bubbleTap;
 }

@@ -227,10 +227,3 @@ html,body{background:#020617!important}
 .tg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;max-height:min(40vh,300px);overflow-y:auto;overscroll-behavior:contain;padding:4px 2px;scrollbar-width:thin;scrollbar-color:#475569 transparent}
 .tg-btn{min-height:104px}
 .emote-ico.tg-ico{width:100%;height:56px}
-.tg-banner{position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:70;width:min(380px,calc(100% - 24px));padding:14px 16px 16px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;text-align:center;animation:tgIn .22s ease-out}
-.tg-t{font:800 18px Fredoka,sans-serif;color:#fde047;text-shadow:0 2px 0 rgba(0,0,0,.5)}
-.tg-s{font:700 13px Fredoka,sans-serif;color:#cbd5e1;margin-top:4px}
-.tg-bar{height:6px;border-radius:6px;background:#0b1220;margin-top:10px;overflow:hidden}
-.tg-bar i{display:block;height:100%;width:100%;background:#38bdf8;animation:tgBar linear forwards}
-@keyframes tgBar{to{width:0}}
-@keyframes tgIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}

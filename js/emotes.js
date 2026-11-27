@@ -1,7 +1,7 @@
 // Blockhaven - emotes. Every folder in /emotes/ is one emote (see docs/EMOTES.md):
 //   emotes/<id>/info.txt   name=Wave / duration=2.6 / loop=0 / order=10 / preview=0.9   (preview = the moment drawn as the tray silhouette)
 //   emotes/<id>/emote.js   export default { pose(t, P, fx) { ... }, draw(c, P, t, fx) { ... } }
-//   together=1 / gap=24 / ask=shake hands   makes it a two-player emote (see docs/EMOTES.md); those are not in the tray
+//   together=1 / gap=24 / ask=shake hands with you / accept=shake   makes it a two-player emote (see docs/EMOTES.md); those are not in the tray
 //   emotes/<id>/icon.svg   optional hand drawn tray icon; without it a silhouette is generated from the pose
 // The folder list comes from emotes/index.json (tools/build_index.py), with the GitHub contents API as a fallback,
 // exactly like the furniture catalog, so dropping in a new folder is all it takes.
@@ -38,7 +38,7 @@ async function loadOne(id, files) {
   emotes.set(id, {
     id, name: info.name || id, iconUrl: files.includes('icon.svg') ? `${BASE}${encodeURIComponent(id)}/icon.svg${Q}` : null,
     preview: Number.isFinite(Number(info.preview)) && info.preview !== undefined ? Number(info.preview) : 0.5,
-    together: info.together === '1' || info.together === 'true', gap: Number(info.gap) || 24, ask: info.ask || ('do ' + (info.name || id)),
+    together: info.together === '1' || info.together === 'true', gap: Number(info.gap) || 24, ask: info.ask || ('do ' + (info.name || id)), accept: info.accept || 'accept',
     duration: Math.max(0.2, Number(info.duration) || 2), loop: info.loop === '1' || info.loop === 'true',
     order: Number.isFinite(Number(info.order)) && info.order !== undefined ? Number(info.order) : 999, mod,
   });

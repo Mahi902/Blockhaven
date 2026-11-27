@@ -1,6 +1,7 @@
 name=Laugh Together
 together=1
 ask=laugh with you
+accept=laugh
 gap=40
 duration=3.4
 preview=1.2
