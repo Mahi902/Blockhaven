@@ -1,0 +1,5 @@
+name=Facepalm
+duration=2.6
+loop=0
+order=180
+preview=1.2

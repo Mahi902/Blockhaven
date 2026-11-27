@@ -1,0 +1,5 @@
+name=Salute
+duration=2.2
+loop=0
+order=160
+preview=1.0

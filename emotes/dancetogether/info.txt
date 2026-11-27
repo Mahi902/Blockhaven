@@ -1,0 +1,7 @@
+name=Dance Together
+together=1
+ask=dance with you
+gap=34
+duration=5
+preview=0.4
+order=50

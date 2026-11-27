@@ -1,0 +1,7 @@
+name=Hug
+together=1
+ask=give you a hug
+gap=19
+duration=3.4
+preview=1.4
+order=10

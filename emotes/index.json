@@ -7,6 +7,10 @@
   "emote.js",
   "info.txt"
  ],
+ "bowtogether": [
+  "emote.js",
+  "info.txt"
+ ],
  "cheer": [
   "emote.js",
   "info.txt"
@@ -19,7 +23,27 @@
   "emote.js",
   "info.txt"
  ],
+ "dancetogether": [
+  "emote.js",
+  "info.txt"
+ ],
  "dizzy": [
+  "emote.js",
+  "info.txt"
+ ],
+ "facepalm": [
+  "emote.js",
+  "info.txt"
+ ],
+ "fistbump": [
+  "emote.js",
+  "info.txt"
+ ],
+ "flex": [
+  "emote.js",
+  "info.txt"
+ ],
+ "handshake": [
   "emote.js",
   "info.txt"
  ],
@@ -27,7 +51,19 @@
   "emote.js",
   "info.txt"
  ],
+ "highfive": [
+  "emote.js",
+  "info.txt"
+ ],
+ "hug": [
+  "emote.js",
+  "info.txt"
+ ],
  "jump": [
+  "emote.js",
+  "info.txt"
+ ],
+ "kiss": [
   "emote.js",
   "info.txt"
  ],
@@ -35,7 +71,15 @@
   "emote.js",
   "info.txt"
  ],
+ "laughtogether": [
+  "emote.js",
+  "info.txt"
+ ],
  "sad": [
+  "emote.js",
+  "info.txt"
+ ],
+ "salute": [
   "emote.js",
   "info.txt"
  ],
@@ -51,7 +95,23 @@
   "emote.js",
   "info.txt"
  ],
+ "think": [
+  "emote.js",
+  "info.txt"
+ ],
+ "thumbsup": [
+  "emote.js",
+  "info.txt"
+ ],
+ "victory": [
+  "emote.js",
+  "info.txt"
+ ],
  "wave": [
+  "emote.js",
+  "info.txt"
+ ],
+ "yawn": [
   "emote.js",
   "info.txt"
  ]

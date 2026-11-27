@@ -1,0 +1,5 @@
+name=Thumbs Up
+duration=2.2
+loop=0
+order=150
+preview=0.9

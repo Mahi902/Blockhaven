@@ -252,7 +252,7 @@ function drawPlayer(c, P = S.player, spr = sprites) {
   else c.drawImage(img, -dw / 2, -dh * 0.89 + bob, dw, dh);
   if (useArms) { drawFace(c, P.look, dirKey, ex.face, sc, emo.t); drawArms(c, P.look, dirKey, ex.arms || {}, sc); }
   c.restore();
-  if (emo && emo.def.mod.draw) { try { emo.def.mod.draw(c, P, emo.t, emoteFx); } catch (e) { /* a broken emote should never break the game */ } }
+  if (emo && emo.def.mod.draw) { try { emo.def.mod.draw(c, P, emo.t, emoteFx, emo.ctx); } catch (e) { /* a broken emote should never break the game */ } }
   if (scrub) drawScrub(c, P);
   if (P.seat && P.seat.spin && Math.abs(P.seat.spin.v) > 5) {   // motion swirl
     c.save(); c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 2;

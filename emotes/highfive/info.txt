@@ -1,0 +1,7 @@
+name=High Five
+together=1
+ask=high five you
+gap=23
+duration=2.4
+preview=1.2
+order=30

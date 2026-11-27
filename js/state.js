@@ -26,6 +26,7 @@ export const S = {
   keys: {},
   touchDir: { up: false, down: false, left: false, right: false },
   nearby: null,               // { kind, obj } interactable in reach
+  partner: null,              // another player in reach for "Perform Emote Together" (multiplayer)
 
   // build tools
   place: { type: null, color: 'white', rot: 0 },
@@ -36,6 +37,7 @@ export const S = {
   rectPreview: null,          // {x,y,w,h,kind}
   dragItem: null,
   remote: [],                 // other players in a multiplayer session
+  myId: null,                 // my id in the session ('host', or the id the host gave me)
   onSay: null,
 };
 

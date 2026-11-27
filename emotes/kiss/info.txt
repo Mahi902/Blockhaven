@@ -1,0 +1,5 @@
+name=Blow Kiss
+duration=2.4
+loop=0
+order=200
+preview=0.7

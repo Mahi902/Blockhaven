@@ -1,0 +1,5 @@
+name=Flex
+duration=2.6
+loop=0
+order=170
+preview=1.0

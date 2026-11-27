@@ -45,3 +45,23 @@ index the game falls back to the GitHub API, so a freshly pushed folder still sh
 
 Multiplayer needs nothing extra: only the emote id and a play counter travel with the normal position updates, and each
 device animates it locally from the same `pose()` code.
+
+## Emotes for two players ("Perform Emote Together")
+
+In multiplayer, walking up to another player shows a "Perform Emote Together" button (no highlight on the player). It opens a
+menu with both players and every two-player emote. The other player gets a banner: tap once to accept, double tap to decline.
+After an emote (or a refusal) the same two players wait 20 seconds before the next one; they can still emote with anyone else.
+
+Add one like a normal emote, with these extra lines in `info.txt`:
+
+```
+together=1            # two-player: shown in the Together menu instead of the tray
+ask=give you a hug    # the banner reads "<name> wants to give you a hug"
+gap=19                # px between the two players while it plays (arm reach is about 13 px each)
+```
+
+`pose(t, P, fx, ctx)` is called for both players, always seen from the side, facing each other. `ctx` has `role` (0 asked, 1
+accepted), `fwd` (1 if this player faces right, -1 if left), `mid` (the point between them), `other` (the other player) and
+`gap`. Arm angles are therefore "forward": 0 hangs down, 1.57 points straight at the other player, 3.14 points up. The game walks
+both players to the meeting spot and turns them to face each other by itself (return `meet` 0 to 1 to control it). In `draw` use
+`if (ctx.role) return;` so only one of them draws a shared effect. Hands can be `hand: 'thumb' | 'peace' | 'fist' | 'open'`.

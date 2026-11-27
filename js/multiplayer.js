@@ -164,7 +164,7 @@ function pickWorld(worlds) {
 }
 function beginHost(worldId) {
   stop(true);
-  startBeat(); MP.role = 'host'; MP.worldId = worldId; MP.started = false; MP.peers = new Map(); MP.defaultRole = 'viewer'; MP.myId = 'host';
+  startBeat(); MP.role = 'host'; MP.worldId = worldId; MP.started = false; MP.peers = new Map(); MP.defaultRole = 'viewer'; MP.myId = 'host'; S.myId = 'host';
   openInvite();
 }
 
@@ -214,11 +214,31 @@ function hostGot(p, m) {
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
   } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; p.seat = m.seat; p.lock = m.lock; p.emote = validEmote(m.emote); }
   else if (m.t === 'chat') { const text = String(m.text || '').slice(0, 140); chatIn(p.id, p.name, text); toAll({ t: 'chat', from: p.id, name: p.name, text }, p.id); }
+  else if (m.t === 'duo') { if (typeof m.to === 'string') routeDuo({ ...m, from: p.id }); }
   else if (m.t === 'nightReq') { if (p.role === 'editor') queueNight({ v: m.v }); }
   else if (m.t === 'states') { applyStates(m.s); toAll({ t: 'states', s: m.s }, p.id); }
   else if (m.t === 'world' && p.role === 'editor') { applyRemote(m.snap); toAll({ t: 'world', snap: m.snap }, p.id); }
 }
-const validEmote = e => (e && typeof e.id === 'string' && Number.isFinite(e.n) ? { id: e.id.slice(0, 40), n: e.n } : null);
+const validEmote = e => {
+  if (!e || typeof e.id !== 'string' || !Number.isFinite(e.n)) return null;
+  const o = { id: e.id.slice(0, 40), n: e.n };
+  if (typeof e.with === 'string') { o.with = e.with.slice(0, 16); o.role = e.role === 1 ? 1 : 0; o.side = e.side === 1 ? 1 : -1; }   // two-player emote
+  return o;
+};
+const emoteOut = e => (e ? { id: e.id, n: e.n, ...(e.with ? { with: e.with, role: e.role, side: e.side } : {}) } : null);
+
+// ---- two-player emote requests (requester -> host -> target, and back) ----------------------------------------------
+let duoHandler = null;
+export const onDuo = fn => { duoHandler = fn; };
+/** msg: { k: 'req' | 'yes' | 'no' | 'cancel', id, n, ... }. The host relays between guests. */
+export function sendDuo(to, msg) {
+  const m = { t: 'duo', from: MP.myId, to, ...msg };
+  if (isHost()) routeDuo(m); else if (isGuest()) send(MP.dc, m);
+}
+function routeDuo(m) {
+  if (m.to === 'host') { if (duoHandler) duoHandler(m); return; }
+  const p = MP.peers.get(m.to); if (p) send(p.dc, m);
+}
 function dropPeer(p, why) {
   if (!MP.peers.has(p.id)) return;
   MP.peers.delete(p.id); try { p.pc.close(); } catch (e) { /* ignore */ }
@@ -261,12 +281,13 @@ function guestGot(m) {
   if (m.t === 'welcome') {
     if (S.started) return;
     if (m.night !== undefined) S.night = !!m.night;
-    MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null);
+    MP.myId = m.id; S.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null);
     if (m.v !== VERSION) toast('Version mismatch: host ' + m.v + ', you ' + VERSION + '. Refresh both devices.', 5000);
     if (m.started) enterGuest(m.world); else lobbyGuest();
   }
   else if (m.t === 'start') { if (m.night !== undefined) S.night = !!m.night; enterGuest(m.world || MP.snap); send(MP.dc, { t: 'ready' }); }
   else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, walk: old ? old.walk : 0, bubble: old && old.bubble }; }); }
+  else if (m.t === 'duo') { if (duoHandler) duoHandler(m); }
   else if (m.t === 'npc') npcApply(m.d);
   else if (m.t === 'night') { S.night = !!m.v; hooks.syncBar(); }
   else if (m.t === 'states') applyStates(m.s);
@@ -298,7 +319,7 @@ let npcTick = 0;
 function startLoops() {
   clearInterval(posTimer);
   posTimer = setInterval(() => {
-    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving, seat: seatOf(P), lock: P.lock ? { anim: P.lock.anim } : null, emote: P.emote ? { id: P.emote.id, n: P.emote.n } : null };
+    const P = S.player, mine = { x: P.x, y: P.y, dir: P.dir, mv: !!P.moving, seat: seatOf(P), lock: P.lock ? { anim: P.lock.anim } : null, emote: emoteOut(P.emote) };
     if (isHost()) {
       rebuildRemote();
       toAll({ t: 'players', list: [{ id: 'host', name: P.name, look: P.look, ...mine }, ...[...MP.peers.values()].filter(p => p.hello).map(p => ({ id: p.id, name: p.name, look: p.look, x: p.x, y: p.y, dir: p.dir, mv: p.mv, seat: p.seat, lock: p.lock, emote: p.emote }))] });
@@ -359,7 +380,7 @@ function cleanup() {
   clearInterval(beatTimer); clearInterval(posTimer); clearTimeout(worldTimer);
   const i = W.listeners.indexOf(onWorldChange); if (i >= 0) W.listeners.splice(i, 1);
   MP.role = null; MP.started = false; MP.peers = new Map(); MP.dc = null; MP.pc = null; MP.myRole = 'editor';
-  S.remote = []; S.onSay = null; S.npcGuest = false; lastSent = '';
+  S.remote = []; S.onSay = null; S.npcGuest = false; S.myId = null; lastSent = '';
   if (hooks) hooks.syncBar();
 }
 

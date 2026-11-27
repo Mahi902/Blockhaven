@@ -1,0 +1,7 @@
+name=Bow Together
+together=1
+ask=bow with you
+gap=44
+duration=2.8
+preview=1.4
+order=60

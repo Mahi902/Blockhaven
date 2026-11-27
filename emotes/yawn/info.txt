@@ -1,0 +1,5 @@
+name=Yawn
+duration=3.2
+loop=0
+order=210
+preview=1.3

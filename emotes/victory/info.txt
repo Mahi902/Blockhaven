@@ -1,0 +1,5 @@
+name=Victory
+duration=2.4
+loop=0
+order=220
+preview=0.9

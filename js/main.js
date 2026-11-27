@@ -7,6 +7,7 @@ import * as W from './world.js';
 import { loadCatalog, catalog, getImage, getFunction, previewUrl } from './catalog.js';
 import { stopMusic } from './music.js';
 import { loadEmotes, mountTray } from './emotes.js';
+import { initTogether, tickTogether, nearestPartner } from './together.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, doInteract, setZoom, clampCamera } from './input.js';
@@ -151,6 +152,9 @@ function updatePrompt() {
   }
   el.classList.toggle('hidden', !text);
   if (text) $('promptText').textContent = text;
+  const tg = $('togetherBtn'), show = !!S.partner && S.mode === 'play' && !S.modalOpen;
+  tg.classList.toggle('hidden', !show);
+  if (show) $('togetherKey').textContent = text ? 'T' : 'E';   // E is free for it when nothing else is in reach
 }
 
 let last = 0;
@@ -161,10 +165,12 @@ function frame(t) {
     if (S.mode === 'play') {
       updatePlayer(dt);
       S.nearby = S.player.seat ? null : nearestInteractive(46);
+      S.partner = S.modalOpen ? null : nearestPartner();     // no highlight for players, just the button
       const c = S.camera, k = 1 - Math.pow(0.001, dt);
       c.x += (S.player.x - c.x) * k; c.y += (S.player.y - c.y) * k;
       clampCamera();
-    } else S.nearby = null;
+    } else { S.nearby = null; S.partner = null; }
+    tickTogether();
     if (!MPm.canEdit() && S.mode === 'build') { B.setMode('play'); syncBar(); }
     MPm.tickRemote(dt);
     updateNpcs(dt);
@@ -193,6 +199,8 @@ async function boot() {
   await loadCatalog();
   await loadPlayerTemplates();
   loadEmotes().then(() => mountTray($('emoteTray'))).catch(e => console.warn('[emotes]', e));
+  initTogether();
+  $('togetherBtn').addEventListener('click', () => { if (S.partner && S.onTogether) S.onTogether(S.partner); });
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();

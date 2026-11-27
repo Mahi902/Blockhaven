@@ -52,6 +52,7 @@ export function doInteract() {
   if (S.modalOpen || !S.started || S.mode !== 'play') return;
   if (S.player.seat) { leaveSeatNow(); return; }
   if (S.nearby) interactWith(S.nearby.kind, S.nearby.obj);
+  else if (S.partner && S.onTogether) S.onTogether(S.partner);
 }
 
 function onKeyDown(e) {
@@ -80,6 +81,7 @@ function onKeyDown(e) {
   if (key === 'b') { handlers.toggleBuild && handlers.toggleBuild(); return; }
   if (S.mode === 'play') {
     if (key === 'e' || key === ' ') { e.preventDefault(); doInteract(); }
+    else if (key === 't' && !e.ctrlKey && !e.metaKey && S.partner && S.onTogether) { e.preventDefault(); S.onTogether(S.partner); }
   } else {
     if (key === 'r') B.rotateCurrent();
     else if (key === 'delete' || key === 'backspace') { e.preventDefault(); B.deleteSelected(); }

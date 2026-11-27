@@ -1,0 +1,5 @@
+name=Think
+duration=3.4
+loop=0
+order=190
+preview=1.2
