@@ -83,7 +83,7 @@ export function toast(text, ms = 2200) {
 let currentOnClose = null;
 
 /** modal({ title, subtitle, body: Node|string, buttons:[{label,kind,onClick}], onClose }) */
-export function openModal({ title = '', subtitle = '', body = null, buttons = [], onClose = null, wide = false } = {}) {
+export function openModal({ title = '', subtitle = '', body = null, buttons = [], onClose = null, wide = false, locked = false } = {}) {
   const root = document.getElementById('modalRoot');
   if (currentOnClose) { const f = currentOnClose; currentOnClose = null; try { f(); } catch (e) { console.error(e); } }
   root.innerHTML = '';
@@ -92,11 +92,11 @@ export function openModal({ title = '', subtitle = '', body = null, buttons = []
       h('div', {},
         h('h2', { class: 'bh-modal-title' }, title),
         subtitle ? h('p', { class: 'bh-modal-sub' }, subtitle) : null),
-      button('', { kind: 'red', small: true, icon: 'close', title: 'Close', onClick: closeModal })),
+      locked ? null : button('', { kind: 'red', small: true, icon: 'close', title: 'Close', onClick: closeModal })),
     h('div', { class: 'bh-modal-body' }, typeof body === 'string' ? h('p', { class: 'bh-text' }, body) : body),
     buttons.length ? h('div', { class: 'bh-modal-foot' }, buttons.map(b => button(b.label, { kind: b.kind || 'green', icon: b.icon, onClick: b.onClick }))) : null);
   const overlay = h('div', { class: 'bh-overlay' }, card);
-  overlay.addEventListener('pointerdown', e => { if (e.target === overlay) closeModal(); });
+  overlay.addEventListener('pointerdown', e => { if (e.target === overlay && !locked) closeModal(); });
   root.appendChild(overlay);
   S.modalOpen = true;
   currentOnClose = onClose;

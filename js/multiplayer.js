@@ -170,15 +170,16 @@ export async function openInvite() {
   const toScan = () => { set(scanStep(finish, 'Scan the reply code on their screen')); next.classList.add('hidden'); };
   const next = button('They scanned it', { kind: 'green', onClick: toScan });
   set(showStep(code));
-  openModal({ title: 'Invite a player', subtitle: 'Works over the same Wi-Fi or hotspot', body: h('div', { class: 'bh-stack' }, box, next),
+  openModal({ title: 'Invite a player', subtitle: 'Works over the same Wi-Fi or hotspot', body: h('div', { class: 'bh-stack' }, box, next), locked: !MP.started,
+    buttons: [{ label: 'Back', kind: MP.started ? 'dark' : 'red', onClick: () => { if (MP.peers.size) openLobby(); else { closeModal(); if (!MP.started) stop(true); } } }],
     onClose: () => { if (step) step.stop(); if (!peer.joined) { try { pc.close(); } catch (e) { /* ignore */ } } } });
 }
 function openLobby() {
   const names = () => [...MP.peers.values()].map(p => p.name).join(', ') || 'nobody yet';
   const body = h('div', { class: 'bh-stack' }, h('p', { class: 'bh-text' }, 'Connected: ' + names()),
     button('Invite another player', { kind: 'blue', onClick: openInvite }));
-  const buttons = MP.started ? [{ label: 'Done', kind: 'green', onClick: closeModal }] : [{ label: 'Start game', kind: 'green', onClick: () => { closeModal(); hooks.startHost(MP.worldId); } }];
-  openModal({ title: 'Player connected', subtitle: MP.started ? 'They are in your world' : 'Invite more, or start the game', body, buttons });
+  const buttons = MP.started ? [{ label: 'Done', kind: 'green', onClick: closeModal }] : [{ label: 'Start game', kind: 'green', onClick: () => { closeModal(); hooks.startHost(MP.worldId); } }, { label: 'Cancel', kind: 'red', onClick: () => { closeModal(); stop(true); } }];
+  openModal({ title: 'Player connected', subtitle: MP.started ? 'They are in your world' : 'Invite more, or start the game', body, buttons, locked: !MP.started });
 }
 export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start' }); }
 
@@ -245,7 +246,7 @@ function guestGot(m) {
 }
 function lobbyGuest() {
   openModal({ title: 'Connected', subtitle: 'Waiting for the host to start...', body: h('p', { class: 'bh-text' }, 'You joined as ' + (MP.myRole === 'editor' ? 'an editor' : 'a viewer') + '.'),
-    buttons: [{ label: 'Leave', kind: 'red', onClick: () => { MP.starting = true; closeModal(); leave(); } }],
+    locked: true, buttons: [{ label: 'Leave', kind: 'red', onClick: () => { MP.starting = true; closeModal(); leave(); } }],
     onClose: () => { if (isGuest() && !MP.starting && !S.started) leave(); } });
 }
 
