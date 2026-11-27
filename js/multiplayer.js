@@ -58,6 +58,7 @@ function startBeat() {
     const now = Date.now();
     if (isHost()) {
       toAll({ t: 'ping' });
+      for (const p of MP.peers.values()) if (MP.started && p.hello && !p.ready) send(p.dc, { t: 'start', world: W.getSnapshot() });
       for (const p of [...MP.peers.values()]) if (now - (p.seen || now) > 15000) dropPeer(p, 'lost connection');
     } else if (isGuest()) {
       send(MP.dc, { t: 'ping' });
@@ -182,16 +183,17 @@ function openLobby() {
   const buttons = MP.started ? [{ label: 'Done', kind: 'green', onClick: closeModal }] : [{ label: 'Start game', kind: 'green', onClick: () => { closeModal(); hooks.startHost(MP.worldId); } }, { label: 'Cancel', kind: 'red', onClick: () => { closeModal(); stop(true); } }];
   openModal({ title: 'Player connected', subtitle: MP.started ? 'They are in your world' : 'Invite more, or start the game', body, buttons, locked: !MP.started });
 }
-export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start' }); }
+export function onHostStart() { MP.started = true; startLoops(); W.listeners.push(onWorldChange); toAll({ t: 'start', world: W.getSnapshot() }); }
 
 function hostGot(p, m) {
   p.seen = Date.now();
   if (m.t === 'ping') return;
   if (m.t === 'bye') { dropPeer(p, 'left'); return; }
+  if (m.t === 'ready') { p.ready = true; return; }
   if (m.t === 'hello') {
     p.name = String(m.name || 'Player').slice(0, 16); p.look = m.look; p.hello = true;
     send(p.dc, { t: 'welcome', id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
-    if (MP.started) send(p.dc, { t: 'start' });
+    if (MP.started) send(p.dc, { t: 'start', world: W.getSnapshot() });
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
   } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; }
   else if (m.t === 'chat') { const text = String(m.text || '').slice(0, 140); chatIn(p.id, p.name, text); toAll({ t: 'chat', from: p.id, name: p.name, text }, p.id); }
@@ -237,7 +239,13 @@ function guestGot(m) {
   MP.seen = Date.now();
   if (m.t === 'ping') return;
   if (m.t === 'welcome') { MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null); toast('Connected to the host'); lobbyGuest(); }
-  else if (m.t === 'start') { MP.starting = true; closeModal(); hooks.startGuest(MP.snap); startLoops(); W.listeners.push(onWorldChange); }
+  else if (m.t === 'start') {
+    if (!S.started) {
+      try { MP.starting = true; closeModal(); hooks.startGuest(m.world || MP.snap); startLoops(); W.listeners.push(onWorldChange); }
+      catch (e) { console.error(e); toast('Could not enter the world: ' + e.message, 4000); return; }
+    }
+    send(MP.dc, { t: 'ready' });
+  }
   else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, bubble: old && old.bubble }; }); }
   else if (m.t === 'chat') chatIn(m.from, m.name, m.text);
   else if (m.t === 'world') { if (S.started) applyRemote(m.snap); else MP.snap = m.snap; }
