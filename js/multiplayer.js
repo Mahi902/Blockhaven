@@ -4,6 +4,7 @@ import { S } from './state.js';
 import * as W from './world.js';
 import { h, button, choice, openModal, closeModal, toast } from './ui.js';
 import { sound } from './audio.js';
+import { VERSION } from './config.js';
 
 export const MP = { role: null, started: false, myRole: 'editor', myId: null, peers: new Map(), defaultRole: 'viewer', lobby: null };
 let hooks = null, seq = 1, applying = false, lastSent = '', worldTimer = 0, posTimer = 0;
@@ -192,7 +193,8 @@ function hostGot(p, m) {
   if (m.t === 'ready') { p.ready = true; return; }
   if (m.t === 'hello') {
     p.name = String(m.name || 'Player').slice(0, 16); p.look = m.look; p.hello = true;
-    send(p.dc, { t: 'welcome', id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
+    if (m.v !== VERSION) toast('Version mismatch: host ' + VERSION + ', player ' + m.v + '. Refresh both devices.', 5000);
+    send(p.dc, { t: 'welcome', v: VERSION, id: p.id, role: p.role, started: MP.started, world: W.getSnapshot() });
     if (MP.started) send(p.dc, { t: 'start', world: W.getSnapshot() });
     toast(p.name + ' joined'); rebuildRemote(); openLobby();
   } else if (m.t === 'pos') { p.x = m.x; p.y = m.y; p.dir = m.dir; p.mv = m.mv; p.look = m.look || p.look; }
@@ -231,21 +233,20 @@ export function openJoin() {
 function guestChannel(dc) {
   MP.role = 'guest'; MP.dc = dc; MP.started = false; MP.peers = new Map(); MP.seen = Date.now(); MP.starting = false; startBeat();
   dc.onmessage = receiver(guestGot);
-  const hi = () => send(dc, { t: 'hello', ...me() });
+  let said = false; const hi = () => { if (said) return; said = true; send(dc, { t: 'hello', v: VERSION, ...me() }); };
   dc.onopen = hi; if (dc.readyState === 'open') hi();
   dc.onclose = () => { if (MP.role === 'guest') { toast('Disconnected from the host', 3000); leave(true); } };
 }
 function guestGot(m) {
   MP.seen = Date.now();
   if (m.t === 'ping') return;
-  if (m.t === 'welcome') { MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null); toast('Connected to the host'); lobbyGuest(); }
-  else if (m.t === 'start') {
-    if (!S.started) {
-      try { MP.starting = true; closeModal(); hooks.startGuest(m.world || MP.snap); startLoops(); W.listeners.push(onWorldChange); }
-      catch (e) { console.error(e); toast('Could not enter the world: ' + e.message, 4000); return; }
-    }
-    send(MP.dc, { t: 'ready' });
+  if (m.t === 'welcome') {
+    if (S.started) return;
+    MP.myId = m.id; MP.myRole = m.role; MP.snap = m.world; W.useKey(null);
+    if (m.v !== VERSION) toast('Version mismatch: host ' + m.v + ', you ' + VERSION + '. Refresh both devices.', 5000);
+    if (m.started) enterGuest(m.world); else lobbyGuest();
   }
+  else if (m.t === 'start') { enterGuest(m.world || MP.snap); send(MP.dc, { t: 'ready' }); }
   else if (m.t === 'players') { S.remote = m.list.filter(r => r.id !== MP.myId).map(r => { const old = S.remote.find(o => o.id === r.id); return { ...r, bubble: old && old.bubble }; }); }
   else if (m.t === 'chat') chatIn(m.from, m.name, m.text);
   else if (m.t === 'world') { if (S.started) applyRemote(m.snap); else MP.snap = m.snap; }
@@ -253,7 +254,13 @@ function guestGot(m) {
   else if (m.t === 'kick') { toast('You were removed by the host', 3500); leave(true); }
   else if (m.t === 'end') { toast('The host ended the session', 3500); leave(true); }
 }
+function enterGuest(snap) {
+  if (S.started) return;
+  try { MP.starting = true; closeModal(); hooks.startGuest(snap || MP.snap); startLoops(); W.listeners.push(onWorldChange); send(MP.dc, { t: 'ready' }); }
+  catch (e) { console.error(e); MP.starting = false; toast('Could not enter the world: ' + e.message, 6000); }
+}
 function lobbyGuest() {
+  if (S.started) return;
   openModal({ title: 'Connected', subtitle: 'Waiting for the host to start...', body: h('p', { class: 'bh-text' }, 'You joined as ' + (MP.myRole === 'editor' ? 'an editor' : 'a viewer') + '.'),
     locked: true, buttons: [{ label: 'Leave', kind: 'red', onClick: () => { MP.starting = true; closeModal(); leave(); } }],
     onClose: () => { if (isGuest() && !MP.starting && !S.started) leave(); } });
