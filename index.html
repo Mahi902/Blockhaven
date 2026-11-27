@@ -42,7 +42,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;background:linear-gra
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
 var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-var LATEST = '1.90', newer = function (a, b) { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0)); };
+var LATEST = '1.91', newer = function (a, b) { a = a.split('.').map(Number); b = b.split('.').map(Number); return a[0] > b[0] || (a[0] === b[0] && (a[1] || 0) > (b[1] || 0)); };
 function regSW() { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=' + LATEST).catch(function () {}); }
 // Is the installed app older than this page? Its version is saved by the game; failing that, the newest cache name it left behind.
 (function () {
@@ -62,7 +62,9 @@ function regSW() { if ('serviceWorker' in navigator) navigator.serviceWorker.reg
         }).then(function () {
           try { localStorage.setItem('bh_app_version', LATEST); } catch (e) {}
           regSW(); b.classList.add('hide');
-          $('updText').innerHTML = '<span class="ok">Updated to v' + LATEST + '.</span> Close Blockhaven fully and open it again to play the new version.';
+          $('upd').style.background = 'rgba(34,197,94,.16)'; $('upd').style.borderColor = '#22c55e'; $('upd').style.transition = 'opacity .6s';
+          $('upd').innerHTML = '<span class="ok">Update successful!</span> Blockhaven is now v' + LATEST + '. Reopen the app to play it.';
+          setTimeout(function () { $('upd').style.opacity = '0'; setTimeout(function () { $('upd').classList.add('hide'); }, 650); }, 3500);
         });
       });
     }
