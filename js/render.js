@@ -81,7 +81,7 @@ function drawHammock(c, it, d, img, f) {
   c.save(); c.beginPath(); c.rect(-W0 / 2, -H0 / 2, W0, cap); c.rect(-W0 / 2, H0 / 2 - cap, W0, cap); c.clip();   // fixed posts
   c.drawImage(img, -W0 / 2, -H0 / 2, W0, H0); c.restore();
   c.strokeStyle = '#b89968'; c.lineWidth = 1.5; c.lineCap = 'round'; c.beginPath();                              // ropes: post -> cloth corners
-  for (const sy of [-1, 1]) for (const sx of [-1, 1]) { c.moveTo(0, sy * (H0 / 2 - 7)); c.lineTo(sx * 15 + lat, sy * (H0 / 2 - 17)); }
+  for (const sy of [-1, 1]) for (const sx of [-1, 1]) { c.moveTo(0, sy * (H0 / 2 - 8)); c.lineTo(sx * 3 + lat, sy * (H0 / 2 - cap - 1)); }
   c.stroke();
   c.save(); c.translate(lat, 0); c.beginPath(); c.rect(-W0 / 2 - 20, -H0 / 2 + cap, W0 + 40, H0 - cap * 2); c.clip();   // swinging cloth
   c.drawImage(img, -W0 / 2, -H0 / 2, W0, H0); c.restore();
@@ -215,7 +215,7 @@ function drawPlayer(c, P = S.player, spr = sprites) {
       const d = catalog.get(it.type), bimg = d && getImage(d, it.color), f = W.footprint(it);
       if (bimg) {
         c.save(); c.translate((f.x + f.w / 2) * TILE, (f.y + f.h / 2) * TILE); c.rotate(it.rot * Math.PI / 2); if (P.seat.sway) c.translate(P.seat.sway.rot * 32, 0);
-        c.beginPath(); c.rect(-d.w * TILE / 2, -d.h * TILE / 2 + 52, d.w * TILE, d.h * TILE); c.clip();
+        c.beginPath(); c.rect(-d.w * TILE / 2 - 20, -d.h * TILE / 2 + 52, d.w * TILE + 40, d.h * TILE - 52 - (it.type === 'hammock' ? 11 : 0)); c.clip();
         c.drawImage(bimg, -d.w * TILE / 2, -d.h * TILE / 2, d.w * TILE, d.h * TILE);
         c.restore();
       }
