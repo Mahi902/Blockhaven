@@ -204,7 +204,7 @@ async function boot() {
   Wm.init(); curId = Wm.last(); buildLook(); buildHome();
   $('startBtn').addEventListener('click', start);
   MPm.init({ syncBar, exitToMenu, startHost: id => { curId = id; start(); MPm.onHostStart(); }, startGuest });
-  const mpBtn = button('Multiplayer', { kind: 'dgreen', onClick: () => { S.player.name = $('nameInput').value.trim() || 'Guest'; savePlayer(); MPm.openMultiplayer(Wm.list()); } });
+  const mpBtn = button('Multiplayer', { kind: 'dgreen', icon: 'multiplayer', onClick: () => { S.player.name = $('nameInput').value.trim() || 'Guest'; savePlayer(); MPm.openMultiplayer(Wm.list()); } });
   mpBtn.classList.add('mp-btn'); $('startBtn').after(mpBtn);
   const tabs = { Play: ['tabPlay', 'panePlayTitle'], Look: ['tabLook', 'paneLook'] };
   Object.values(tabs).forEach(([t]) => $(t).addEventListener('click', () => Object.values(tabs).forEach(([tt, pp]) => { $(tt).classList.toggle('on', tt === t); $(pp).classList.toggle('hidden', tt !== t); })));
