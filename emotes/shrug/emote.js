@@ -6,6 +6,6 @@ export default {
   },
   draw(c, P, t, fx) {
     const k = Math.min(1, t / 0.25, (2.2 - t) / 0.3);
-    fx.emoji(c, '❓', P.x, P.y - 88, 20 * Math.max(0, k) + 2, Math.max(0, k));
+    fx.text(c, '?', P.x, P.y - 88, 24 * Math.max(0, k) + 2, '#fde047', Math.max(0, k));
   },
 };

@@ -9,7 +9,7 @@ export default {
     const fade = Math.min(1, t / 0.5, (3.2 - t) / 0.5);
     for (let i = 0; i < 2; i++) {
       const p = ((t * 1.1 + i * 0.5) % 1);
-      fx.emoji(c, '💧', P.x + (i ? 7 : -7), P.y - 21 + p * 20, 8, (1 - p * 0.7) * Math.max(0, fade));
+      fx.shape(c, 'drop', P.x + (i ? 7 : -7), P.y - 21 + p * 20, 8, '#60a5fa', (1 - p * 0.7) * Math.max(0, fade));
     }
   },
 };

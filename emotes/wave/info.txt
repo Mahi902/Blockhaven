@@ -1,5 +1,5 @@
 name=Wave
-icon=👋
 duration=2.6
 loop=0
 order=10
+preview=0.9

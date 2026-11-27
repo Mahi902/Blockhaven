@@ -1,5 +1,5 @@
 name=Shrug
-icon=🤷
 duration=2.2
 loop=0
 order=100
+preview=1.0

@@ -1,5 +1,5 @@
 name=Cheer
-icon=🎉
 duration=2.6
 loop=0
 order=70
+preview=0.3

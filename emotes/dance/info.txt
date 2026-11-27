@@ -1,5 +1,5 @@
 name=Dance
-icon=💃
 duration=4
 loop=1
 order=40
+preview=0.26

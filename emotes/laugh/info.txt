@@ -1,5 +1,5 @@
 name=Laugh
-icon=😂
 duration=3
 loop=0
 order=60
+preview=1.0

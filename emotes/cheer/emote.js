@@ -12,6 +12,6 @@ export default {
       const x = P.x + (fx.rand(i) - 0.5) * 80 + Math.sin(t * 3 + i) * 5, y = P.y - 100 + p * 105;
       c.save(); c.globalAlpha = Math.max(0, fade); c.translate(x, y); c.rotate(t * 5 + i); c.fillStyle = COLORS[i % COLORS.length]; c.fillRect(-2.5, -1.5, 5, 3); c.restore();
     }
-    fx.emoji(c, '🎉', P.x, P.y - 88, 22, Math.max(0, fade));
+    for (let i = 0; i < 3; i++) fx.shape(c, i === 1 ? 'star' : 'spark', P.x + (i - 1) * 24, P.y - 88 - (i === 1 ? 6 : 0) + Math.sin(t * 6 + i) * 3, 16, COLORS[(i * 2 + 1) % COLORS.length], Math.max(0, fade), t * 2 + i);
   },
 };

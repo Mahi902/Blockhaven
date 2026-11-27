@@ -8,6 +8,6 @@ export default {
     };
   },
   draw(c, P, t, fx) {
-    for (let i = 0; i < 2; i++) { const p = ((t * 0.7 + i * 0.5) % 1); fx.emoji(c, i ? '🎵' : '🎶', P.x + (i ? 24 : -24), P.y - 42 - p * 26, 14, 1 - p); }
+    for (let i = 0; i < 2; i++) { const p = ((t * 0.7 + i * 0.5) % 1); fx.shape(c, 'note', P.x + (i ? 26 : -26), P.y - 36 - p * 30, 15, i ? '#38bdf8' : '#c084fc', 1 - p, (i ? 1 : -1) * 0.2); }
   },
 };

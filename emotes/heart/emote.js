@@ -8,7 +8,7 @@ export default {
     const fade = Math.min(1, (2.8 - t) / 0.4);
     for (let i = 0; i < 5; i++) {
       const p = ((t * 0.55 + i * 0.2) % 1);
-      fx.emoji(c, '❤️', P.x + (i % 2 ? 1 : -1) * (24 + Math.sin(p * 6 + i * 2) * 6), P.y - 36 - p * 46, 12 + 8 * (1 - p), (1 - p) * Math.max(0, fade));
+      fx.shape(c, 'heart', P.x + (i % 2 ? 1 : -1) * (24 + Math.sin(p * 6 + i * 2) * 6), P.y - 36 - p * 46, 11 + 8 * (1 - p), '#ef4444', (1 - p) * Math.max(0, fade));
     }
   },
 };

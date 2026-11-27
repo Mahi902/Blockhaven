@@ -8,7 +8,7 @@ export default {
     const k = Math.min(1, t / 0.2, (3 - t) / 0.4);
     for (let i = 0; i < 3; i++) {
       const a = t * 5 + i * 2.094;
-      fx.emoji(c, '⭐', P.x + Math.cos(a) * 20, P.y - 42 + Math.sin(a) * 6, 12, k);
+      fx.shape(c, 'star', P.x + Math.cos(a) * 20, P.y - 42 + Math.sin(a) * 6, 11, '#fde047', k, a);
     }
   },
 };

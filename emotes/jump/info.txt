@@ -1,5 +1,5 @@
 name=Jump
-icon=⬆️
 duration=1.1
 loop=0
 order=20
+preview=0.5

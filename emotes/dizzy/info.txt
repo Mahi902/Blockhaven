@@ -1,5 +1,5 @@
 name=Dizzy
-icon=😵‍💫
 duration=3
 loop=0
 order=120
+preview=0.6
