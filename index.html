@@ -12,92 +12,166 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>(function(){var s=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;if(s)location.replace('play.html');})();</script>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;overflow:hidden}
-body{font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;background:#0b0f19}
-.hide{display:none!important}
-#intro{position:fixed;inset:0 0 26px 0;overflow:hidden;background:linear-gradient(#0ea5e9 0%,#38bdf8 30%,#7dd3fc 58%,#dbeafe 82%)}
-.sun{position:absolute;right:12%;top:9%;width:84px;height:84px;border-radius:50%;background:#fde047;border:5px solid #0f172a;box-shadow:0 0 0 14px rgba(253,224,71,.28),0 0 0 32px rgba(253,224,71,.14);animation:pulse 5s ease-in-out infinite}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;background:#0b0f19;overflow-x:hidden}
+.hide{display:none!important}a{color:inherit}
+/* buttons + panels: the game's own UI */
+.bh-btn{font-family:Fredoka,sans-serif;font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.45);border:4px solid #0f172a;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;
+ background:linear-gradient(#4ade80,#16a34a);box-shadow:0 6px 0 #0f5a2a,0 9px 12px rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.45);transition:transform .06s,box-shadow .06s}
+.bh-btn:hover{filter:brightness(1.1)}.bh-btn:disabled{opacity:.55;filter:grayscale(.5);cursor:default}
+.bh-btn:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 #0f5a2a,inset 0 3px 0 rgba(255,255,255,.3)}
+.big{font-size:clamp(22px,3.6vw,30px);letter-spacing:.07em;padding:12px 26px}
+.bh-gold{color:#3b2300;text-shadow:0 1px 0 rgba(255,255,255,.5);background:linear-gradient(#fde047,#f59e0b);box-shadow:0 6px 0 #8a5400,0 9px 12px rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.6)}
+.bh-gold:active:not(:disabled){box-shadow:0 1px 0 #8a5400}
+.bh-blue{background:linear-gradient(#38bdf8,#0284c7);box-shadow:0 6px 0 #0a4a73,0 9px 12px rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.45)}.bh-blue:active:not(:disabled){box-shadow:0 1px 0 #0a4a73}
+.bh-dark{background:linear-gradient(#64748b,#334155);box-shadow:0 5px 0 #0f172a,0 8px 10px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25)}.bh-dark:active:not(:disabled){box-shadow:0 1px 0 #0f172a}
+.sm{font-size:15px;padding:6px 14px;border-width:3px;border-radius:10px}
+.ico{width:22px;height:22px;display:block}
+.bh-panel{background:linear-gradient(#1e293b,#0f172a);border:3px solid #020617;border-radius:14px;box-shadow:0 6px 0 #020617,0 10px 18px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.12)}
+.note{font-size:13px;line-height:1.5;color:#cbd5e1;text-align:left;padding:10px 14px}.note b{color:#fde047}.note ol{margin:6px 0 0;padding-left:20px}.ok{color:#86efac;font-weight:800}
+/* top bar */
+.nav{position:fixed;top:0;left:0;right:0;height:60px;z-index:30;display:flex;align-items:center;gap:6px;padding:0 14px;background:linear-gradient(#1e293b,#0f172a);border-bottom:4px solid #020617;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;font:700 22px Fredoka,sans-serif;letter-spacing:.04em;color:#fff;margin-right:auto}.brand img{width:34px;height:auto}.brand span{color:#fde047}
+.nav a.l{font:700 15px Fredoka,sans-serif;color:#cbd5e1;text-decoration:none;padding:6px 12px;border-radius:9px}.nav a.l:hover{background:#334155;color:#fff}
+.nav .bh-btn{margin-left:6px}
+/* hero */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,34px);padding:90px 16px 150px;overflow:hidden;background:linear-gradient(#0ea5e9 0%,#38bdf8 32%,#7dd3fc 60%,#dbeafe 85%)}
+.sun{position:absolute;right:12%;top:15%;width:80px;height:80px;border-radius:50%;background:#fde047;border:5px solid #0f172a;box-shadow:0 0 0 14px rgba(253,224,71,.28),0 0 0 32px rgba(253,224,71,.14);animation:pulse 5s ease-in-out infinite}
 @keyframes pulse{50%{transform:scale(1.06)}}
 .cloud{position:absolute;width:150px;opacity:.85;animation:drift linear infinite;left:-20%}
-.c1{top:8%;animation-duration:100s}.c2{top:22%;width:100px;animation-duration:150s;animation-delay:-70s}.c3{top:38%;width:120px;animation-duration:125s;animation-delay:-30s}
+.c1{top:14%;animation-duration:100s}.c2{top:28%;width:100px;animation-duration:150s;animation-delay:-70s}.c3{top:44%;width:120px;animation-duration:125s;animation-delay:-30s}
 @keyframes drift{to{transform:translateX(calc(100vw + 40vw))}}
 .blk{position:absolute;width:24px;height:24px;border:3px solid #0f172a;border-radius:5px;box-shadow:0 4px 0 rgba(15,23,42,.5);animation:bob 4s ease-in-out infinite}
-.b1{left:14%;top:30%;background:#fb7185}.b2{left:84%;top:46%;background:#4ade80;animation-delay:-1.4s}.b3{left:30%;top:12%;background:#c084fc;animation-delay:-2.6s;width:18px;height:18px}
+.b1{left:12%;top:36%;background:#fb7185}.b2{left:86%;top:52%;background:#4ade80;animation-delay:-1.4s}.b3{left:28%;top:20%;background:#c084fc;animation-delay:-2.6s;width:18px;height:18px}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-14px) rotate(8deg)}}
-.town{position:absolute;left:0;right:0;bottom:0;width:100%;height:36%;object-fit:cover;object-position:bottom}
-.prop{position:absolute;bottom:8%;height:clamp(70px,13vh,130px);width:auto;filter:drop-shadow(0 6px 0 rgba(15,23,42,.35));animation:hop 3.2s ease-in-out infinite}
-.p1{left:5%}.p2{left:17%;animation-delay:-.8s;height:clamp(80px,15vh,150px)}.p3{left:27%;animation-delay:-1.6s;bottom:12%}
-.p4{right:27%;animation-delay:-2.2s;bottom:12%}.p5{right:15%;animation-delay:-.4s}.p6{right:4%;animation-delay:-1.2s;height:clamp(90px,17vh,170px)}
-@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3.5vh,30px);padding:14px}
-.title-logo{text-align:center;animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+.town{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%;object-fit:cover;object-position:bottom;pointer-events:none}
+.title-logo{position:relative;text-align:center;animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes pop{from{transform:scale(.4) translateY(-30px);opacity:0}}
-.title-logo img{width:clamp(84px,16vh,140px);height:auto;animation:hop 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 0 rgba(15,23,42,.3))}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.title-logo img{width:clamp(84px,15vh,130px);height:auto;animation:hop 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 0 rgba(15,23,42,.3))}
 .title-logo h1{margin:4px 0 0;font:700 clamp(46px,12vw,116px)/1 Fredoka,sans-serif;color:#fff;letter-spacing:.04em;-webkit-text-stroke:8px #0f172a;paint-order:stroke fill;text-shadow:0 9px 0 #0f172a}
 .title-logo h1 span{color:#fde047}
-.title-logo p{margin:16px 0 0;font:600 clamp(14px,2.4vw,19px) Fredoka,sans-serif;color:#0f172a;background:rgba(255,255,255,.78);display:inline-block;padding:3px 16px;border-radius:99px}
-.btns{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(360px,86vw);animation:pop .7s .15s cubic-bezier(.2,1.4,.4,1) both}
-.bh-btn{font-family:Fredoka,sans-serif;font-weight:700;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.45);border:4px solid #0f172a;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;
- background:linear-gradient(#4ade80,#16a34a);box-shadow:0 7px 0 #0f5a2a,0 10px 12px rgba(0,0,0,.4),inset 0 3px 0 rgba(255,255,255,.45);transition:transform .06s,box-shadow .06s}
-.bh-btn:hover{filter:brightness(1.1)}.bh-btn:disabled{opacity:.5;filter:grayscale(.5);cursor:default}
-.bh-btn:active:not(:disabled){transform:translateY(6px);box-shadow:0 1px 0 #0f5a2a,inset 0 3px 0 rgba(255,255,255,.3)}
-.play-big{font-size:clamp(24px,4vw,32px);letter-spacing:.08em;padding:12px}
-.bh-gold{color:#3b2300;text-shadow:0 1px 0 rgba(255,255,255,.5);font-size:20px;padding:9px;background:linear-gradient(#fde047,#f59e0b);box-shadow:0 7px 0 #8a5400,0 10px 12px rgba(0,0,0,.4),inset 0 3px 0 rgba(255,255,255,.6)}
-.bh-gold:active:not(:disabled){box-shadow:0 1px 0 #8a5400}
-.bh-ico{width:24px;height:24px}
-.bh-panel{background:linear-gradient(#1e293b,#0f172a);border:3px solid #020617;border-radius:12px;box-shadow:0 5px 0 #020617,0 8px 14px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.12)}
-.note{font-size:13px;line-height:1.5;color:#cbd5e1;text-align:left;padding:10px 14px}.note b{color:#fde047}.note ol{margin:6px 0 0;padding-left:20px}
-#msg{margin:0;font:600 13px Fredoka,sans-serif;color:#0f172a;background:rgba(255,255,255,.7);padding:3px 14px;border-radius:99px;text-align:center}
-.ok{color:#86efac;font-weight:800}
-#ios,#other{position:absolute;bottom:calc(9% + 8px);left:50%;transform:translateX(-50%);width:min(340px,90vw);z-index:3}
-#upd{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:min(440px,92vw);z-index:4;border-color:#f59e0b}
-#upd .bh-gold{margin-top:10px;font-size:16px;padding:6px}
-.modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.82);display:flex;align-items:center;justify-content:center;padding:14px;animation:fade .2s both}
-@keyframes fade{from{opacity:0}}
-.modal .bh-panel{width:min(960px,100%);padding:10px;animation:pop .3s cubic-bezier(.2,1.4,.4,1) both}
-.mh{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font:700 18px Fredoka,sans-serif}
-.x{width:36px;height:36px;padding:0;border-width:3px;border-radius:10px;box-shadow:0 4px 0 #7f1233;background:linear-gradient(#fb7185,#e11d48)}
-.x img{width:18px;height:18px}
-.screen{background:#000;border:3px solid #020617;border-radius:10px;overflow:hidden;aspect-ratio:16/9;max-height:76vh;margin:0 auto}
+.tag{margin:16px 0 0;font:600 clamp(14px,2.4vw,19px) Fredoka,sans-serif;color:#0f172a;background:rgba(255,255,255,.8);display:inline-block;padding:3px 16px;border-radius:99px}
+.cta{position:relative;display:flex;flex-wrap:wrap;gap:18px;justify-content:center;animation:pop .7s .15s cubic-bezier(.2,1.4,.4,1) both}
+#msg{position:relative;margin:0;font:600 13px Fredoka,sans-serif;color:#0f172a;background:rgba(255,255,255,.7);padding:3px 14px;border-radius:99px;text-align:center}
+#ios,#other{position:relative;width:min(360px,92vw);z-index:3}
+#upd{position:relative;width:min(440px,92vw);z-index:4;border-color:#f59e0b}#upd .bh-btn{margin-top:10px;font-size:16px;padding:6px 14px}
+/* sections */
+.sec{position:relative;padding:clamp(56px,10vh,96px) 18px;overflow:hidden}
+.in{position:relative;max-width:1000px;margin:0 auto}
+h2{margin:0 0 8px;text-align:center;font:700 clamp(32px,6vw,56px)/1.05 Fredoka,sans-serif;color:#fff;letter-spacing:.03em;-webkit-text-stroke:6px #0f172a;paint-order:stroke fill;text-shadow:0 6px 0 #0f172a}
+h2 span{color:#fde047}
+.sub{text-align:center;margin:0 auto 34px;max-width:620px;font:600 clamp(15px,2.2vw,18px)/1.5 Fredoka,sans-serif}
+/* about */
+.about{background:linear-gradient(#22c55e 0%,#16a34a 100%);border-top:5px solid #0f172a}
+.about .sub{color:#052e16}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+.card{padding:18px 16px 20px;text-align:center}
+.card .bh-btn{width:54px;height:54px;padding:0;border-radius:14px;pointer-events:none;margin-bottom:10px}
+.card .bh-btn .ico{width:28px;height:28px}
+.card h3{margin:0 0 6px;font:700 22px Fredoka,sans-serif;color:#fff}.card p{margin:0;font-size:14px;line-height:1.55;color:#cbd5e1}
+.keys{margin-top:30px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:center;font-size:14px;color:#94a3b8}.keys b{color:#fde047;font-family:Fredoka,sans-serif}
+/* limitless */
+.lim{background:radial-gradient(ellipse at 50% 40%,#1e3a8a 0%,#0f172a 60%,#020617 100%);border-top:5px solid #0f172a;border-bottom:5px solid #0f172a;min-height:520px;display:flex;align-items:center}
+.rows{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-around;opacity:.5;transform:rotate(-4deg) scale(1.15);pointer-events:none}
+.row{overflow:hidden;white-space:nowrap}
+.track{display:inline-flex;gap:46px;align-items:flex-end;animation:slide 70s linear infinite;padding-right:46px}
+.r1 .track{animation-duration:90s;animation-direction:reverse}.r2 .track{animation-duration:75s}.r3 .track{animation-duration:100s;animation-direction:reverse}
+.track img{height:92px;width:auto;flex:0 0 auto}
+@keyframes slide{to{transform:translateX(-50%)}}
+.lim:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(2,6,23,.82) 0%,rgba(2,6,23,.55) 55%,rgba(2,6,23,.2) 100%);pointer-events:none}
+.lim .in{z-index:2;width:100%;text-align:center}
+.lim .sub{color:#e2e8f0;margin-bottom:26px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.chip{padding:8px 16px;font:700 16px Fredoka,sans-serif;color:#fff}.chip b{color:#fde047;font-size:22px;margin-right:4px}
+/* trailer */
+.trl{background:linear-gradient(#0f172a,#1e1b4b 60%,#312e81)}
+.tv{max-width:880px;margin:0 auto;padding:10px}
+.tvh{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px;font:700 17px Fredoka,sans-serif}
+.tvh i{font:700 11px Fredoka,sans-serif;color:#3b2300;background:linear-gradient(#fde047,#f59e0b);border:2px solid #020617;border-radius:8px;padding:1px 8px;font-style:normal;letter-spacing:.05em}
+.screen{background:#000;border:3px solid #020617;border-radius:10px;overflow:hidden;aspect-ratio:16/9;position:relative}
 .screen video{display:block;width:100%;height:100%;object-fit:contain}
-.foot{position:fixed;left:0;right:0;bottom:0;height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fcd34d;background:#020617;z-index:5}
-.foot a{color:inherit;text-decoration:none}
-@media (max-width:760px){.p1,.p3,.p4,.p6{display:none}.sun{width:56px;height:56px;right:8%}}
-@media (max-height:520px){.title-logo img,.title-logo p{display:none}.prop{display:none}}
+.cover{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#000 url(vid/poster.jpg) center/cover;display:flex;align-items:center;justify-content:center}
+.cover:after{content:"";position:absolute;inset:0;background:rgba(2,6,23,.25)}
+.cover .bh-btn{position:relative;z-index:1;width:84px;height:84px;padding:0;border-radius:50%;pointer-events:none}.cover .ico{width:38px;height:38px;margin-left:4px}
+.cover:hover .bh-btn{filter:brightness(1.12)}
+/* footer */
+.fin{background:#020617;padding:34px 18px 26px;text-align:center;border-top:5px solid #0f172a}
+.links{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:22px}
+.fin small{display:block;color:#fcd34d;font:800 11px 'Plus Jakarta Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase}
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .55s,transform .55s cubic-bezier(.2,1.2,.4,1)}.rv.on{opacity:1;transform:none}
+@media (max-width:640px){.nav a.l{display:none}.sun{width:54px;height:54px;right:8%}.track img{height:70px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div id="intro">
+<nav class="nav">
+  <a class="brand" href="#top"><img src="img/logo.svg" alt="">BLOCK<span>HAVEN</span></a>
+  <a class="l" href="#about">About</a><a class="l" href="#possibilities">Possibilities</a><a class="l" href="#trailer">Trailer</a>
+  <a class="bh-btn bh-dark sm" href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">GitHub</a>
+</nav>
+
+<header class="hero" id="top">
   <div class="sun"></div>
   <img class="cloud c1" src="img/cloud.svg" alt=""><img class="cloud c2" src="img/cloud.svg" alt=""><img class="cloud c3" src="img/cloud.svg" alt="">
   <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i>
   <img class="town" src="img/title-bg.svg" alt="">
-  <img class="prop p1" src="furniture/couch/red.svg" alt=""><img class="prop p2" src="furniture/lamp/yellow.svg" alt=""><img class="prop p3" src="furniture/tv/gray.svg" alt="">
-  <img class="prop p4" src="furniture/plant/green.svg" alt=""><img class="prop p5" src="furniture/bed/blue.svg" alt=""><img class="prop p6" src="furniture/arcade/purple.svg" alt="">
-
   <div id="upd" class="note bh-panel hide">
     <b>Update available</b>
     <div id="updText">Your Blockhaven app is outdated.</div>
     <button id="updBtn" class="bh-btn bh-gold" type="button">Update now</button>
     <div style="margin-top:10px"><b>Or by hand:</b><ol><li>Open Blockhaven from your apps.</li><li>Tap the version number (bottom left).</li><li>Wait for Updating, then it reloads.</li></ol>Still old? Close the app fully and reopen it.</div>
   </div>
-
-  <div class="stage">
-    <div class="title-logo"><img src="img/logo.svg" alt=""><h1>BLOCK<span>HAVEN</span></h1><p>Build it. Decorate it. Live in it.</p></div>
-    <div class="btns">
-      <button id="install" class="bh-btn play-big" type="button" disabled><img class="bh-ico" src="img/icons/download.svg" alt="">INSTALL</button>
-      <button id="trailerBtn" class="bh-btn bh-gold" type="button"><img class="bh-ico" src="img/icons/play.svg" alt="" style="filter:brightness(0)">Watch Trailer</button>
-      <p id="msg">Free. Works offline once installed.</p>
-    </div>
+  <div class="title-logo"><img src="img/logo.svg" alt=""><h1>BLOCK<span>HAVEN</span></h1><p class="tag">Build it. Decorate it. Live in it.</p></div>
+  <div class="cta">
+    <button id="install" class="bh-btn big" type="button" disabled><img class="ico" src="img/icons/download.svg" alt="">INSTALL</button>
+    <a class="bh-btn bh-gold big" href="#trailer"><img class="ico" src="img/icons/play.svg" alt="" style="filter:brightness(0)">TRAILER</a>
   </div>
+  <p id="msg">Free. Works offline once installed.</p>
   <div id="ios" class="note bh-panel hide"><b>On iPhone / iPad:</b><ol><li>Tap Share in Safari.</li><li>Choose "Add to Home Screen".</li><li>Open Blockhaven from your home screen.</li></ol></div>
   <div id="other" class="note bh-panel hide"><b>No install button?</b><ol><li>Open your browser menu.</li><li>Choose "Install app" or "Add to Home Screen".</li><li>Open Blockhaven from your apps.</li></ol></div>
-</div>
-<div id="modal" class="modal hide"><div class="bh-panel">
-  <div class="mh"><span>Blockhaven Trailer</span><button id="xBtn" class="bh-btn x" type="button" aria-label="Close"><img src="img/icons/close.svg" alt=""></button></div>
-  <div class="screen"><video id="vid" controls playsinline poster="vid/poster.jpg"></video></div>
-</div></div>
-<div class="foot"><a href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">Blockhaven</a>&nbsp;&middot;&nbsp;made by&nbsp;<a href="https://github.com/mahi902" target="_blank" rel="noopener">mahi902</a></div>
+</header>
+
+<section class="sec about" id="about"><div class="in">
+  <h2 class="rv">About the <span>game</span></h2>
+  <p class="sub rv">A free-form apartment sandbox. No quests, no rules. Just a blank space and everything you need to make it yours.</p>
+  <div class="cards">
+    <div class="card bh-panel rv"><span class="bh-btn bh-blue"><img class="ico" src="img/icons/wall.svg" alt=""></span><h3>Build</h3><p>Drag out rooms, raise walls, add doors and windows. Floors, walls and ceilings are yours to color.</p></div>
+    <div class="card bh-panel rv"><span class="bh-btn"><img class="ico" src="img/icons/place.svg" alt=""></span><h3>Decorate</h3><p>Beds, sofas, TVs, arcades and more. Every piece comes in a pile of colors.</p></div>
+    <div class="card bh-panel rv"><span class="bh-btn bh-gold"><img class="ico" src="img/icons/home.svg" alt="" style="filter:brightness(0)"></span><h3>Live</h3><p>Walk around, sit, sleep, use things, and talk. Save as many worlds as you like.</p></div>
+    <div class="card bh-panel rv"><span class="bh-btn bh-dark"><img class="ico" src="img/icons/multiplayer.svg" alt=""></span><h3>Together</h3><p>Hang out with friends and trade emotes: hugs, handshakes, high fives.</p></div>
+  </div>
+  <div class="keys bh-panel rv"><span><b>WASD</b> / click to move</span><span><b>E</b> use</span><span><b>Enter</b> talk</span><span><b>B</b> build</span><span><b>R</b> rotate</span><span><b>Ctrl+Z</b> undo</span></div>
+</div></section>
+
+<section class="sec lim" id="possibilities">
+  <div class="rows" aria-hidden="true"><div class="row r0"><div class="track"><img src="furniture/hammock/light%20gray.svg" alt="" loading="lazy"><img src="furniture/rocker/yellow.svg" alt="" loading="lazy"><img src="furniture/desklamp/green.svg" alt="" loading="lazy"><img src="furniture/door/cyan.svg" alt="" loading="lazy"><img src="furniture/cleanbot/purple.svg" alt="" loading="lazy"><img src="furniture/washer/lime.svg" alt="" loading="lazy"><img src="furniture/coffee/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/lime.svg" alt="" loading="lazy"><img src="furniture/lavalamp/magenta.svg" alt="" loading="lazy"><img src="furniture/wardrobe/cyan.svg" alt="" loading="lazy"><img src="furniture/toaster/magenta.svg" alt="" loading="lazy"><img src="furniture/treadmill/red.svg" alt="" loading="lazy"><img src="furniture/mirror/red.svg" alt="" loading="lazy"><img src="furniture/catbed/light%20gray.svg" alt="" loading="lazy"><img src="furniture/aquarium/red.svg" alt="" loading="lazy"><img src="furniture/window/pink.svg" alt="" loading="lazy"><img src="furniture/fridge/orange.svg" alt="" loading="lazy"><img src="furniture/couch/white.svg" alt="" loading="lazy"><img src="furniture/table/purple.svg" alt="" loading="lazy"><img src="furniture/heater/blue.svg" alt="" loading="lazy"><img src="furniture/nightstand/green.svg" alt="" loading="lazy"><img src="furniture/stove/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/yellow.svg" alt="" loading="lazy"><img src="furniture/arcade/green.svg" alt="" loading="lazy"><img src="furniture/plant/lime.svg" alt="" loading="lazy"><img src="furniture/fan/pink.svg" alt="" loading="lazy"><img src="furniture/piano/cyan.svg" alt="" loading="lazy"><img src="furniture/cat/brown.svg" alt="" loading="lazy"><img src="furniture/toilet/white.svg" alt="" loading="lazy"><img src="furniture/punchbag/pink.svg" alt="" loading="lazy"><img src="furniture/sink/brown.svg" alt="" loading="lazy"><img src="furniture/bed/yellow.svg" alt="" loading="lazy"><img src="furniture/armchair/cyan.svg" alt="" loading="lazy"><img src="furniture/desk/red.svg" alt="" loading="lazy"><img src="furniture/shower/orange.svg" alt="" loading="lazy"><img src="furniture/tv/green.svg" alt="" loading="lazy"><img src="furniture/lamp/purple.svg" alt="" loading="lazy"><img src="furniture/bookshelf/orange.svg" alt="" loading="lazy"><img src="furniture/stereo/light%20gray.svg" alt="" loading="lazy"><img src="furniture/beanbag/pink.svg" alt="" loading="lazy"><img src="furniture/bathtub/lime.svg" alt="" loading="lazy"><img src="furniture/microwave/white.svg" alt="" loading="lazy"><img src="furniture/chair/blue.svg" alt="" loading="lazy"><img src="furniture/gclock/brown.svg" alt="" loading="lazy"><img src="furniture/hammock/light%20gray.svg" alt="" loading="lazy"><img src="furniture/rocker/yellow.svg" alt="" loading="lazy"><img src="furniture/desklamp/green.svg" alt="" loading="lazy"><img src="furniture/door/cyan.svg" alt="" loading="lazy"><img src="furniture/cleanbot/purple.svg" alt="" loading="lazy"><img src="furniture/washer/lime.svg" alt="" loading="lazy"><img src="furniture/coffee/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/lime.svg" alt="" loading="lazy"><img src="furniture/lavalamp/magenta.svg" alt="" loading="lazy"><img src="furniture/wardrobe/cyan.svg" alt="" loading="lazy"><img src="furniture/toaster/magenta.svg" alt="" loading="lazy"><img src="furniture/treadmill/red.svg" alt="" loading="lazy"><img src="furniture/mirror/red.svg" alt="" loading="lazy"><img src="furniture/catbed/light%20gray.svg" alt="" loading="lazy"><img src="furniture/aquarium/red.svg" alt="" loading="lazy"><img src="furniture/window/pink.svg" alt="" loading="lazy"><img src="furniture/fridge/orange.svg" alt="" loading="lazy"><img src="furniture/couch/white.svg" alt="" loading="lazy"><img src="furniture/table/purple.svg" alt="" loading="lazy"><img src="furniture/heater/blue.svg" alt="" loading="lazy"><img src="furniture/nightstand/green.svg" alt="" loading="lazy"><img src="furniture/stove/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/yellow.svg" alt="" loading="lazy"><img src="furniture/arcade/green.svg" alt="" loading="lazy"><img src="furniture/plant/lime.svg" alt="" loading="lazy"><img src="furniture/fan/pink.svg" alt="" loading="lazy"><img src="furniture/piano/cyan.svg" alt="" loading="lazy"><img src="furniture/cat/brown.svg" alt="" loading="lazy"><img src="furniture/toilet/white.svg" alt="" loading="lazy"><img src="furniture/punchbag/pink.svg" alt="" loading="lazy"><img src="furniture/sink/brown.svg" alt="" loading="lazy"><img src="furniture/bed/yellow.svg" alt="" loading="lazy"><img src="furniture/armchair/cyan.svg" alt="" loading="lazy"><img src="furniture/desk/red.svg" alt="" loading="lazy"><img src="furniture/shower/orange.svg" alt="" loading="lazy"><img src="furniture/tv/green.svg" alt="" loading="lazy"><img src="furniture/lamp/purple.svg" alt="" loading="lazy"><img src="furniture/bookshelf/orange.svg" alt="" loading="lazy"><img src="furniture/stereo/light%20gray.svg" alt="" loading="lazy"><img src="furniture/beanbag/pink.svg" alt="" loading="lazy"><img src="furniture/bathtub/lime.svg" alt="" loading="lazy"><img src="furniture/microwave/white.svg" alt="" loading="lazy"><img src="furniture/chair/blue.svg" alt="" loading="lazy"><img src="furniture/gclock/brown.svg" alt="" loading="lazy"></div></div><div class="row r1"><div class="track"><img src="furniture/punchbag/red.svg" alt="" loading="lazy"><img src="furniture/couch/light%20gray.svg" alt="" loading="lazy"><img src="furniture/window/red.svg" alt="" loading="lazy"><img src="furniture/tv/purple.svg" alt="" loading="lazy"><img src="furniture/aquarium/blue.svg" alt="" loading="lazy"><img src="furniture/fan/red.svg" alt="" loading="lazy"><img src="furniture/toilet/light%20gray.svg" alt="" loading="lazy"><img src="furniture/fridge/cyan.svg" alt="" loading="lazy"><img src="furniture/mirror/blue.svg" alt="" loading="lazy"><img src="furniture/wardrobe/magenta.svg" alt="" loading="lazy"><img src="furniture/washer/white.svg" alt="" loading="lazy"><img src="furniture/catbed/pink.svg" alt="" loading="lazy"><img src="furniture/toaster/brown.svg" alt="" loading="lazy"><img src="furniture/arcade/purple.svg" alt="" loading="lazy"><img src="furniture/hammock/pink.svg" alt="" loading="lazy"><img src="furniture/sink/lime.svg" alt="" loading="lazy"><img src="furniture/desklamp/purple.svg" alt="" loading="lazy"><img src="furniture/cleanbot/orange.svg" alt="" loading="lazy"><img src="furniture/door/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/white.svg" alt="" loading="lazy"><img src="furniture/treadmill/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/green.svg" alt="" loading="lazy"><img src="furniture/armchair/magenta.svg" alt="" loading="lazy"><img src="furniture/piano/magenta.svg" alt="" loading="lazy"><img src="furniture/lavalamp/brown.svg" alt="" loading="lazy"><img src="furniture/heater/yellow.svg" alt="" loading="lazy"><img src="furniture/bed/green.svg" alt="" loading="lazy"><img src="furniture/microwave/light%20gray.svg" alt="" loading="lazy"><img src="furniture/cat/lime.svg" alt="" loading="lazy"><img src="furniture/chair/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/brown.svg" alt="" loading="lazy"><img src="furniture/shower/cyan.svg" alt="" loading="lazy"><img src="furniture/plant/white.svg" alt="" loading="lazy"><img src="furniture/gclock/lime.svg" alt="" loading="lazy"><img src="furniture/nightstand/purple.svg" alt="" loading="lazy"><img src="furniture/stereo/pink.svg" alt="" loading="lazy"><img src="furniture/rocker/green.svg" alt="" loading="lazy"><img src="furniture/desk/blue.svg" alt="" loading="lazy"><img src="furniture/bathtub/white.svg" alt="" loading="lazy"><img src="furniture/table/orange.svg" alt="" loading="lazy"><img src="furniture/beanbag/red.svg" alt="" loading="lazy"><img src="furniture/stove/yellow.svg" alt="" loading="lazy"><img src="furniture/bookshelf/cyan.svg" alt="" loading="lazy"><img src="furniture/lamp/orange.svg" alt="" loading="lazy"><img src="furniture/punchbag/red.svg" alt="" loading="lazy"><img src="furniture/couch/light%20gray.svg" alt="" loading="lazy"><img src="furniture/window/red.svg" alt="" loading="lazy"><img src="furniture/tv/purple.svg" alt="" loading="lazy"><img src="furniture/aquarium/blue.svg" alt="" loading="lazy"><img src="furniture/fan/red.svg" alt="" loading="lazy"><img src="furniture/toilet/light%20gray.svg" alt="" loading="lazy"><img src="furniture/fridge/cyan.svg" alt="" loading="lazy"><img src="furniture/mirror/blue.svg" alt="" loading="lazy"><img src="furniture/wardrobe/magenta.svg" alt="" loading="lazy"><img src="furniture/washer/white.svg" alt="" loading="lazy"><img src="furniture/catbed/pink.svg" alt="" loading="lazy"><img src="furniture/toaster/brown.svg" alt="" loading="lazy"><img src="furniture/arcade/purple.svg" alt="" loading="lazy"><img src="furniture/hammock/pink.svg" alt="" loading="lazy"><img src="furniture/sink/lime.svg" alt="" loading="lazy"><img src="furniture/desklamp/purple.svg" alt="" loading="lazy"><img src="furniture/cleanbot/orange.svg" alt="" loading="lazy"><img src="furniture/door/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/white.svg" alt="" loading="lazy"><img src="furniture/treadmill/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/green.svg" alt="" loading="lazy"><img src="furniture/armchair/magenta.svg" alt="" loading="lazy"><img src="furniture/piano/magenta.svg" alt="" loading="lazy"><img src="furniture/lavalamp/brown.svg" alt="" loading="lazy"><img src="furniture/heater/yellow.svg" alt="" loading="lazy"><img src="furniture/bed/green.svg" alt="" loading="lazy"><img src="furniture/microwave/light%20gray.svg" alt="" loading="lazy"><img src="furniture/cat/lime.svg" alt="" loading="lazy"><img src="furniture/chair/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/brown.svg" alt="" loading="lazy"><img src="furniture/shower/cyan.svg" alt="" loading="lazy"><img src="furniture/plant/white.svg" alt="" loading="lazy"><img src="furniture/gclock/lime.svg" alt="" loading="lazy"><img src="furniture/nightstand/purple.svg" alt="" loading="lazy"><img src="furniture/stereo/pink.svg" alt="" loading="lazy"><img src="furniture/rocker/green.svg" alt="" loading="lazy"><img src="furniture/desk/blue.svg" alt="" loading="lazy"><img src="furniture/bathtub/white.svg" alt="" loading="lazy"><img src="furniture/table/orange.svg" alt="" loading="lazy"><img src="furniture/beanbag/red.svg" alt="" loading="lazy"><img src="furniture/stove/yellow.svg" alt="" loading="lazy"><img src="furniture/bookshelf/cyan.svg" alt="" loading="lazy"><img src="furniture/lamp/orange.svg" alt="" loading="lazy"></div></div><div class="row r2"><div class="track"><img src="furniture/wardrobe/brown.svg" alt="" loading="lazy"><img src="furniture/cleanbot/cyan.svg" alt="" loading="lazy"><img src="furniture/stove/green.svg" alt="" loading="lazy"><img src="furniture/arcade/orange.svg" alt="" loading="lazy"><img src="furniture/tv/orange.svg" alt="" loading="lazy"><img src="furniture/microwave/pink.svg" alt="" loading="lazy"><img src="furniture/cat/white.svg" alt="" loading="lazy"><img src="furniture/catbed/red.svg" alt="" loading="lazy"><img src="furniture/bookshelf/magenta.svg" alt="" loading="lazy"><img src="furniture/desk/yellow.svg" alt="" loading="lazy"><img src="furniture/armchair/brown.svg" alt="" loading="lazy"><img src="furniture/sink/white.svg" alt="" loading="lazy"><img src="furniture/lamp/cyan.svg" alt="" loading="lazy"><img src="furniture/exbike/light%20gray.svg" alt="" loading="lazy"><img src="furniture/stereo/red.svg" alt="" loading="lazy"><img src="furniture/door/brown.svg" alt="" loading="lazy"><img src="furniture/shower/magenta.svg" alt="" loading="lazy"><img src="furniture/table/cyan.svg" alt="" loading="lazy"><img src="furniture/lavalamp/lime.svg" alt="" loading="lazy"><img src="furniture/nightstand/orange.svg" alt="" loading="lazy"><img src="furniture/aquarium/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/lime.svg" alt="" loading="lazy"><img src="furniture/piano/brown.svg" alt="" loading="lazy"><img src="furniture/couch/pink.svg" alt="" loading="lazy"><img src="furniture/washer/light%20gray.svg" alt="" loading="lazy"><img src="furniture/chair/green.svg" alt="" loading="lazy"><img src="furniture/desklamp/orange.svg" alt="" loading="lazy"><img src="furniture/mirror/yellow.svg" alt="" loading="lazy"><img src="furniture/window/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/purple.svg" alt="" loading="lazy"><img src="furniture/gclock/white.svg" alt="" loading="lazy"><img src="furniture/fridge/magenta.svg" alt="" loading="lazy"><img src="furniture/bathtub/light%20gray.svg" alt="" loading="lazy"><img src="furniture/treadmill/yellow.svg" alt="" loading="lazy"><img src="furniture/punchbag/blue.svg" alt="" loading="lazy"><img src="furniture/fan/blue.svg" alt="" loading="lazy"><img src="furniture/bed/purple.svg" alt="" loading="lazy"><img src="furniture/beanbag/blue.svg" alt="" loading="lazy"><img src="furniture/plant/light%20gray.svg" alt="" loading="lazy"><img src="furniture/toaster/lime.svg" alt="" loading="lazy"><img src="furniture/rocker/purple.svg" alt="" loading="lazy"><img src="furniture/toilet/pink.svg" alt="" loading="lazy"><img src="furniture/heater/green.svg" alt="" loading="lazy"><img src="furniture/hammock/red.svg" alt="" loading="lazy"><img src="furniture/wardrobe/brown.svg" alt="" loading="lazy"><img src="furniture/cleanbot/cyan.svg" alt="" loading="lazy"><img src="furniture/stove/green.svg" alt="" loading="lazy"><img src="furniture/arcade/orange.svg" alt="" loading="lazy"><img src="furniture/tv/orange.svg" alt="" loading="lazy"><img src="furniture/microwave/pink.svg" alt="" loading="lazy"><img src="furniture/cat/white.svg" alt="" loading="lazy"><img src="furniture/catbed/red.svg" alt="" loading="lazy"><img src="furniture/bookshelf/magenta.svg" alt="" loading="lazy"><img src="furniture/desk/yellow.svg" alt="" loading="lazy"><img src="furniture/armchair/brown.svg" alt="" loading="lazy"><img src="furniture/sink/white.svg" alt="" loading="lazy"><img src="furniture/lamp/cyan.svg" alt="" loading="lazy"><img src="furniture/exbike/light%20gray.svg" alt="" loading="lazy"><img src="furniture/stereo/red.svg" alt="" loading="lazy"><img src="furniture/door/brown.svg" alt="" loading="lazy"><img src="furniture/shower/magenta.svg" alt="" loading="lazy"><img src="furniture/table/cyan.svg" alt="" loading="lazy"><img src="furniture/lavalamp/lime.svg" alt="" loading="lazy"><img src="furniture/nightstand/orange.svg" alt="" loading="lazy"><img src="furniture/aquarium/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/lime.svg" alt="" loading="lazy"><img src="furniture/piano/brown.svg" alt="" loading="lazy"><img src="furniture/couch/pink.svg" alt="" loading="lazy"><img src="furniture/washer/light%20gray.svg" alt="" loading="lazy"><img src="furniture/chair/green.svg" alt="" loading="lazy"><img src="furniture/desklamp/orange.svg" alt="" loading="lazy"><img src="furniture/mirror/yellow.svg" alt="" loading="lazy"><img src="furniture/window/blue.svg" alt="" loading="lazy"><img src="furniture/fireplace/purple.svg" alt="" loading="lazy"><img src="furniture/gclock/white.svg" alt="" loading="lazy"><img src="furniture/fridge/magenta.svg" alt="" loading="lazy"><img src="furniture/bathtub/light%20gray.svg" alt="" loading="lazy"><img src="furniture/treadmill/yellow.svg" alt="" loading="lazy"><img src="furniture/punchbag/blue.svg" alt="" loading="lazy"><img src="furniture/fan/blue.svg" alt="" loading="lazy"><img src="furniture/bed/purple.svg" alt="" loading="lazy"><img src="furniture/beanbag/blue.svg" alt="" loading="lazy"><img src="furniture/plant/light%20gray.svg" alt="" loading="lazy"><img src="furniture/toaster/lime.svg" alt="" loading="lazy"><img src="furniture/rocker/purple.svg" alt="" loading="lazy"><img src="furniture/toilet/pink.svg" alt="" loading="lazy"><img src="furniture/heater/green.svg" alt="" loading="lazy"><img src="furniture/hammock/red.svg" alt="" loading="lazy"></div></div><div class="row r3"><div class="track"><img src="furniture/fridge/brown.svg" alt="" loading="lazy"><img src="furniture/stereo/blue.svg" alt="" loading="lazy"><img src="furniture/arcade/cyan.svg" alt="" loading="lazy"><img src="furniture/treadmill/green.svg" alt="" loading="lazy"><img src="furniture/lamp/magenta.svg" alt="" loading="lazy"><img src="furniture/couch/red.svg" alt="" loading="lazy"><img src="furniture/bathtub/pink.svg" alt="" loading="lazy"><img src="furniture/bookshelf/brown.svg" alt="" loading="lazy"><img src="furniture/tv/cyan.svg" alt="" loading="lazy"><img src="furniture/gclock/light%20gray.svg" alt="" loading="lazy"><img src="furniture/microwave/red.svg" alt="" loading="lazy"><img src="furniture/piano/lime.svg" alt="" loading="lazy"><img src="furniture/table/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/pink.svg" alt="" loading="lazy"><img src="furniture/armchair/lime.svg" alt="" loading="lazy"><img src="furniture/cleanbot/magenta.svg" alt="" loading="lazy"><img src="furniture/rocker/orange.svg" alt="" loading="lazy"><img src="furniture/toilet/red.svg" alt="" loading="lazy"><img src="furniture/desk/green.svg" alt="" loading="lazy"><img src="furniture/punchbag/yellow.svg" alt="" loading="lazy"><img src="furniture/toaster/white.svg" alt="" loading="lazy"><img src="furniture/sink/light%20gray.svg" alt="" loading="lazy"><img src="furniture/wardrobe/lime.svg" alt="" loading="lazy"><img src="furniture/shower/brown.svg" alt="" loading="lazy"><img src="furniture/fireplace/orange.svg" alt="" loading="lazy"><img src="furniture/door/lime.svg" alt="" loading="lazy"><img src="furniture/aquarium/green.svg" alt="" loading="lazy"><img src="furniture/plant/pink.svg" alt="" loading="lazy"><img src="furniture/hammock/blue.svg" alt="" loading="lazy"><img src="furniture/cat/light%20gray.svg" alt="" loading="lazy"><img src="furniture/beanbag/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/white.svg" alt="" loading="lazy"><img src="furniture/bed/orange.svg" alt="" loading="lazy"><img src="furniture/chair/purple.svg" alt="" loading="lazy"><img src="furniture/desklamp/cyan.svg" alt="" loading="lazy"><img src="furniture/lavalamp/white.svg" alt="" loading="lazy"><img src="furniture/heater/purple.svg" alt="" loading="lazy"><img src="furniture/mirror/green.svg" alt="" loading="lazy"><img src="furniture/washer/pink.svg" alt="" loading="lazy"><img src="furniture/window/yellow.svg" alt="" loading="lazy"><img src="furniture/nightstand/cyan.svg" alt="" loading="lazy"><img src="furniture/catbed/blue.svg" alt="" loading="lazy"><img src="furniture/fan/yellow.svg" alt="" loading="lazy"><img src="furniture/stove/purple.svg" alt="" loading="lazy"><img src="furniture/fridge/brown.svg" alt="" loading="lazy"><img src="furniture/stereo/blue.svg" alt="" loading="lazy"><img src="furniture/arcade/cyan.svg" alt="" loading="lazy"><img src="furniture/treadmill/green.svg" alt="" loading="lazy"><img src="furniture/lamp/magenta.svg" alt="" loading="lazy"><img src="furniture/couch/red.svg" alt="" loading="lazy"><img src="furniture/bathtub/pink.svg" alt="" loading="lazy"><img src="furniture/bookshelf/brown.svg" alt="" loading="lazy"><img src="furniture/tv/cyan.svg" alt="" loading="lazy"><img src="furniture/gclock/light%20gray.svg" alt="" loading="lazy"><img src="furniture/microwave/red.svg" alt="" loading="lazy"><img src="furniture/piano/lime.svg" alt="" loading="lazy"><img src="furniture/table/magenta.svg" alt="" loading="lazy"><img src="furniture/exbike/pink.svg" alt="" loading="lazy"><img src="furniture/armchair/lime.svg" alt="" loading="lazy"><img src="furniture/cleanbot/magenta.svg" alt="" loading="lazy"><img src="furniture/rocker/orange.svg" alt="" loading="lazy"><img src="furniture/toilet/red.svg" alt="" loading="lazy"><img src="furniture/desk/green.svg" alt="" loading="lazy"><img src="furniture/punchbag/yellow.svg" alt="" loading="lazy"><img src="furniture/toaster/white.svg" alt="" loading="lazy"><img src="furniture/sink/light%20gray.svg" alt="" loading="lazy"><img src="furniture/wardrobe/lime.svg" alt="" loading="lazy"><img src="furniture/shower/brown.svg" alt="" loading="lazy"><img src="furniture/fireplace/orange.svg" alt="" loading="lazy"><img src="furniture/door/lime.svg" alt="" loading="lazy"><img src="furniture/aquarium/green.svg" alt="" loading="lazy"><img src="furniture/plant/pink.svg" alt="" loading="lazy"><img src="furniture/hammock/blue.svg" alt="" loading="lazy"><img src="furniture/cat/light%20gray.svg" alt="" loading="lazy"><img src="furniture/beanbag/yellow.svg" alt="" loading="lazy"><img src="furniture/coffee/white.svg" alt="" loading="lazy"><img src="furniture/bed/orange.svg" alt="" loading="lazy"><img src="furniture/chair/purple.svg" alt="" loading="lazy"><img src="furniture/desklamp/cyan.svg" alt="" loading="lazy"><img src="furniture/lavalamp/white.svg" alt="" loading="lazy"><img src="furniture/heater/purple.svg" alt="" loading="lazy"><img src="furniture/mirror/green.svg" alt="" loading="lazy"><img src="furniture/washer/pink.svg" alt="" loading="lazy"><img src="furniture/window/yellow.svg" alt="" loading="lazy"><img src="furniture/nightstand/cyan.svg" alt="" loading="lazy"><img src="furniture/catbed/blue.svg" alt="" loading="lazy"><img src="furniture/fan/yellow.svg" alt="" loading="lazy"><img src="furniture/stove/purple.svg" alt="" loading="lazy"></div></div></div>
+  <div class="in">
+    <h2 class="rv">Limitless <span>Possibilities</span></h2>
+    <p class="sub rv">Every room is a blank page. Mix, match and recolor until it feels like home.</p>
+    <div class="chips rv"><span class="chip bh-panel"><b>44</b>furniture pieces</span><span class="chip bh-panel"><b>16</b>colors each</span><span class="chip bh-panel"><b>&infin;</b>rooms to build</span></div>
+  </div>
+</section>
+
+<section class="sec trl" id="trailer"><div class="in">
+  <h2 class="rv">The <span>trailer</span></h2>
+  <p class="sub rv" style="color:#c7d2fe">See Blockhaven in action.</p>
+  <div class="tv bh-panel rv">
+    <div class="tvh"><span>Blockhaven Trailer</span><i>NOW SHOWING</i></div>
+    <div class="screen"><video id="vid" controls playsinline preload="none" poster="vid/poster.jpg" src="vid/Blockhaven_Trailer.mp4" class="hide"></video>
+      <button id="cover" class="cover" type="button" aria-label="Play trailer"><span class="bh-btn"><img class="ico" src="img/icons/play.svg" alt=""></span></button></div>
+  </div>
+</div></section>
+
+<footer class="fin">
+  <div class="links">
+    <a class="bh-btn bh-dark sm" href="https://github.com/mahi902" target="_blank" rel="noopener">Profile: mahi902</a>
+    <a class="bh-btn bh-dark sm" href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">GitHub repo</a>
+    <a class="bh-btn bh-blue sm" href="#about">About</a>
+  </div>
+  <small>Blockhaven &middot; made by mahi902</small>
+</footer>
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
 var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -141,12 +215,11 @@ if (ios) { btn.classList.add('hide'); $('ios').classList.remove('hide'); }
 else setTimeout(function () { if (!dp && !btn.disabled) $('other').classList.remove('hide'); }, 2500);
 </script>
 <script>
-(function(){var m=document.getElementById('modal'),v=document.getElementById('vid');
-function open(){v.src='vid/Blockhaven_Trailer.mp4';m.classList.remove('hide');v.play().catch(function(){});}
-function close(){v.pause();v.removeAttribute('src');v.load();m.classList.add('hide');}
-document.getElementById('trailerBtn').onclick=open;document.getElementById('xBtn').onclick=close;
-m.addEventListener('click',function(e){if(e.target===m)close();});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!m.classList.contains('hide'))close();});})();
+(function(){var v=document.getElementById('vid'),c=document.getElementById('cover');
+c.onclick=function(){v.classList.remove('hide');c.classList.add('hide');v.play().catch(function(){});};
+var els=document.querySelectorAll('.rv');
+if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.12});els.forEach(function(e){io.observe(e);});}
+else els.forEach(function(e){e.classList.add('on');});})();
 </script>
 </body>
 </html>
