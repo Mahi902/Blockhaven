@@ -152,7 +152,7 @@ function updatePrompt() {
   }
   el.classList.toggle('hidden', !text);
   if (text) $('promptText').textContent = text;
-  const req = S.mode === 'play' ? pendingRequest() : null;      // someone asked to emote together: Accept / Decline instead of the Perform button
+  const req = S.request = S.mode === 'play' ? pendingRequest() : null;      // someone asked to emote together: Accept / Decline instead of the Perform button
   $('acceptBtn').classList.toggle('hidden', !req); $('declineBtn').classList.toggle('hidden', !req);
   if (req) { $('acceptText').textContent = 'Accept ' + req.label; $('declineText').textContent = 'Decline ' + req.label; }
   const tg = $('togetherBtn'), show = !!S.partner && S.mode === 'play' && !S.modalOpen;
@@ -206,6 +206,7 @@ async function boot() {
   $('togetherBtn').addEventListener('click', () => { if (S.partner && S.onTogether) S.onTogether(S.partner); });
   $('acceptBtn').addEventListener('click', () => respond(true));
   $('declineBtn').addEventListener('click', () => respond(false));
+  S.onRespond = respond;
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();

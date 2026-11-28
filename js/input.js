@@ -81,6 +81,7 @@ function onKeyDown(e) {
   if (key === 'b') { handlers.toggleBuild && handlers.toggleBuild(); return; }
   if (S.mode === 'play') {
     if (key === 'e' || key === ' ') { e.preventDefault(); doInteract(); }
+    else if ((key === 'y' || key === 'n') && !e.ctrlKey && !e.metaKey && S.request && S.onRespond) { e.preventDefault(); S.onRespond(key === 'y'); }   // answer an emote request
     else if (key === 't' && !e.ctrlKey && !e.metaKey && S.partner && S.onTogether) { e.preventDefault(); S.onTogether(S.partner); }
   } else {
     if (key === 'r') B.rotateCurrent();

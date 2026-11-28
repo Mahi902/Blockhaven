@@ -26,6 +26,7 @@ export const S = {
   keys: {},
   touchDir: { up: false, down: false, left: false, right: false },
   nearby: null,               // { kind, obj } interactable in reach
+  request: null,              // an emote-together request waiting for my answer { name, label }
   partner: null,              // another player in reach for "Perform Emote Together" (multiplayer)
 
   // build tools
