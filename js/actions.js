@@ -26,7 +26,7 @@ export function updateActions() {
       for (const e of S.nearbyAll.slice(0, room)) A.push({ label: e.def.tip, target: e, run: () => interactWith(e.kind, e.obj) });
       if (S.partner && A.length < room) A.push({ label: 'Perform Emote Together', run: () => { if (S.onTogether && S.partner) S.onTogether(S.partner); } });
     }
-    if (req) A.push({ label: 'Accept ' + req.label, run: () => respond(true) }, { label: 'Decline ' + req.label, run: () => respond(false) });   // an emote request: the same buttons and keys as everything else
+    if (req) A.push({ label: 'Accept ' + req.label, off: req.why, run: () => respond(true) }, { label: 'Decline ' + req.label, run: () => respond(false) });   // an emote request: the same buttons and keys as everything else
   }
   S.nearby = S.nearbyAll[0] || null;
   S.actions = A;
@@ -36,12 +36,12 @@ export function updateActions() {
 
 function paint(A) {
   const list = $('actionList'); if (!list) return;
-  const s = A.map(a => a.label).join('|');
+  const s = A.map(a => a.label + (a.off ? '!' : '')).join('|');
   if (s !== sig) {
     sig = s; list.replaceChildren();
     A.forEach((a, i) => {
       const b = document.createElement('button');
-      b.className = 'bh-btn bh-gold'; b.type = 'button';
+      b.className = 'bh-btn bh-gold' + (a.off ? ' off' : ''); b.type = 'button'; if (a.off) b.setAttribute('aria-disabled', 'true');
       const k = document.createElement('kbd'); k.textContent = keyLabel(i, A.length);
       const t = document.createElement('span'); t.textContent = a.label;
       b.append(k, t);

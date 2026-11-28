@@ -486,6 +486,18 @@ function stepBlocked(x, y, nx, ny) {
   return !(d && d.hasFunction);       // closed but openable pieces (doors) are fine, we open them on the way
 }
 
+/** True if a wall, window or closed door lies on the straight line between two points. */
+export function lineBlocked(ax, ay, bx, by) {
+  const len = Math.hypot(bx - ax, by - ay), steps = Math.max(1, Math.ceil(len / 4));
+  let tx = Math.floor(ax / TILE), ty = Math.floor(ay / TILE);
+  for (let i = 1; i <= steps; i++) {
+    const nx = Math.floor((ax + (bx - ax) * i / steps) / TILE), ny = Math.floor((ay + (by - ay) * i / steps) / TILE);
+    if (nx !== tx) { const e = W.edgeAtKey('v', Math.max(tx, nx), ty); if (e && W.isClosedEdge(e)) return true; tx = nx; }
+    if (ny !== ty) { const e = W.edgeAtKey('h', tx, Math.max(ty, ny)); if (e && W.isClosedEdge(e)) return true; ty = ny; }
+  }
+  return false;
+}
+
 export function findPath(goals) {
   const P = S.player;
   const sx = Math.floor(P.x / TILE), sy = Math.floor(P.y / TILE);

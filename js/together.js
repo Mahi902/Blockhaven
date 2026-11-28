@@ -7,7 +7,7 @@ import { h, openModal, closeModal, toast } from './ui.js';
 import { sound } from './audio.js';
 import * as MPm from './multiplayer.js';
 import { emotes, togetherOrder, startTogether, duoSilhouetteSvg } from './emotes.js';
-import { buildSprites } from './player.js';
+import { buildSprites, lineBlocked } from './player.js';
 
 const COOL_MS = 20000;    // wait between two players' emotes together
 const ASK_MS = 15000;     // how long a request stays open
@@ -91,8 +91,22 @@ function endOut(why) {
 
 // ---- answering -----------------------------------------------------------------------------------------------------------------
 /** The request waiting for my answer ({ name, label }), or null. Drives the Accept / Decline buttons. */
-export function pendingRequest() { return incoming ? { name: incoming.name, label: incoming.def.name.toLowerCase() } : null; }
-export function respond(yes) { answer(yes); }
+export function pendingRequest() {
+  if (!incoming) return null;
+  return { name: incoming.name, label: incoming.def.name.toLowerCase(), why: cantAccept() };
+}
+/** Why the request can't be accepted right now (too far, or a wall / closed door between), else null. */
+function cantAccept() {
+  const r = incoming && byId(incoming.from), P = S.player;
+  if (!r) return 'They left';
+  if (Math.hypot(r.x - P.x, r.y - P.y) > NEAR * 1.5) return 'Too far away to accept';
+  if (lineBlocked(P.x, P.y, r.x, r.y)) return 'Something is in the way';
+  return null;
+}
+export function respond(yes) {
+  if (yes && incoming) { const why = cantAccept(); if (why) { toast(why, 2000); return; } }
+  answer(yes);
+}
 function answer(yes, why) {
   const inc = incoming; if (!inc) return;
   clearTimeout(inc.timer); incoming = null; clearBubbleOf(inc.from);
