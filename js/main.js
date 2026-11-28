@@ -7,7 +7,7 @@ import * as W from './world.js';
 import { loadCatalog, catalog, getImage, getFunction, previewUrl } from './catalog.js';
 import { stopMusic } from './music.js';
 import { loadEmotes, mountTray } from './emotes.js';
-import { initTogether, tickTogether, nearestPartner, pendingRequest, respond } from './together.js';
+import { initTogether, tickTogether, nearestPartner } from './together.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, setZoom, clampCamera } from './input.js';
@@ -144,12 +144,6 @@ function toggleChat() {
 }
 function closeChat() { chatOpen = false; applyChat(); $('chatInput').blur(); }
 
-function updatePrompt() {
-  // someone asked to emote together: Accept / Decline buttons (the other action buttons are built in actions.js)
-  const req = S.request = S.mode === 'play' ? pendingRequest() : null;
-  $('acceptBtn').classList.toggle('hidden', !req); $('declineBtn').classList.toggle('hidden', !req);
-  if (req) { $('acceptText').textContent = 'Accept ' + req.label; $('declineText').textContent = 'Decline ' + req.label; }
-}
 
 let last = 0;
 function frame(t) {
@@ -170,7 +164,6 @@ function frame(t) {
     updateNpcs(dt);
     S.bubbles.forEach(b => { b.ttl -= dt; });
     S.bubbles = S.bubbles.filter(b => b.ttl > 0);
-    updatePrompt();
   }
   render();
   requestAnimationFrame(frame);
@@ -194,9 +187,6 @@ async function boot() {
   await loadPlayerTemplates();
   loadEmotes().then(() => mountTray($('emoteTray'))).catch(e => console.warn('[emotes]', e));
   initTogether();
-  $('acceptBtn').addEventListener('click', () => respond(true));
-  $('declineBtn').addEventListener('click', () => respond(false));
-  S.onRespond = respond;
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();

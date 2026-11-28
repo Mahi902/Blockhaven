@@ -49,7 +49,7 @@ device animates it locally from the same `pose()` code.
 ## Emotes for two players ("Perform Emote Together")
 
 In multiplayer, walking up to another player shows a "Perform Emote Together" button (no highlight on the player). It opens a
-menu with both players and every two-player emote. Your pick is sent as a normal chat message, for example "I want to hug you.". The other player gets "Accept hug" and "Decline hug" buttons where the Perform button was.
+menu with both players and every two-player emote. Your pick is sent as a normal chat message, for example "I want to hug you.". The other player gets "Accept hug" and "Decline hug" as normal yellow action buttons (E×1, E×2).
 After an emote (or a refusal) the same two players wait 20 seconds before the next one; they can still emote with anyone else.
 
 Add one like a normal emote, with these extra lines in `info.txt`:

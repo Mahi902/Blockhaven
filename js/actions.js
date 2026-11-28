@@ -1,9 +1,10 @@
 // Blockhaven - the action buttons (bottom left). Everything usable right now gets a button and they stack:
 // one action -> key E; several -> E x1 (bottom), E x2 (above it), E x3 ... Press E that many times in a row to pick one.
-// On a phone just tap the button.
+// An emote-together request adds "Accept ..." and "Decline ..." buttons to the same stack. On a phone just tap the button.
 import { S } from './state.js';
 import { interactWith } from './api.js';
 import { leaveSeatNow, interactablesNear } from './player.js';
+import { pendingRequest, respond } from './together.js';
 
 const CAP = 6;          // most buttons at once
 const PRESS_MS = 320;   // pause after the last E press before the action runs
@@ -18,13 +19,14 @@ export function updateActions() {
   const A = [];
   S.nearbyAll = [];
   if (S.mode === 'play' && S.started && !S.modalOpen) {
-    const P = S.player;
+    const P = S.player, req = pendingRequest(), room = CAP - (req ? 2 : 0);
     if (P.seat) A.push({ label: seatText(P.seat), run: () => leaveSeatNow() });
     else {
       S.nearbyAll = interactablesNear(46);
-      for (const e of S.nearbyAll.slice(0, CAP)) A.push({ label: e.def.tip, target: e, run: () => interactWith(e.kind, e.obj) });
-      if (S.partner && A.length < CAP) A.push({ label: 'Perform Emote Together', run: () => { if (S.onTogether && S.partner) S.onTogether(S.partner); } });
+      for (const e of S.nearbyAll.slice(0, room)) A.push({ label: e.def.tip, target: e, run: () => interactWith(e.kind, e.obj) });
+      if (S.partner && A.length < room) A.push({ label: 'Perform Emote Together', run: () => { if (S.onTogether && S.partner) S.onTogether(S.partner); } });
     }
+    if (req) A.push({ label: 'Accept ' + req.label, run: () => respond(true) }, { label: 'Decline ' + req.label, run: () => respond(false) });   // an emote request: the same buttons and keys as everything else
   }
   S.nearby = S.nearbyAll[0] || null;
   S.actions = A;

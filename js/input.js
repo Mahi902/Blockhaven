@@ -76,7 +76,6 @@ function onKeyDown(e) {
   if (key === 'b') { handlers.toggleBuild && handlers.toggleBuild(); return; }
   if (S.mode === 'play') {
     if (key === 'e' || key === ' ') { e.preventDefault(); if (!e.repeat) pressAction(); }
-    else if ((key === 'y' || key === 'n') && !e.ctrlKey && !e.metaKey && S.request && S.onRespond) { e.preventDefault(); S.onRespond(key === 'y'); }   // answer an emote request
   } else {
     if (key === 'r') B.rotateCurrent();
     else if (key === 'delete' || key === 'backspace') { e.preventDefault(); B.deleteSelected(); }

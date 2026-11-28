@@ -64,7 +64,7 @@ export function openTogether(partner) {
 }
 
 // The request is just a chat message from the sender ("I want to hug you."). The other player answers with the
-// Accept / Decline buttons (see main.js updatePrompt).
+// Accept / Decline buttons (see js/actions.js).
 const askText = d => `I want to ${d.ask}.`;
 const clearOwnBubble = () => { if (S.bubbles[0] && S.bubbles[0].req) S.bubbles = []; };
 const clearBubbleOf = id => { const r = byId(id); if (r && r.bubble && r.bubble.req) r.bubble = null; };
