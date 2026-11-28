@@ -1,7 +1,6 @@
 name=Hug
 together=1
 ask=hug you
-accept=hug
 gap=19
 duration=3.4
 preview=1.4

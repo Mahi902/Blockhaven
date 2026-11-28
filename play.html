@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="img/pwa/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/game.css?v=2.01">
+<link rel="stylesheet" href="css/game.css?v=2.02">
 </head>
 <body>
 <div id="splash"><i class="sp-orb o1"></i><i class="sp-orb o2"></i><i class="sp-orb o3"></i><i class="sp-orb o4"></i>
@@ -27,6 +27,8 @@
   <div id="buildUI" class="hidden"></div>
 
   <div id="actionStack">
+    <button id="acceptBtn" class="bh-btn bh-dgreen hidden" type="button"><span id="acceptText">Accept</span></button>
+    <button id="declineBtn" class="bh-btn bh-red hidden" type="button"><span id="declineText">Decline</span></button>
     <button id="togetherBtn" class="bh-btn bh-gold hidden" type="button"><kbd id="togetherKey">T</kbd><span>Perform Emote Together</span></button>
     <button id="prompt" class="bh-btn bh-gold hidden" type="button"><kbd>E</kbd><span id="promptText">Use</span></button>
   </div>
@@ -78,8 +80,8 @@
 </div>
 <script src="js/vendor/qrcode.js"></script>
 <script src="js/vendor/jsQR.js"></script>
-<script type="importmap">{"imports": {"./js/api.js": "./js/api.js?v=2.01", "./js/audio.js": "./js/audio.js?v=2.01", "./js/build.js": "./js/build.js?v=2.01", "./js/catalog.js": "./js/catalog.js?v=2.01", "./js/config.js": "./js/config.js?v=2.01", "./js/emotes.js": "./js/emotes.js?v=2.01", "./js/together.js": "./js/together.js?v=2.01", "./js/fx.js": "./js/fx.js?v=2.01", "./js/hair.js": "./js/hair.js?v=2.01", "./js/input.js": "./js/input.js?v=2.01", "./js/npc.js": "./js/npc.js?v=2.01", "./js/multiplayer.js": "./js/multiplayer.js?v=2.01", "./js/music.js": "./js/music.js?v=2.01", "./js/player.js": "./js/player.js?v=2.01", "./js/render.js": "./js/render.js?v=2.01", "./js/starter.js": "./js/starter.js?v=2.01", "./js/state.js": "./js/state.js?v=2.01", "./js/ui.js": "./js/ui.js?v=2.01", "./js/world.js": "./js/world.js?v=2.01", "./js/worlds.js": "./js/worlds.js?v=2.01"}}</script>
-<script type="module" src="js/main.js?v=2.01"></script>
-<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v=2.01").catch(function(){})});</script>
+<script type="importmap">{"imports": {"./js/api.js": "./js/api.js?v=2.02", "./js/audio.js": "./js/audio.js?v=2.02", "./js/build.js": "./js/build.js?v=2.02", "./js/catalog.js": "./js/catalog.js?v=2.02", "./js/config.js": "./js/config.js?v=2.02", "./js/emotes.js": "./js/emotes.js?v=2.02", "./js/together.js": "./js/together.js?v=2.02", "./js/fx.js": "./js/fx.js?v=2.02", "./js/hair.js": "./js/hair.js?v=2.02", "./js/input.js": "./js/input.js?v=2.02", "./js/npc.js": "./js/npc.js?v=2.02", "./js/multiplayer.js": "./js/multiplayer.js?v=2.02", "./js/music.js": "./js/music.js?v=2.02", "./js/player.js": "./js/player.js?v=2.02", "./js/render.js": "./js/render.js?v=2.02", "./js/starter.js": "./js/starter.js?v=2.02", "./js/state.js": "./js/state.js?v=2.02", "./js/ui.js": "./js/ui.js?v=2.02", "./js/world.js": "./js/world.js?v=2.02", "./js/worlds.js": "./js/worlds.js?v=2.02"}}</script>
+<script type="module" src="js/main.js?v=2.02"></script>
+<script>if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("sw.js?v=2.02").catch(function(){})});</script>
 </body>
 </html>

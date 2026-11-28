@@ -1,6 +1,6 @@
 // Blockhaven - "Perform Emote Together" (multiplayer only).
 // Walk up to another player and a button appears. It opens a menu of two-player emotes (hug, handshake...). The other
-// player sees it as a chat bubble above them: one click accepts, a double click declines. A pair then has to wait COOL_MS before doing another
+// player sees it as a normal chat message and gets Accept / Decline buttons. A pair then has to wait COOL_MS before doing another
 // one together (they can still do them with anybody else). Requests travel as 'duo' messages (js/multiplayer.js).
 import { S } from './state.js';
 import { h, openModal, closeModal, toast } from './ui.js';
@@ -12,12 +12,10 @@ import { buildSprites } from './player.js';
 const COOL_MS = 20000;    // wait between two players' emotes together
 const ASK_MS = 15000;     // how long a request stays open
 const NEAR = 72;          // px: how close counts as "near"
-const DOUBLE_MS = 300;    // two taps within this are a double tap
 
 const cool = new Map();   // other player's id -> time (ms) they can emote with you again
 let out = null;           // my request, waiting for an answer: { to, name, id, n, left, timer }
 let incoming = null;      // a request I can answer: { from, name, def, n, left, timer }
-let tapTimer = 0;
 
 const byId = id => S.remote.find(r => r.id === id) || null;
 export const coolLeft = id => Math.max(0, (cool.get(id) || 0) - Date.now());
@@ -65,9 +63,9 @@ export function openTogether(partner) {
   });
 }
 
-// The request is the sender's own chat bubble: "I want to hug you. Click to hug or double click to decline :(".
-// On the other player's screen that bubble sits above the sender and is the thing to click.
-const askText = d => `I want to ${d.ask}. Click to ${d.accept} or double click to decline :(`;
+// The request is just a chat message from the sender ("I want to hug you."). The other player answers with the
+// Accept / Decline buttons (see main.js updatePrompt).
+const askText = d => `I want to ${d.ask}.`;
 const clearOwnBubble = () => { if (S.bubbles[0] && S.bubbles[0].req) S.bubbles = []; };
 const clearBubbleOf = id => { const r = byId(id); if (r && r.bubble && r.bubble.req) r.bubble = null; };
 
@@ -91,19 +89,13 @@ function endOut(why) {
   else if (why === 'no') { setCool(o.to, COOL_MS); toast(o.name + ' said no thanks :(', 2500); }
 }
 
-// ---- answering: click the sender's bubble (once = yes, twice = no) ----------------------------------------------------------------
-/** Called by the canvas on a press at screen (x, y). Returns true if it hit the request bubble. */
-export function bubbleTap(x, y) {
-  if (!incoming) return false;
-  const r = byId(incoming.from), b = r && r.bubble, q = b && b.req && b.rect;
-  if (!q || x < q.x || x > q.x + q.w || y < q.y || y > q.y + q.h) return false;
-  if (tapTimer) { clearTimeout(tapTimer); tapTimer = 0; answer(false); }               // second tap: decline
-  else tapTimer = setTimeout(() => { tapTimer = 0; answer(true); }, DOUBLE_MS);          // single tap: accept, unless a second follows
-  return true;
-}
+// ---- answering -----------------------------------------------------------------------------------------------------------------
+/** The request waiting for my answer ({ name, label }), or null. Drives the Accept / Decline buttons. */
+export function pendingRequest() { return incoming ? { name: incoming.name, label: incoming.def.name.toLowerCase() } : null; }
+export function respond(yes) { answer(yes); }
 function answer(yes, why) {
   const inc = incoming; if (!inc) return;
-  clearTimeout(inc.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; clearBubbleOf(inc.from);
+  clearTimeout(inc.timer); incoming = null; clearBubbleOf(inc.from);
   MPm.sendDuo(inc.from, { k: yes ? 'yes' : 'no', n: inc.n, id: inc.def.id, why });
   if (yes) { if (startTogether(inc.def.id, inc.n, inc.from, 1, inc.left ? 1 : -1)) setCool(inc.from, inc.def.duration * 1000 + COOL_MS); }
   else setCool(inc.from, COOL_MS);
@@ -112,7 +104,7 @@ function answer(yes, why) {
 // ---- messages ---------------------------------------------------------------------------------------------------------------
 function got(m) {
   if (m.k === 'req') return onRequest(m);
-  if (m.k === 'cancel') { if (incoming && incoming.from === m.from && incoming.n === m.n) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; clearBubbleOf(m.from); } return; }
+  if (m.k === 'cancel') { if (incoming && incoming.from === m.from && incoming.n === m.n) { clearTimeout(incoming.timer); incoming = null; clearBubbleOf(m.from); } return; }
   if (!out || out.to !== m.from || out.n !== m.n) return;
   if (m.k === 'yes') {
     const o = out; clearTimeout(o.timer); out = null; clearOwnBubble();
@@ -135,15 +127,15 @@ function onRequest(m) {
 export function tickTogether() {
   if (!MPm.active()) {
     if (out) { clearTimeout(out.timer); out = null; clearOwnBubble(); }
-    if (incoming) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; }
+    if (incoming) { clearTimeout(incoming.timer); incoming = null; }
     cool.clear(); return;
   }
   if (out) { const r = byId(out.to); if (!r || Math.hypot(r.x - S.player.x, r.y - S.player.y) > NEAR * 2 || S.player.seat) cancelOut(); }
-  if (incoming && !byId(incoming.from)) { clearTimeout(incoming.timer); clearTimeout(tapTimer); tapTimer = 0; incoming = null; }
+  if (incoming && !byId(incoming.from)) { clearTimeout(incoming.timer); incoming = null; }
 }
 
 export function initTogether() {
   MPm.onDuo(got);
   S.onTogether = openTogether;
-  S.onBubbleTap = bubbleTap;
+  
 }

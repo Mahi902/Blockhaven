@@ -1,7 +1,6 @@
 name=Fist Bump
 together=1
 ask=fist bump you
-accept=bump
 gap=26
 duration=2.4
 preview=1.05

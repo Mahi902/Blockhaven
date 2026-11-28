@@ -7,7 +7,7 @@ import * as W from './world.js';
 import { loadCatalog, catalog, getImage, getFunction, previewUrl } from './catalog.js';
 import { stopMusic } from './music.js';
 import { loadEmotes, mountTray } from './emotes.js';
-import { initTogether, tickTogether, nearestPartner } from './together.js';
+import { initTogether, tickTogether, nearestPartner, pendingRequest, respond } from './together.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
 import { initInput, doInteract, setZoom, clampCamera } from './input.js';
@@ -152,6 +152,9 @@ function updatePrompt() {
   }
   el.classList.toggle('hidden', !text);
   if (text) $('promptText').textContent = text;
+  const req = S.mode === 'play' ? pendingRequest() : null;      // someone asked to emote together: Accept / Decline instead of the Perform button
+  $('acceptBtn').classList.toggle('hidden', !req); $('declineBtn').classList.toggle('hidden', !req);
+  if (req) { $('acceptText').textContent = 'Accept ' + req.label; $('declineText').textContent = 'Decline ' + req.label; }
   const tg = $('togetherBtn'), show = !!S.partner && S.mode === 'play' && !S.modalOpen;
   tg.classList.toggle('hidden', !show);
   if (show) $('togetherKey').textContent = text ? 'T' : 'E';   // E is free for it when nothing else is in reach
@@ -201,6 +204,8 @@ async function boot() {
   loadEmotes().then(() => mountTray($('emoteTray'))).catch(e => console.warn('[emotes]', e));
   initTogether();
   $('togetherBtn').addEventListener('click', () => { if (S.partner && S.onTogether) S.onTogether(S.partner); });
+  $('acceptBtn').addEventListener('click', () => respond(true));
+  $('declineBtn').addEventListener('click', () => respond(false));
   W.listeners.push(B.refreshHistory);
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();

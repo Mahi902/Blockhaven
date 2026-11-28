@@ -94,7 +94,6 @@ const wpFrom = e => { const r = e.target.getBoundingClientRect(); return screenT
 
 function onPointerDown(e) {
   if (!S.started || S.modalOpen) return;
-  if (S.mode === 'play' && S.onBubbleTap) { const rc = e.target.getBoundingClientRect(); if (S.onBubbleTap(e.clientX - rc.left, e.clientY - rc.top)) return; }   // answering an emote request
   e.target.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (pointers.size === 2) { startPinch(); pan = null; return; }
