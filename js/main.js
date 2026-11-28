@@ -10,7 +10,8 @@ import { loadEmotes, mountTray } from './emotes.js';
 import { initTogether, tickTogether, nearestPartner, pendingRequest, respond } from './together.js';
 import { loadPlayerTemplates, updatePlayer, nearestInteractive, setLook, sprites } from './player.js';
 import { initRender, render, resize } from './render.js';
-import { initInput, doInteract, setZoom, clampCamera } from './input.js';
+import { initInput, setZoom, clampCamera } from './input.js';
+import { updateActions } from './actions.js';
 import * as B from './build.js';
 import { buildStarter, SPAWN } from './starter.js';
 import { setSound, soundOn, sound } from './audio.js';
@@ -144,20 +145,10 @@ function toggleChat() {
 function closeChat() { chatOpen = false; applyChat(); $('chatInput').blur(); }
 
 function updatePrompt() {
-  const el = $('prompt');
-  let text = null;
-  if (S.mode === 'play' && !S.modalOpen) {
-    if (S.player.seat) text = S.player.seat.run ? 'Stop running' : (S.player.seat.swim ? 'Climb out' : (S.player.seat.sway ? 'Get out' : 'Stand up'));
-    else if (S.nearby) text = S.nearby.def.tip;
-  }
-  el.classList.toggle('hidden', !text);
-  if (text) $('promptText').textContent = text;
-  const req = S.request = S.mode === 'play' ? pendingRequest() : null;      // someone asked to emote together: Accept / Decline instead of the Perform button
+  // someone asked to emote together: Accept / Decline buttons (the other action buttons are built in actions.js)
+  const req = S.request = S.mode === 'play' ? pendingRequest() : null;
   $('acceptBtn').classList.toggle('hidden', !req); $('declineBtn').classList.toggle('hidden', !req);
   if (req) { $('acceptText').textContent = 'Accept ' + req.label; $('declineText').textContent = 'Decline ' + req.label; }
-  const tg = $('togetherBtn'), show = !!S.partner && S.mode === 'play' && !S.modalOpen;
-  tg.classList.toggle('hidden', !show);
-  if (show) $('togetherKey').textContent = text ? 'T' : 'E';   // E is free for it when nothing else is in reach
 }
 
 let last = 0;
@@ -167,12 +158,12 @@ function frame(t) {
   if (S.started) {
     if (S.mode === 'play') {
       updatePlayer(dt);
-      S.nearby = S.player.seat ? null : nearestInteractive(46);
       S.partner = S.modalOpen ? null : nearestPartner();     // no highlight for players, just the button
       const c = S.camera, k = 1 - Math.pow(0.001, dt);
       c.x += (S.player.x - c.x) * k; c.y += (S.player.y - c.y) * k;
       clampCamera();
-    } else { S.nearby = null; S.partner = null; }
+    } else S.partner = null;
+    updateActions();
     tickTogether();
     if (!MPm.canEdit() && S.mode === 'build') { B.setMode('play'); syncBar(); }
     MPm.tickRemote(dt);
@@ -203,7 +194,6 @@ async function boot() {
   await loadPlayerTemplates();
   loadEmotes().then(() => mountTray($('emoteTray'))).catch(e => console.warn('[emotes]', e));
   initTogether();
-  $('togetherBtn').addEventListener('click', () => { if (S.partner && S.onTogether) S.onTogether(S.partner); });
   $('acceptBtn').addEventListener('click', () => respond(true));
   $('declineBtn').addEventListener('click', () => respond(false));
   S.onRespond = respond;
@@ -211,7 +201,6 @@ async function boot() {
   document.addEventListener('bh-look', savePlayer);
   B.initBuild(); buildBar();
   initInput(canvas, { toggleBuild });
-  $('prompt').addEventListener('click', doInteract);
   $('chatInput').addEventListener('keydown', e => { if (e.key === 'Escape') closeChat(); });
   const noSelect = e => { if (!e.target.closest('input')) e.preventDefault(); };
   document.addEventListener('contextmenu', noSelect);

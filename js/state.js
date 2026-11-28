@@ -26,6 +26,9 @@ export const S = {
   keys: {},
   touchDir: { up: false, down: false, left: false, right: false },
   nearby: null,               // { kind, obj } interactable in reach
+  actions: [],                // what can be done right now, bottom button first (js/actions.js)
+  nearbyAll: [],              // every usable thing in reach, nearest first
+  actionFocus: -1, actionHover: -1,
   request: null,              // an emote-together request waiting for my answer { name, label }
   partner: null,              // another player in reach for "Perform Emote Together" (multiplayer)
 

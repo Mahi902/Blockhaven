@@ -339,11 +339,15 @@ export function render() {
 
   // selection / build helpers
   if (build) drawBuildOverlay(c, z);
-  else if (S.nearby) {
-    const o = S.nearby.obj;
-    const r = S.nearby.bot ? botRect(o) : S.nearby.kind === 'item' ? W.itemRect(o) : W.edgeRect(o);
-    c.strokeStyle = 'rgba(253,224,71,.9)'; c.lineWidth = 2.5 / z; c.setLineDash([6 / z, 5 / z]); c.lineDashOffset = -S.tick * 0.4 / z;
-    rr(c, r.x - 3, r.y - 3, r.w + 6, r.h + 6, 6); c.stroke(); c.setLineDash([]);
+  else if (S.actions.length) {
+    const many = S.actions.filter(a => a.target).length > 1;
+    S.actions.forEach((a, i) => {
+      if (!a.target) return;
+      const o = a.target.obj, r = a.target.bot ? botRect(o) : a.target.kind === 'item' ? W.itemRect(o) : W.edgeRect(o);
+      const focus = !many || S.actionFocus === i || S.actionFocus < 0;   // with several, the hovered / armed one stands out
+      c.strokeStyle = focus ? 'rgba(253,224,71,.9)' : 'rgba(253,224,71,.38)'; c.lineWidth = (focus ? 2.5 : 1.6) / z; c.setLineDash([6 / z, 5 / z]); c.lineDashOffset = -S.tick * 0.4 / z;
+      rr(c, r.x - 3, r.y - 3, r.w + 6, r.h + 6, 6); c.stroke(); c.setLineDash([]);
+    });
   }
 
   // night

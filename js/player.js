@@ -450,32 +450,28 @@ export function distToRect(px, py, r) {
   return Math.hypot(dx, dy);
 }
 
-export function nearestInteractive(reach = 46, filter = null) {
-  const P = S.player;
-  let best = null, bd = reach;
+/** Everything usable within reach, nearest first (one entry per object). */
+export function interactablesNear(reach = 46, filter = null) {
+  const P = S.player, found = new Map();
+  const add = (e, dd) => { if (dd < reach && (!filter || filter(e)) && (!found.has(e.obj) || found.get(e.obj).dd > dd)) found.set(e.obj, { ...e, dd }); };
   for (const it of W.world.items) {
     const d = catalog.get(it.type);
     if (!d || !d.hasFunction || it.type === 'cat') continue;
-    const dd = distToRect(P.x, P.y, W.itemRect(it));
-    const e = { kind: 'item', obj: it, def: d };
-    if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }
+    add({ kind: 'item', obj: it, def: d }, distToRect(P.x, P.y, W.itemRect(it)));
   }
   for (const it of W.world.items) {   // an NPC away from its dock can be reached where it stands
     const d = catalog.get(it.type);
     if (!d || !d.npc || !d.hasFunction) continue;
-    const dd = botDist(it, P.x, P.y);
-    const e = { kind: 'item', obj: it, def: d, bot: true };
-    if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }
+    add({ kind: 'item', obj: it, def: d, bot: true }, botDist(it, P.x, P.y));
   }
   for (const ed of W.world.edges) {
     const d = catalog.get(ed.type);
     if (!d || !d.hasFunction) continue;
-    const dd = distToRect(P.x, P.y, W.edgeRect(ed)) - 4;
-    const e = { kind: 'edge', obj: ed, def: d };
-    if (dd < bd && (!filter || filter(e))) { bd = dd; best = e; }
+    add({ kind: 'edge', obj: ed, def: d }, distToRect(P.x, P.y, W.edgeRect(ed)) - 4);
   }
-  return best;
+  return [...found.values()].sort((x, y) => x.dd - y.dd);
 }
+export function nearestInteractive(reach = 46, filter = null) { return interactablesNear(reach, filter)[0] || null; }
 
 // ---- path finding (breadth first on the tile grid) ---------------------------------------
 function stepBlocked(x, y, nx, ny) {

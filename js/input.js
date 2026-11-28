@@ -4,6 +4,7 @@ import { S, screenToWorld } from './state.js';
 import * as W from './world.js';
 import { catalog } from './catalog.js';
 import { walkTo, walkToAndUse, leaveSeatNow, say } from './player.js';
+import { pressAction } from './actions.js';
 import { interactWith } from './api.js';
 import * as B from './build.js';
 import { closeModal } from './ui.js';
@@ -48,12 +49,6 @@ function sendChat(input) {
   input.focus();   // keep the chat box open and ready for the next message
 }
 
-export function doInteract() {
-  if (S.modalOpen || !S.started || S.mode !== 'play') return;
-  if (S.player.seat) { leaveSeatNow(); return; }
-  if (S.nearby) interactWith(S.nearby.kind, S.nearby.obj);
-  else if (S.partner && S.onTogether) S.onTogether(S.partner);
-}
 
 function onKeyDown(e) {
   if (!S.started) return;
@@ -80,9 +75,8 @@ function onKeyDown(e) {
   if (key === 'enter') { e.preventDefault(); const cb = document.getElementById('chatBtn'); if (cb && S.mode === 'play') cb.click(); return; }
   if (key === 'b') { handlers.toggleBuild && handlers.toggleBuild(); return; }
   if (S.mode === 'play') {
-    if (key === 'e' || key === ' ') { e.preventDefault(); doInteract(); }
+    if (key === 'e' || key === ' ') { e.preventDefault(); if (!e.repeat) pressAction(); }
     else if ((key === 'y' || key === 'n') && !e.ctrlKey && !e.metaKey && S.request && S.onRespond) { e.preventDefault(); S.onRespond(key === 'y'); }   // answer an emote request
-    else if (key === 't' && !e.ctrlKey && !e.metaKey && S.partner && S.onTogether) { e.preventDefault(); S.onTogether(S.partner); }
   } else {
     if (key === 'r') B.rotateCurrent();
     else if (key === 'delete' || key === 'backspace') { e.preventDefault(); B.deleteSelected(); }
@@ -144,7 +138,7 @@ function playClick(wp) {
   const it = W.itemAtCell(cx, cy);
   const hit = e && catalog.get(e.type).hasFunction ? { kind: 'edge', obj: e } : (it && catalog.get(it.type).hasFunction ? { kind: 'item', obj: it } : null);
   if (!S.settings.clickMove) {          // click-to-move is off: only use what is already within reach
-    if (hit && S.nearby && S.nearby.obj === hit.obj) interactWith(hit.kind, hit.obj);
+    if (hit && S.nearbyAll.some(n => n.obj === hit.obj)) interactWith(hit.kind, hit.obj);
     return;
   }
   if (hit) { walkToAndUse(hit.kind, hit.obj); return; }
