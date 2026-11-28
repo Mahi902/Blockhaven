@@ -35,7 +35,7 @@ body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;backgroun
 .nav a.l{font:700 15px Fredoka,sans-serif;color:#cbd5e1;text-decoration:none;padding:6px 12px;border-radius:9px}.nav a.l:hover{background:#334155;color:#fff}
 .nav .bh-btn{margin-left:6px}
 /* hero */
-.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,34px);padding:90px 16px 150px;overflow:hidden;background:linear-gradient(#0ea5e9 0%,#38bdf8 32%,#7dd3fc 60%,#dbeafe 85%)}
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,34px);padding:90px 16px clamp(120px,24vw,440px);overflow:hidden;background:linear-gradient(#0ea5e9 0%,#38bdf8 32%,#7dd3fc 60%,#dbeafe 85%)}
 .sun{position:absolute;right:12%;top:15%;width:80px;height:80px;border-radius:50%;background:#fde047;border:5px solid #0f172a;box-shadow:0 0 0 14px rgba(253,224,71,.28),0 0 0 32px rgba(253,224,71,.14);animation:pulse 5s ease-in-out infinite}
 @keyframes pulse{50%{transform:scale(1.06)}}
 .cloud{position:absolute;width:150px;opacity:.85;animation:drift linear infinite;left:-20%}
@@ -44,7 +44,7 @@ body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;backgroun
 .blk{position:absolute;width:24px;height:24px;border:3px solid #0f172a;border-radius:5px;box-shadow:0 4px 0 rgba(15,23,42,.5);animation:bob 4s ease-in-out infinite}
 .b1{left:12%;top:36%;background:#fb7185}.b2{left:86%;top:52%;background:#4ade80;animation-delay:-1.4s}.b3{left:28%;top:20%;background:#c084fc;animation-delay:-2.6s;width:18px;height:18px}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-14px) rotate(8deg)}}
-.town{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%;object-fit:cover;object-position:bottom;pointer-events:none}
+.town{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;display:block;pointer-events:none}
 .title-logo{position:relative;text-align:center;animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes pop{from{transform:scale(.4) translateY(-30px);opacity:0}}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
@@ -150,7 +150,7 @@ h2 span{color:#fde047}
   <div class="in">
     <h2 class="rv">Limitless <span>Possibilities</span></h2>
     <p class="sub rv">Every room is a blank page. Mix, match and recolor until it feels like home.</p>
-    <div class="chips rv"><span class="chip bh-panel"><b>44</b>furniture pieces</span><span class="chip bh-panel"><b>16</b>colors each</span><span class="chip bh-panel"><b>&infin;</b>rooms to build</span></div>
+    <div class="chips rv"><span class="chip bh-panel"><b id="fcount">44</b>furniture pieces</span><span class="chip bh-panel"><b>16</b>colors each</span><span class="chip bh-panel"><b>&infin;</b>rooms to build</span></div>
   </div>
 </section>
 
@@ -220,6 +220,14 @@ c.onclick=function(){v.classList.remove('hide');c.classList.add('hide');v.play()
 var els=document.querySelectorAll('.rv');
 if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.12});els.forEach(function(e){io.observe(e);});}
 else els.forEach(function(e){e.classList.add('on');});})();
+</script>
+<script>
+(function(){var el=document.getElementById('fcount'),K='bh_fcount';
+try{var c=parseInt(localStorage.getItem(K),10);if(c>0)el.textContent=c;}catch(e){}
+fetch('https://raw.githubusercontent.com/mahi902/Blockhaven/main/furniture/index.json?_='+Date.now(),{cache:'no-store'})
+.then(function(r){if(!r.ok)throw 0;return r.json();})
+.then(function(d){var n=Object.keys(d).filter(function(k){return k!=='wall'&&Array.isArray(d[k])&&d[k].some(function(f){return /\.svg$/i.test(f);});}).length;
+if(n>0){el.textContent=n;try{localStorage.setItem(K,n);}catch(e){}}}).catch(function(){});})();
 </script>
 </body>
 </html>
