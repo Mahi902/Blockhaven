@@ -11,75 +11,37 @@
 <link rel="apple-touch-icon" href="img/pwa/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script>(function(){var s=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;if(s)location.replace('play.html');})();</script>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%}
-body{font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;background:#0b0f19;min-height:100vh;overflow-x:hidden}
-.hidden,.hide{display:none!important}
-#intro{position:relative;min-height:100vh;overflow:hidden;background:linear-gradient(#38bdf8 0%,#7dd3fc 45%,#dbeafe 75%)}
-.sky{position:absolute;inset:0;pointer-events:none}
-.cloud{position:absolute;width:150px;opacity:.7;animation:drift linear infinite}
-.c1{top:3%;animation-duration:110s;left:-20%}.c2{top:12%;width:110px;animation-duration:150s;animation-delay:-60s;left:-20%}.c3{top:30%;width:130px;animation-duration:130s;animation-delay:-30s;left:-20%}
-@keyframes drift{to{transform:translateX(calc(100vw + 40vw))}}
-.blk{position:absolute;width:26px;height:26px;border:3px solid #0f172a;border-radius:5px;box-shadow:0 4px 0 rgba(15,23,42,.5);animation:bob 4s ease-in-out infinite}
-.b1{left:7%;top:45%;background:#fb7185}.b2{left:90%;top:38%;background:#fde047;animation-delay:-1s}.b3{left:22%;top:14%;background:#4ade80;animation-delay:-2s;width:20px;height:20px}
-.b4{left:76%;top:12%;background:#c084fc;animation-delay:-.5s;width:20px;height:20px}.b5{left:94%;top:62%;background:#38bdf8;animation-delay:-3s;width:18px;height:18px}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-14px) rotate(8deg)}}
-.town{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%;object-fit:cover;object-position:bottom;pointer-events:none}
-.wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;padding:clamp(14px,5vh,48px) 14px 70px}
-.title-logo{text-align:center;animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes pop{from{transform:scale(.4) translateY(-30px);opacity:0}}
-.title-logo img{width:72px;height:auto}
-.title-logo h1{margin:0;font:700 clamp(40px,9vw,72px)/1 Fredoka,sans-serif;color:#fff;letter-spacing:.04em;-webkit-text-stroke:5px #0f172a;paint-order:stroke fill;text-shadow:0 6px 0 #0f172a}
-.title-logo h1 span{color:#fde047}
-.title-logo p{margin:8px 0 0;font:600 15px Fredoka,sans-serif;color:#0f172a;background:rgba(255,255,255,.7);display:inline-block;padding:2px 12px;border-radius:99px}
-.bh-panel{background:linear-gradient(#1e293b,#0f172a);border:3px solid #020617;border-radius:12px;box-shadow:0 5px 0 #020617,0 8px 14px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.12)}
-.bh-label{display:block;font:700 12px Fredoka,sans-serif;color:#94a3b8;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em}
-.bh-btn{font-family:Fredoka,sans-serif;font-weight:700;font-size:15px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.45);border:3px solid #0f172a;border-radius:10px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
- background:linear-gradient(#4ade80,#16a34a);box-shadow:0 5px 0 #0f5a2a,0 7px 8px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.45);transition:transform .06s,box-shadow .06s}
-.bh-btn:hover{filter:brightness(1.1)}.bh-btn:disabled{opacity:.4;pointer-events:none}
-.bh-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0f5a2a,inset 0 2px 0 rgba(255,255,255,.3)}
-.bh-gold{color:#3b2300;text-shadow:0 1px 0 rgba(255,255,255,.5);background:linear-gradient(#fde047,#f59e0b);box-shadow:0 5px 0 #8a5400,0 7px 8px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.6)}.bh-gold:active{box-shadow:0 1px 0 #8a5400}
-.play-big{font-size:26px;letter-spacing:.06em;padding:10px;margin-top:2px}
-.menu{width:min(420px,100%);padding:12px 14px 16px}
-.tv{width:min(760px,100%);padding:10px 10px 14px}
-.tv-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
-.tv-head b{font:700 16px Fredoka,sans-serif;color:#fff}.tv-head i{font:700 11px Fredoka,sans-serif;color:#3b2300;background:linear-gradient(#fde047,#f59e0b);border:2px solid #020617;border-radius:8px;padding:1px 8px;font-style:normal;letter-spacing:.05em}
-.screen{position:relative;background:#020617;border:3px solid #020617;border-radius:10px;overflow:hidden;aspect-ratio:16/9;box-shadow:inset 0 0 0 2px #334155}
-.screen video{display:block;width:100%;height:100%;background:#000;object-fit:contain}
-.tv-leg{display:flex;justify-content:space-between;padding:0 28px;margin-bottom:-24px}.tv-leg i{width:22px;height:14px;background:#334155;border:3px solid #020617;border-top:0;border-radius:0 0 6px 6px;margin-top:8px}
-.note{margin-top:12px;font-size:13px;line-height:1.5;color:#cbd5e1;text-align:left;background:#0b1220;border:2px solid #020617;border-radius:10px;padding:10px 12px}.note b{color:#fde047}.note ol{margin:6px 0 0;padding-left:20px}
-.ok{color:#86efac;font-weight:800}
-.foot{position:fixed;left:0;right:0;bottom:0;height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fcd34d;background:#020617;z-index:5}
-.foot a{color:inherit;text-decoration:none}
-</style>
-</head>
 <body>
 <div id="intro">
-  <div class="sky"><img class="cloud c1" src="img/cloud.svg" alt=""><img class="cloud c2" src="img/cloud.svg" alt=""><img class="cloud c3" src="img/cloud.svg" alt="">
-    <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i><i class="blk b4"></i><i class="blk b5"></i></div>
+  <div class="sun"></div>
+  <img class="cloud c1" src="img/cloud.svg" alt=""><img class="cloud c2" src="img/cloud.svg" alt=""><img class="cloud c3" src="img/cloud.svg" alt="">
+  <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i>
   <img class="town" src="img/title-bg.svg" alt="">
-  <div class="wrap">
+  <img class="prop p1" src="furniture/couch/black.svg" alt=""><img class="prop p2" src="furniture/lamp/black.svg" alt=""><img class="prop p3" src="furniture/tv/black.svg" alt="">
+  <img class="prop p4" src="furniture/plant/black.svg" alt=""><img class="prop p5" src="furniture/bed/black.svg" alt=""><img class="prop p6" src="furniture/arcade/black.svg" alt="">
+
+  <div id="upd" class="note bh-panel hide">
+    <b>Update available</b>
+    <div id="updText">Your Blockhaven app is outdated.</div>
+    <button id="updBtn" class="bh-btn bh-gold" type="button">Update now</button>
+    <div style="margin-top:10px"><b>Or by hand:</b><ol><li>Open Blockhaven from your apps.</li><li>Tap the version number (bottom left).</li><li>Wait for Updating, then it reloads.</li></ol>Still old? Close the app fully and reopen it.</div>
+  </div>
+
+  <div class="stage">
     <div class="title-logo"><img src="img/logo.svg" alt=""><h1>BLOCK<span>HAVEN</span></h1><p>Build it. Decorate it. Live in it.</p></div>
-
-    <div class="tv bh-panel">
-      <div class="tv-head"><b>Trailer</b><i>NOW SHOWING</i></div>
-      <div class="screen"><video controls playsinline preload="none" poster="vid/poster.jpg" src="vid/Blockhaven_Trailer.mp4"></video></div>
-    </div>
-
-    <div class="menu bh-panel">
-      <button id="install" class="bh-btn play-big" type="button" disabled>Install Blockhaven</button>
-      <div id="upd" class="note hide" style="border-color:#f59e0b">
-        <b>Update available</b>
-        <div id="updText">Your Blockhaven app is outdated.</div>
-        <button id="updBtn" class="bh-btn bh-gold" type="button" style="margin-top:10px">Update now</button>
-        <div style="margin-top:10px"><b>Or update by hand:</b><ol><li>Open Blockhaven from your apps or home screen.</li><li>On the home screen, tap the version number (bottom left).</li><li>Wait for it to say Updating, then the game reloads.</li></ol>Still old? Close the app fully and open it again.</div>
-      </div>
-      <div id="msg" class="note">Install the game to play it. It works offline once installed.</div>
-      <div id="ios" class="note hide"><b>On iPhone / iPad:</b><ol><li>Tap the Share button in Safari.</li><li>Choose "Add to Home Screen".</li><li>Open Blockhaven from your home screen.</li></ol></div>
-      <div id="other" class="note hide"><b>No install button?</b><ol><li>Open your browser menu.</li><li>Choose "Install app" or "Add to Home Screen".</li><li>Open Blockhaven from your apps.</li></ol></div>
+    <div class="btns">
+      <button id="install" class="bh-btn play-big" type="button" disabled><img class="bh-ico" src="img/icons/download.svg" alt="">INSTALL</button>
+      <button id="trailerBtn" class="bh-btn bh-gold" type="button"><img class="bh-ico" src="img/icons/play.svg" alt="" style="filter:brightness(0)">Watch Trailer</button>
+      <p id="msg">Free. Works offline once installed.</p>
     </div>
   </div>
+  <div id="ios" class="note bh-panel hide"><b>On iPhone / iPad:</b><ol><li>Tap Share in Safari.</li><li>Choose "Add to Home Screen".</li><li>Open Blockhaven from your home screen.</li></ol></div>
+  <div id="other" class="note bh-panel hide"><b>No install button?</b><ol><li>Open your browser menu.</li><li>Choose "Install app" or "Add to Home Screen".</li><li>Open Blockhaven from your apps.</li></ol></div>
 </div>
+<div id="modal" class="modal hide"><div class="bh-panel">
+  <div class="mh"><span>Blockhaven Trailer</span><button id="xBtn" class="bh-btn x" type="button" aria-label="Close"><img src="img/icons/close.svg" alt=""></button></div>
+  <div class="screen"><video id="vid" controls playsinline poster="vid/poster.jpg"></video></div>
+</div></div>
 <div class="foot"><a href="https://github.com/mahi902/Blockhaven" target="_blank" rel="noopener">Blockhaven</a>&nbsp;&middot;&nbsp;made by&nbsp;<a href="https://github.com/mahi902" target="_blank" rel="noopener">mahi902</a></div>
 <script>
 var dp = null, $ = function (i) { return document.getElementById(i); }, btn = $('install');
@@ -122,6 +84,14 @@ window.addEventListener('appinstalled', done);
 function done() { btn.disabled = true; btn.textContent = 'Installed'; $('msg').innerHTML = '<span class="ok">Installed!</span> Open Blockhaven from your apps or home screen to play.'; $('ios').classList.add('hide'); $('other').classList.add('hide'); }
 if (ios) { btn.classList.add('hide'); $('ios').classList.remove('hide'); }
 else setTimeout(function () { if (!dp && !btn.disabled) $('other').classList.remove('hide'); }, 2500);
+</script>
+<script>
+(function(){var m=document.getElementById('modal'),v=document.getElementById('vid');
+function open(){v.src='vid/Blockhaven_Trailer.mp4';m.classList.remove('hide');v.play().catch(function(){});}
+function close(){v.pause();v.removeAttribute('src');v.load();m.classList.add('hide');}
+document.getElementById('trailerBtn').onclick=open;document.getElementById('xBtn').onclick=close;
+m.addEventListener('click',function(e){if(e.target===m)close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!m.classList.contains('hide'))close();});})();
 </script>
 </body>
 </html>
